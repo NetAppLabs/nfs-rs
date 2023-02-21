@@ -2,6 +2,7 @@ mod rpc;
 mod nfs3;
 mod mount;
 mod shared;
+mod wasi_ext;
 
 pub use mount::Mount;
 pub use shared::Time;
@@ -29,9 +30,9 @@ pub fn parse_url_and_mount(url: &str) -> Result<Box<dyn Mount>> {
 }
 
 fn get_uid_gid() -> (u32, u32) {
-    #[cfg(windows)]
+    #[cfg(not(unix))]
     let uid_gid = || { (65534, 65534) };
-    #[cfg(not(windows))]
+    #[cfg(unix)]
     let uid_gid = || {
         let uid = nix::unistd::getuid();
         let gid = nix::unistd::getgid();

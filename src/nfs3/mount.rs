@@ -1,3 +1,7 @@
+
+#[cfg(target_os = "wasi")]
+use crate::wasi_ext::TcpStream;
+#[cfg(not(target_os = "wasi"))]
 use std::net::TcpStream;
 
 use xdr_codec::{Pack, Unpack};
