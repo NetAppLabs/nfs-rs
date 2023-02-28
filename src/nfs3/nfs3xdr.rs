@@ -5119,7 +5119,7 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for cookieverf3 {
             {
                 let (v, usz) = {
                     let mut buf: [u8; NFS3_COOKIEVERFSIZE as usize] =
-                        unsafe { ::std::mem::uninitialized() };
+                        unsafe { ::std::mem::zeroed() };
                     let sz = xdr_codec::unpack_opaque_array(
                         input,
                         &mut buf[..],
@@ -5193,7 +5193,7 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for createverf3 {
             {
                 let (v, usz) = {
                     let mut buf: [u8; NFS3_CREATEVERFSIZE as usize] =
-                        unsafe { ::std::mem::uninitialized() };
+                        unsafe { ::std::mem::zeroed() };
                     let sz = xdr_codec::unpack_opaque_array(
                         input,
                         &mut buf[..],
@@ -5580,7 +5580,7 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for fhandle2 {
         Ok((
             {
                 let (v, usz) = {
-                    let mut buf: [u8; FHSIZE2 as usize] = unsafe { ::std::mem::uninitialized() };
+                    let mut buf: [u8; FHSIZE2 as usize] = unsafe { ::std::mem::zeroed() };
                     let sz = xdr_codec::unpack_opaque_array(input, &mut buf[..], FHSIZE2 as usize)?;
                     (buf, sz)
                 };
@@ -5727,7 +5727,7 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for nfscookie2 {
             {
                 let (v, usz) = {
                     let mut buf: [u8; NFSCOOKIESIZE2 as usize] =
-                        unsafe { ::std::mem::uninitialized() };
+                        unsafe { ::std::mem::zeroed() };
                     let sz = xdr_codec::unpack_opaque_array(
                         input,
                         &mut buf[..],
@@ -6284,7 +6284,7 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for writeverf3 {
             {
                 let (v, usz) = {
                     let mut buf: [u8; NFS3_WRITEVERFSIZE as usize] =
-                        unsafe { ::std::mem::uninitialized() };
+                        unsafe { ::std::mem::zeroed() };
                     let sz = xdr_codec::unpack_opaque_array(
                         input,
                         &mut buf[..],
