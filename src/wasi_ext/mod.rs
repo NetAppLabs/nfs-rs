@@ -92,7 +92,7 @@ pub unsafe fn to_socket_addr(addr: &wasi_experimental_sockets::Addr) -> io::Resu
         );
         return Ok(sock_addr);
     }
-    unimplemented!()
+    unimplemented!("to_socket_addr")
 }
 
 pub unsafe fn to_wasi_addr(addr: &SocketAddr) -> io::Result<wasi_experimental_sockets::Addr> {
@@ -147,68 +147,92 @@ impl TcpStream {
         //if let SocketAddr::V4(ipv4) = addr? {
 
         //println!("net.tcpstream.connect");
-        let mut res = None;
         for addr in addrs.to_socket_addrs()? {
-            let mut wasi_addr = unsafe { to_wasi_addr(&addr).unwrap() };
+            let x = unsafe { to_wasi_addr(&addr) };
+            if x.is_err() {
+                println!("TcpStream::connect to_wasi_addr err: {}", x.err().unwrap());
+                continue;
+            }
+            let mut wasi_addr = x.unwrap(); // unsafe { to_wasi_addr(&addr).unwrap() };
 
-            let wasi_fd = unsafe {
-                wasi_experimental_sockets::sock_open(wasi_experimental_sockets::ADDRESS_FAMILY_INET4, wasi_experimental_sockets::SOCK_TYPE_SOCKET_STREAM).unwrap()
+            let x = unsafe {
+                wasi_experimental_sockets::sock_open(wasi_experimental_sockets::ADDRESS_FAMILY_INET4, wasi_experimental_sockets::SOCK_TYPE_SOCKET_STREAM)
             };
+            if x.is_err() {
+                println!("TcpStream::connect sock_open err: {}", x.err().unwrap());
+                continue;
+            }
+            let wasi_fd = x.unwrap();
 
-            unsafe {
-                wasi_experimental_sockets::sock_connect(wasi_fd, &mut wasi_addr as *mut wasi_experimental_sockets::Addr).unwrap();
+            let x = unsafe {
+                wasi_experimental_sockets::sock_connect(wasi_fd, &mut wasi_addr as *mut wasi_experimental_sockets::Addr)
             };
+            if x.is_err() {
+                println!("TcpStream::connect sock_connect err: {}", x.err().unwrap());
+                let x = unsafe { wasi_experimental_sockets::sock_close(wasi_fd) };
+                if x.is_err() {
+                    println!("TcpStream::connect sock_close err: {}", x.err().unwrap());
+                }
+                continue;
+            }
 
-            res = Some(Self {
-                fd: unsafe { WasiFd::from_raw(wasi_fd) },
-            });
-            break;
+            return Ok(Self{fd: unsafe { WasiFd::from_raw(wasi_fd) }});
         }
 
-        Ok(res.unwrap())
+        Err(io::Error::new(io::ErrorKind::Other, "no valid socket address"))
         //old:
         //let addr: u32 = ipv4.ip().clone().into();
         //let port: u16 = ipv4.port();
         //let fd = unsafe { wasi_experimental_sockets::sock_connect(addr, port).unwrap() };
         //Ok(Self { fd: unsafe { WasiFd::from_raw(fd) } })
         //} else {
-        //    unimplemented!()
+        //    unimplemented!("connect")
         //}
     }
 
     pub fn connect_timeout(_: &SocketAddr, _: Duration) -> io::Result<TcpStream> {
-        unimplemented!()
+        unimplemented!("connect_timeout")
     }
 
     pub fn set_read_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        //unimplemented!()
+        //unimplemented!("set_read_timeout")
         Ok(())
     }
 
     pub fn set_write_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        //unimplemented!()
+        //unimplemented!("set_write_timeout")
         Ok(())
     }
 
     pub fn read_timeout(&self) -> io::Result<Option<Duration>> {
-        unimplemented!()
+        unimplemented!("read_timeout")
     }
 
     pub fn write_timeout(&self) -> io::Result<Option<Duration>> {
-        unimplemented!()
+        unimplemented!("write_timeout")
     }
 
     pub fn peek(&self, _: &mut [u8]) -> io::Result<usize> {
-        unimplemented!()
+        unimplemented!("peek")
     }
 
     pub fn read(&self, buf: &mut [u8]) -> io::Result<usize> {
         //self.read_vectored(&mut [IoSliceMut::new(buf)])
         //println!("net.read");
 
-        Ok(unsafe {
-            wasi_experimental_sockets::sock_recv(self.fd.as_raw(), buf.as_mut_ptr() as *mut u8, buf.len(), 0).unwrap()
-        })
+        let res = unsafe {
+            wasi_experimental_sockets::sock_recv(self.fd.as_raw(), buf.as_mut_ptr() as *mut u8, buf.len(), 0)
+        };
+        if res.is_err() {
+            let err = res.err().unwrap();
+            if err.raw_error() == ERRNO_AGAIN {
+                std::thread::sleep(std::time::Duration::from_millis(1));
+                return self.read(buf);
+            }
+            println!("TcpStream::read sock_recv err: {}", err);
+            return Err(io::Error::new(io::ErrorKind::Other, err.to_string().as_str()));
+        }
+        Ok(res.unwrap())
     }
 
     pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
@@ -264,7 +288,12 @@ impl TcpStream {
         let len = buf.len();
         let buf_ptr: *const u8 = buf.as_ptr();
         let bufmut_ptr: *mut u8 = unsafe { mem::transmute(buf_ptr) };
-        Ok(unsafe { wasi_experimental_sockets::sock_send(self.fd.as_raw(), bufmut_ptr, len, 0).unwrap() })
+        let res = unsafe { wasi_experimental_sockets::sock_send(self.fd.as_raw(), bufmut_ptr, len, 0) };
+        if res.is_err() {
+            println!("TcpStream::write sock_send err: {}", res.err().unwrap());
+            return Err(io::Error::new(io::ErrorKind::Other, res.err().unwrap().to_string().as_str()));
+        }
+        Ok(res.unwrap())
         //old:
         //self.write_vectored(&[IoSlice::new(buf)])
     }
@@ -302,43 +331,43 @@ impl TcpStream {
     }
 
     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
-        unimplemented!()
+        unsafe { to_socket_addr(&sock_addr_remote(self.fd.fd)) }
     }
 
     pub fn socket_addr(&self) -> io::Result<SocketAddr> {
-        unimplemented!()
+        unimplemented!("socket_addr")
     }
 
     pub fn shutdown(&self, _: Shutdown) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("shutdown")
     }
 
     pub fn duplicate(&self) -> io::Result<TcpStream> {
-        unimplemented!()
+        unimplemented!("duplicate")
     }
 
     pub fn set_nodelay(&self, _: bool) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_nodelay")
     }
 
     pub fn nodelay(&self) -> io::Result<bool> {
-        unimplemented!()
+        unimplemented!("nodelay")
     }
 
     pub fn set_ttl(&self, _: u32) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_ttl")
     }
 
     pub fn ttl(&self) -> io::Result<u32> {
-        unimplemented!()
+        unimplemented!("ttl")
     }
 
     pub fn take_error(&self) -> io::Result<Option<io::Error>> {
-        unimplemented!()
+        unimplemented!("take_error")
     }
 
     pub fn set_nonblocking(&self, _: bool) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_nonblocking")
     }
 
     pub fn fd(&self) -> &WasiFd {
@@ -406,7 +435,7 @@ impl TcpListener {
         //let fd = unsafe { wasi_experimental_sockets::sock_connect(addr, port).unwrap() };
         //Ok(Self { fd: unsafe { WasiFd::from_raw(fd) } })
         //} else {
-        //    unimplemented!()
+        //    unimplemented!("bind")
         //}
     }
 
@@ -433,31 +462,31 @@ impl TcpListener {
     }
 
     pub fn duplicate(&self) -> io::Result<TcpListener> {
-        unimplemented!()
+        unimplemented!("duplicate")
     }
 
     pub fn set_ttl(&self, _: u32) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_ttl")
     }
 
     pub fn ttl(&self) -> io::Result<u32> {
-        unimplemented!()
+        unimplemented!("ttl")
     }
 
     pub fn set_only_v6(&self, _: bool) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_only_v6")
     }
 
     pub fn only_v6(&self) -> io::Result<bool> {
-        unimplemented!()
+        unimplemented!("only_v6")
     }
 
     pub fn take_error(&self) -> io::Result<Option<io::Error>> {
-        unimplemented!()
+        unimplemented!("take_error")
     }
 
     pub fn set_nonblocking(&self, _: bool) -> io::Result<()> {
-        //unimplemented!()
+        //unimplemented!("set_nonblocking")
         Ok(())
     }
 
@@ -499,129 +528,129 @@ pub struct UdpSocket {
 
 impl UdpSocket {
     pub fn bind(_: io::Result<&SocketAddr>) -> io::Result<UdpSocket> {
-        unimplemented!()
+        unimplemented!("bind")
     }
 
     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
-        unimplemented!()
+        unimplemented!("peer_addr")
     }
 
     pub fn socket_addr(&self) -> io::Result<SocketAddr> {
-        unimplemented!()
+        unimplemented!("socket_addr")
     }
 
     pub fn recv_from(&self, _: &mut [u8]) -> io::Result<(usize, SocketAddr)> {
-        unimplemented!()
+        unimplemented!("recv_from")
     }
 
     pub fn peek_from(&self, _: &mut [u8]) -> io::Result<(usize, SocketAddr)> {
-        unimplemented!()
+        unimplemented!("peek_from")
     }
 
     pub fn send_to(&self, _: &[u8], _: &SocketAddr) -> io::Result<usize> {
-        unimplemented!()
+        unimplemented!("send_to")
     }
 
     pub fn duplicate(&self) -> io::Result<UdpSocket> {
-        unimplemented!()
+        unimplemented!("duplicate")
     }
 
     pub fn set_read_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        //unimplemented!()
+        //unimplemented!("set_read_timeout")
         Ok(())
     }
 
     pub fn set_write_timeout(&self, _: Option<Duration>) -> io::Result<()> {
-        //unimplemented!()
+        //unimplemented!("set_write_timeout")
         Ok(())
     }
 
     pub fn read_timeout(&self) -> io::Result<Option<Duration>> {
-        unimplemented!()
+        unimplemented!("read_timeout")
     }
 
     pub fn write_timeout(&self) -> io::Result<Option<Duration>> {
-        unimplemented!()
+        unimplemented!("write_timeout")
     }
 
     pub fn set_broadcast(&self, _: bool) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_broadcast")
     }
 
     pub fn broadcast(&self) -> io::Result<bool> {
-        unimplemented!()
+        unimplemented!("broadcast")
     }
 
     pub fn set_multicast_loop_v4(&self, _: bool) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_multicast_loop_v4")
     }
 
     pub fn multicast_loop_v4(&self) -> io::Result<bool> {
-        unimplemented!()
+        unimplemented!("multicast_loop_v4")
     }
 
     pub fn set_multicast_ttl_v4(&self, _: u32) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_multicast_ttl_v4")
     }
 
     pub fn multicast_ttl_v4(&self) -> io::Result<u32> {
-        unimplemented!()
+        unimplemented!("multicast_ttl_v4")
     }
 
     pub fn set_multicast_loop_v6(&self, _: bool) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_multicast_loop_v6")
     }
 
     pub fn multicast_loop_v6(&self) -> io::Result<bool> {
-        unimplemented!()
+        unimplemented!("multicast_loop_v6")
     }
 
     pub fn join_multicast_v4(&self, _: &Ipv4Addr, _: &Ipv4Addr) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("join_multicast_v4")
     }
 
     pub fn join_multicast_v6(&self, _: &Ipv6Addr, _: u32) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("join_multicast_v6")
     }
 
     pub fn leave_multicast_v4(&self, _: &Ipv4Addr, _: &Ipv4Addr) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("leave_multicast_v4")
     }
 
     pub fn leave_multicast_v6(&self, _: &Ipv6Addr, _: u32) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("leave_multicast_v6")
     }
 
     pub fn set_ttl(&self, _: u32) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_ttl")
     }
 
     pub fn ttl(&self) -> io::Result<u32> {
-        unimplemented!()
+        unimplemented!("ttl")
     }
 
     pub fn take_error(&self) -> io::Result<Option<io::Error>> {
-        unimplemented!()
+        unimplemented!("take_error")
     }
 
     pub fn set_nonblocking(&self, _: bool) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("set_nonblocking")
     }
 
     pub fn recv(&self, _: &mut [u8]) -> io::Result<usize> {
-        unimplemented!()
+        unimplemented!("recv")
     }
 
     pub fn peek(&self, _: &mut [u8]) -> io::Result<usize> {
-        unimplemented!()
+        unimplemented!("peek")
     }
 
     pub fn send(&self, _: &[u8]) -> io::Result<usize> {
-        unimplemented!()
+        unimplemented!("send")
     }
 
     pub fn connect(&self, _: io::Result<&SocketAddr>) -> io::Result<()> {
-        unimplemented!()
+        unimplemented!("connect")
     }
 
     pub fn fd(&self) -> &WasiFd {
