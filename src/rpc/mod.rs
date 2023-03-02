@@ -124,9 +124,9 @@ impl Client {
         let mut hdr_buf_vec = hdr_buf.to_vec();
         hdr_buf_vec.append(&mut buf);
 
+        #[allow(unused_mut)]
         let mut conn = self.get_conn(&reqmsg);
         let _ = conn.write_all(hdr_buf_vec.as_slice())?;
-        let _ = conn.flush()?;
 
         let mut hdr = [0u8; 4];
         let _ = conn.read_exact(&mut hdr)?;

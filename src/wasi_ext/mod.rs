@@ -11,6 +11,7 @@ use std::unimplemented;
 
 
 pub mod error;
+#[allow(unused)]
 mod lib_generated;
 
 use lib_generated as wasi_experimental_sockets;
@@ -142,24 +143,29 @@ pub unsafe fn to_wasi_addr(addr: &SocketAddr) -> io::Result<wasi_experimental_so
 }
 
 impl TcpStream {
-    pub fn connect(addr: SocketAddr) -> io::Result<TcpStream> {
+    pub fn connect<A: std::net::ToSocketAddrs>(addrs: A) -> io::Result<TcpStream> {
         //if let SocketAddr::V4(ipv4) = addr? {
 
         //println!("net.tcpstream.connect");
-        let mut wasi_addr = unsafe { to_wasi_addr(&addr).unwrap() };
+        let mut res = None;
+        for addr in addrs.to_socket_addrs()? {
+            let mut wasi_addr = unsafe { to_wasi_addr(&addr).unwrap() };
 
-        let wasi_fd = unsafe {
-            wasi_experimental_sockets::sock_open(wasi_experimental_sockets::ADDRESS_FAMILY_INET4, wasi_experimental_sockets::SOCK_TYPE_SOCKET_STREAM).unwrap()
-        };
+            let wasi_fd = unsafe {
+                wasi_experimental_sockets::sock_open(wasi_experimental_sockets::ADDRESS_FAMILY_INET4, wasi_experimental_sockets::SOCK_TYPE_SOCKET_STREAM).unwrap()
+            };
 
-        unsafe {
-            wasi_experimental_sockets::sock_connect(wasi_fd, &mut wasi_addr as *mut wasi_experimental_sockets::Addr).unwrap();
-        };
+            unsafe {
+                wasi_experimental_sockets::sock_connect(wasi_fd, &mut wasi_addr as *mut wasi_experimental_sockets::Addr).unwrap();
+            };
 
-        Ok(Self {
-            fd: unsafe { WasiFd::from_raw(wasi_fd) },
-        })
+            res = Some(Self {
+                fd: unsafe { WasiFd::from_raw(wasi_fd) },
+            });
+            break;
+        }
 
+        Ok(res.unwrap())
         //old:
         //let addr: u32 = ipv4.ip().clone().into();
         //let port: u16 = ipv4.port();
@@ -205,6 +211,25 @@ impl TcpStream {
         })
     }
 
+    pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
+        while !buf.is_empty() {
+            match self.read(buf) {
+                Ok(0) => break,
+                Ok(n) => {
+                    let tmp = buf;
+                    buf = &mut tmp[n..];
+                }
+                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+                Err(e) => return Err(e),
+            }
+        }
+        if !buf.is_empty() {
+            Err(io::Error::new(io::ErrorKind::UnexpectedEof, "failed to fill whole buffer"))
+        } else {
+            Ok(())
+        }
+    }
+
     pub fn read_vectored(&self, iov: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
         //Ok(unsafe { wasi_experimental_sockets::sock_recv(self.fd.as_raw(), &mut iovec(iov), iov.len(), 0).unwrap()})
         //let iovecvar = iovec(iov);
@@ -242,6 +267,20 @@ impl TcpStream {
         Ok(unsafe { wasi_experimental_sockets::sock_send(self.fd.as_raw(), bufmut_ptr, len, 0).unwrap() })
         //old:
         //self.write_vectored(&[IoSlice::new(buf)])
+    }
+
+    pub fn write_all(&self, mut buf: &[u8]) -> io::Result<()> {
+        while !buf.is_empty() {
+            match self.write(buf) {
+                Ok(0) => {
+                    return Err(io::Error::new(io::ErrorKind::WriteZero, "failed to write whole buffer"));
+                }
+                Ok(n) => buf = &buf[n..],
+                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+                Err(e) => return Err(e),
+            }
+        }
+        Ok(())
     }
 
     pub fn write_vectored(&self, iov: &[IoSlice<'_>]) -> io::Result<usize> {
@@ -308,6 +347,10 @@ impl TcpStream {
 
     pub fn into_fd(self) -> WasiFd {
         self.fd
+    }
+
+    pub fn try_clone(&self) -> io::Result<TcpStream> {
+        Ok(TcpStream{fd: WasiFd{fd: self.fd.fd}})
     }
 }
 
