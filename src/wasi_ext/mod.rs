@@ -2,7 +2,7 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::io::{self, IoSlice, IoSliceMut};
 use std::mem;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, SocketAddrV6};
 //use std::sys::fd::WasiFd;
 //use std::sys_common::FromInner;
 
@@ -51,17 +51,23 @@ pub struct TcpStream {
 }
 
 const BUF_LEN: usize = 20;
-pub unsafe fn sock_addr_remote(fd: u32) -> wasi_experimental_sockets::Addr {
+pub unsafe fn sock_addr_remote(fd: u32) -> io::Result<wasi_experimental_sockets::Addr> {
     let mut buf: [u8; BUF_LEN] = [0; BUF_LEN];
-    wasi_experimental_sockets::sock_addr_remote(fd, buf.as_mut_ptr(), BUF_LEN).unwrap();
+    let res = wasi_experimental_sockets::sock_addr_remote(fd, buf.as_mut_ptr(), BUF_LEN);
+    if res.is_err() {
+        return Err(io::Error::new(io::ErrorKind::Other, "error getting remote address"));
+    }
     let addr_ptr = buf.as_ptr() as *const wasi_experimental_sockets::Addr;
-    addr_ptr.read_unaligned()
+    Ok(addr_ptr.read_unaligned())
 }
-pub unsafe fn sock_addr_local(fd: u32) -> wasi_experimental_sockets::Addr {
+pub unsafe fn sock_addr_local(fd: u32) -> io::Result<wasi_experimental_sockets::Addr> {
     let mut buf: [u8; BUF_LEN] = [0; BUF_LEN];
-    wasi_experimental_sockets::sock_addr_local(fd, buf.as_mut_ptr(), BUF_LEN).unwrap();
+    let res = wasi_experimental_sockets::sock_addr_local(fd, buf.as_mut_ptr(), BUF_LEN);
+    if res.is_err() {
+        return Err(io::Error::new(io::ErrorKind::Other, "error getting local address"));
+    }
     let addr_ptr = buf.as_ptr() as *const wasi_experimental_sockets::Addr;
-    addr_ptr.read_unaligned()
+    Ok(addr_ptr.read_unaligned())
 }
 
 pub unsafe fn to_socket_addr(addr: &wasi_experimental_sockets::Addr) -> io::Result<SocketAddr> {
@@ -142,12 +148,32 @@ pub unsafe fn to_wasi_addr(addr: &SocketAddr) -> io::Result<wasi_experimental_so
     }
 }
 
+fn to_socket_addrs(addr: (&str, u16)) -> io::Result<Vec<SocketAddr>> {
+    let (host, port) = addr;
+    if let Ok(addr) = host.parse::<Ipv4Addr>() {
+        let addr = SocketAddrV4::new(addr, port);
+        return Ok(vec![SocketAddr::V4(addr)]);
+    }
+    if let Ok(addr) = host.parse::<Ipv6Addr>() {
+        let addr = SocketAddrV6::new(addr, port, 0, 0);
+        return Ok(vec![SocketAddr::V6(addr)]);
+    }
+    let mut addrs = vec![];
+    for a in LookupHost::try_from(addr)? {
+        addrs.push(a);
+    }
+    if !addrs.is_empty() {
+        return Ok(addrs)
+    }
+    Err(io::Error::new(io::ErrorKind::Other, "could not resolve host"))
+}
+
 impl TcpStream {
-    pub fn connect<A: std::net::ToSocketAddrs>(addrs: A) -> io::Result<TcpStream> {
+    pub fn connect(addr: (&str, u16)) -> io::Result<TcpStream> {
         //if let SocketAddr::V4(ipv4) = addr? {
 
         //println!("net.tcpstream.connect");
-        for addr in addrs.to_socket_addrs()? {
+        for addr in to_socket_addrs(addr)? {
             let x = unsafe { to_wasi_addr(&addr) };
             if x.is_err() {
                 println!("TcpStream::connect to_wasi_addr err: {}", x.err().unwrap());
@@ -176,7 +202,16 @@ impl TcpStream {
                 continue;
             }
 
-            return Ok(Self{fd: unsafe { WasiFd::from_raw(wasi_fd) }});
+            let stream = Self{fd: unsafe { WasiFd::from_raw(wasi_fd) }};
+            if let Some(err) = stream.peer_addr().err() {
+                println!("TcpStream::connect sock_peer_addr err: {}", err);
+                let x = unsafe { wasi_experimental_sockets::sock_close(wasi_fd) };
+                if x.is_err() {
+                    println!("TcpStream::connect sock_close err: {}", x.err().unwrap());
+                }
+                continue;
+            }
+            return Ok(stream);
         }
 
         Err(io::Error::new(io::ErrorKind::Other, "no valid socket address"))
@@ -331,7 +366,7 @@ impl TcpStream {
     }
 
     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
-        unsafe { to_socket_addr(&sock_addr_remote(self.fd.fd)) }
+        unsafe { to_socket_addr(&sock_addr_remote(self.fd.fd)?) }
     }
 
     pub fn socket_addr(&self) -> io::Result<SocketAddr> {
@@ -446,7 +481,7 @@ impl TcpListener {
     pub fn accept(&self) -> io::Result<(TcpStream, SocketAddr)> {
         let wasi_childfd = unsafe { wasi_experimental_sockets::sock_accept(self.fd.as_raw()).unwrap() };
         //let socket_addr = self.socket_addr();
-        let remote_addr_wasi = unsafe { sock_addr_remote(wasi_childfd) };
+        let remote_addr_wasi = unsafe { sock_addr_remote(wasi_childfd)? };
         let remote_addr = unsafe { to_socket_addr(&remote_addr_wasi).unwrap() };
         //println!("Accept from {}: ",remote_addr);
 
@@ -686,8 +721,9 @@ pub struct LookupHost {
     //original: *mut c::addrinfo,
     //cur: *mut c::addrinfo,
     //original: *mut wasi_experimental_sockets::Addr,
-    cur: *mut wasi_experimental_sockets::Addr,
-    has_itered: bool,
+    buf: Vec<u8>,
+    bufused: usize,
+    index: usize,
     port: u16,
 }
 
@@ -700,16 +736,20 @@ impl LookupHost {
 impl Iterator for LookupHost {
     type Item = SocketAddr;
     fn next(&mut self) -> Option<SocketAddr> {
+        const IPV4_LEN: usize = 8;
+        const IPV6_LEN: usize = 20;
         loop {
             unsafe {
-                if !self.has_itered {
-                    let cur = self.cur.as_ref()?;
-                    self.has_itered = true;
-                    match to_socket_addr(cur) {
-                        //match sockaddr_to_addr(mem::transmute(cur.ai_addr), cur.ai_addrlen as usize) {
-                        Ok(addr) => return Some(addr),
-                        Err(_) => continue,
+                if self.index < self.bufused {
+                    let cur_ptr = self.buf[self.index..].as_ptr() as *mut wasi_experimental_sockets::Addr;
+                    let cur = cur_ptr.as_ref()?;
+                    if let Some(addr) = to_socket_addr(cur).ok() {
+                        let size = if addr.is_ipv4() { IPV4_LEN } else { IPV6_LEN };
+                        self.index += size;
+                        return Some(addr);
                     }
+                    let size = if cur.tag == wasi_experimental_sockets::ADDR_TYPE_IP4 { IPV4_LEN } else { IPV6_LEN };
+                    self.index += size;
                 } else {
                     return None;
                 }
@@ -776,22 +816,24 @@ impl<'a> TryFrom<(&'a str, u16)> for LookupHost {
             },
         };*/
 
-        let mut buf: [u8; BUF_LEN] = [0; BUF_LEN];
+        const IPV6_LEN: usize = 20;
+        const MAX_RESOLVED_IPV6_ADDR_COUNT: usize = 10;
+        let mut buf = vec![0u8; IPV6_LEN*MAX_RESOLVED_IPV6_ADDR_COUNT];
         //wasi_experimental_sockets::sock_addr_remote(fd,  buf.as_mut_ptr(), BUF_LEN).unwrap();
-        let addr_ptr = buf.as_ptr() as *mut wasi_experimental_sockets::Addr;
         // TODO: handle error
-        let _res = unsafe {
-            wasi_experimental_sockets::addr_resolve(&host, port, buf.as_mut_ptr(), BUF_LEN).unwrap();
+        let bufused = unsafe {
+            wasi_experimental_sockets::addr_resolve(&host, port, buf.as_mut_ptr(), buf.len()).unwrap() as usize
         };
         //let addr = addr_ptr.read_unaligned();
 
         //let ret = LookupHost{original: addr_ptr, cur: addr_ptr, port: port};
         let ret = LookupHost {
-            cur: addr_ptr,
-            has_itered: false,
-            port: port,
+            buf,
+            bufused,
+            index: 0,
+            port,
         };
-        return io::Result::Ok(ret);
+        Ok(ret)
         // pub unsafe fn addr_resolve(
         //     host: &str,
         //     port: IpPort,

@@ -203,23 +203,23 @@ impl crate::Mount for Mount3 {
     }
 }
 
-fn ensure_port(addrs: Vec<std::net::SocketAddr>, prog: u32, vers: u32, auth: &crate::Auth) -> Result<Vec<std::net::SocketAddr>> {
-    if addrs[0].port() != 0 {
-        return Ok(addrs);
+fn ensure_port(host: &String, port: u16, prog: u32, vers: u32, auth: &crate::Auth) -> Result<u16> {
+    if port != 0 {
+        return Ok(port);
     }
-    rpc::portmap(addrs, prog, vers, auth)
+    rpc::portmap(host, prog, vers, auth)
 }
 
 pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
     let dir = args.dirpath;
     let (dircount, maxcount) = (args.dircount, args.maxcount);
     let auth = crate::Auth::new_unix("nfs-rs", args.uid, args.gid);
-    let nfs_addrs = ensure_port(args.nfs_addrs, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
-    let mount_addrs = ensure_port(args.mount_addrs, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
-    let nfs_conn = TcpStream::connect(&*nfs_addrs)?;
+    let nfsport = ensure_port(&args.host, args.nfsport, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
+    let mountport = ensure_port(&args.host, args.mountport, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
+    let nfs_conn = TcpStream::connect((args.host.as_str(), nfsport))?;
     let nfs_addr = nfs_conn.peer_addr()?;
-    let mount_conn = if mount_addrs[0].port() != nfs_addr.port() {
-        TcpStream::connect(&*mount_addrs)?
+    let mount_conn = if mountport != nfs_addr.port() {
+        TcpStream::connect((args.host.as_str(), mountport))?
     } else {
         nfs_conn.try_clone()?
     };

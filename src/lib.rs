@@ -16,9 +16,10 @@ use rpc::auth::Auth;
 #[derive(Debug)]
 struct MountArgs {
     versions: Vec<String>,
-    nfs_addrs: Vec<std::net::SocketAddr>,
-    mount_addrs: Vec<std::net::SocketAddr>,
+    host: String,
     dirpath: String,
+    mountport: u16,
+    nfsport: u16,
     uid: u32,
     gid: u32,
     dircount: u32,
@@ -72,9 +73,8 @@ fn parse_url(url: &str) -> Result<MountArgs> {
     let (dircount, maxcount): (u32, u32) = parse_readdir_buffer_query_param(&readdir_buffer_str)?;
     let nfsport = get_url_query_param(&params, "nfsport", addr_port.unwrap_or_default(), "specified URL contains bad NFS port")?;
     let mountport = get_url_query_param(&params, "mountport", Default::default(), "specified URL contains bad mount port")?;
-    let nfs_addrs = parsed_url.socket_addrs(|| Some(nfsport))?;
-    let mount_addrs = parsed_url.socket_addrs(|| Some(mountport))?;
-    Ok(MountArgs{versions, nfs_addrs, mount_addrs, dirpath: parsed_url.path().to_string(), uid, gid, dircount, maxcount})
+    let host = parsed_url.host_str().unwrap_or_default().to_string();
+    Ok(MountArgs{versions, host, mountport, nfsport, dirpath: parsed_url.path().to_string(), uid, gid, dircount, maxcount})
 }
 
 fn get_url_query_param<T: std::str::FromStr>(params: &url::form_urlencoded::Parse, name: &str, def: T, err_msg: &str) -> Result<T> {
@@ -226,166 +226,107 @@ mod tests {
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 1);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 0);
-        assert_eq!(args.mount_addrs.len(), 1);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 0);
+        assert_eq!(args.host, "127.0.0.1".to_string());
+        assert_eq!(args.nfsport, 0);
+        assert_eq!(args.mountport, 0);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
     }
 
-    #[ignore]
     #[test]
     fn parse_url_with_uid_and_gid_and_multi_version() {
         let res = parse_url("nfs://localhost/some/export/path?version=4.1,4,3&uid=616&gid=666");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["4.1".to_string(), "4".to_string(), "3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 2);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 0);
-        assert_eq!(args.nfs_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[1].port(), 0);
-        assert_eq!(args.mount_addrs.len(), 2);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 0);
-        assert_eq!(args.mount_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[1].port(), 0);
+        assert_eq!(args.host, "localhost".to_string());
+        assert_eq!(args.nfsport, 0);
+        assert_eq!(args.mountport, 0);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), (616, 666));
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
     }
 
-    #[ignore]
     #[test]
     fn parse_url_with_port() {
         let res = parse_url("nfs://localhost:20490/some/export/path");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 2);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 20490);
-        assert_eq!(args.nfs_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[1].port(), 20490);
-        assert_eq!(args.mount_addrs.len(), 2);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 0);
-        assert_eq!(args.mount_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[1].port(), 0);
+        assert_eq!(args.host, "localhost".to_string());
+        assert_eq!(args.nfsport, 20490);
+        assert_eq!(args.mountport, 0);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
     }
 
-    #[ignore]
     #[test]
     fn parse_url_with_nfsport() {
         let res = parse_url("nfs://localhost/some/export/path?nfsport=20490");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 2);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 20490);
-        assert_eq!(args.nfs_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[1].port(), 20490);
-        assert_eq!(args.mount_addrs.len(), 2);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 0);
-        assert_eq!(args.mount_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[1].port(), 0);
+        assert_eq!(args.host, "localhost".to_string());
+        assert_eq!(args.nfsport, 20490);
+        assert_eq!(args.mountport, 0);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
     }
 
-    #[ignore]
     #[test]
     fn parse_url_with_mountport() {
         let res = parse_url("nfs://localhost/some/export/path?mountport=20490");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 2);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 0);
-        assert_eq!(args.nfs_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[1].port(), 0);
-        assert_eq!(args.mount_addrs.len(), 2);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 20490);
-        assert_eq!(args.mount_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[1].port(), 20490);
+        assert_eq!(args.host, "localhost".to_string());
+        assert_eq!(args.nfsport, 0);
+        assert_eq!(args.mountport, 20490);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
     }
 
-    #[ignore]
     #[test]
     fn parse_url_with_port_and_mountport() {
         let res = parse_url("nfs://localhost:20389/some/export/path?mountport=20490");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 2);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 20389);
-        assert_eq!(args.nfs_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[1].port(), 20389);
-        assert_eq!(args.mount_addrs.len(), 2);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 20490);
-        assert_eq!(args.mount_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[1].port(), 20490);
+        assert_eq!(args.host, "localhost".to_string());
+        assert_eq!(args.nfsport, 20389);
+        assert_eq!(args.mountport, 20490);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
     }
 
-    #[ignore]
     #[test]
     fn parse_url_with_nfsport_and_mountport() {
         let res = parse_url("nfs://localhost/some/export/path?nfsport=20389&mountport=20490");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 2);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 20389);
-        assert_eq!(args.nfs_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[1].port(), 20389);
-        assert_eq!(args.mount_addrs.len(), 2);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 20490);
-        assert_eq!(args.mount_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[1].port(), 20490);
+        assert_eq!(args.host, "localhost".to_string());
+        assert_eq!(args.nfsport, 20389);
+        assert_eq!(args.mountport, 20490);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
     }
 
-    #[ignore]
     #[test]
     fn parse_url_with_port_nfsport_and_mountport() {
         let res = parse_url("nfs://localhost:20388/some/export/path?nfsport=20389&mountport=20490");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 2);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 20389);
-        assert_eq!(args.nfs_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[1].port(), 20389);
-        assert_eq!(args.mount_addrs.len(), 2);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V6(std::net::Ipv6Addr::new(0,0,0,0,0,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 20490);
-        assert_eq!(args.mount_addrs[1].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[1].port(), 20490);
+        assert_eq!(args.host, "localhost".to_string());
+        assert_eq!(args.nfsport, 20389);
+        assert_eq!(args.mountport, 20490);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
@@ -397,12 +338,9 @@ mod tests {
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 1);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 0);
-        assert_eq!(args.mount_addrs.len(), 1);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 0);
+        assert_eq!(args.host, "127.0.0.1".to_string());
+        assert_eq!(args.nfsport, 0);
+        assert_eq!(args.mountport, 0);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (4096, 4096));
@@ -414,12 +352,9 @@ mod tests {
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let args = res.unwrap();
         assert_eq!(args.versions, vec!["3".to_string()]);
-        assert_eq!(args.nfs_addrs.len(), 1);
-        assert_eq!(args.nfs_addrs[0].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.nfs_addrs[0].port(), 0);
-        assert_eq!(args.mount_addrs.len(), 1);
-        assert_eq!(args.mount_addrs[0].ip(), std::net::IpAddr::V4(std::net::Ipv4Addr::new(127,0,0,1)));
-        assert_eq!(args.mount_addrs[0].port(), 0);
+        assert_eq!(args.host, "127.0.0.1".to_string());
+        assert_eq!(args.nfsport, 0);
+        assert_eq!(args.mountport, 0);
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (2048, 4096));
@@ -427,7 +362,7 @@ mod tests {
 
     #[test]
     fn mount_with_only_v4() {
-        let args = MountArgs{versions: vec!["4".to_string()], nfs_addrs: Default::default(), mount_addrs: Default::default(), dirpath: Default::default(), gid: Default::default(), uid: Default::default(), dircount: Default::default(), maxcount: Default::default()};
+        let args = MountArgs{versions: vec!["4".to_string()], host: Default::default(), mountport: Default::default(), nfsport: Default::default(), dirpath: Default::default(), gid: Default::default(), uid: Default::default(), dircount: Default::default(), maxcount: Default::default()};
         let res = mount(args);
         assert!(res.is_err());
         let err = res.unwrap_err();
@@ -437,7 +372,7 @@ mod tests {
 
     #[test]
     fn mount_with_only_v4_1() {
-        let args = MountArgs{versions: vec!["4.1".to_string()], nfs_addrs: Default::default(), mount_addrs: Default::default(), dirpath: Default::default(), gid: Default::default(), uid: Default::default(), dircount: Default::default(), maxcount: Default::default()};
+        let args = MountArgs{versions: vec!["4.1".to_string()], host: Default::default(), mountport: Default::default(), nfsport: Default::default(), dirpath: Default::default(), gid: Default::default(), uid: Default::default(), dircount: Default::default(), maxcount: Default::default()};
         let res = mount(args);
         assert!(res.is_err());
         let err = res.unwrap_err();
@@ -447,7 +382,7 @@ mod tests {
 
     #[test]
     fn mount_with_only_v4_and_v4_1() {
-        let args = MountArgs{versions: vec!["4".to_string(), "4.1".to_string()], nfs_addrs: Default::default(), mount_addrs: Default::default(), dirpath: Default::default(), gid: Default::default(), uid: Default::default(), dircount: Default::default(), maxcount: Default::default()};
+        let args = MountArgs{versions: vec!["4".to_string(), "4.1".to_string()], host: Default::default(), mountport: Default::default(), nfsport: Default::default(), dirpath: Default::default(), gid: Default::default(), uid: Default::default(), dircount: Default::default(), maxcount: Default::default()};
         let res = mount(args);
         assert!(res.is_err());
         let err = res.unwrap_err();

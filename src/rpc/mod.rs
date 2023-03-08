@@ -7,7 +7,6 @@ use xdr_codec::{Pack, Unpack, Read, Write};
 use crate::wasi_ext::TcpStream;
 #[cfg(not(target_os = "wasi"))]
 use std::net::TcpStream;
-use std::net::{SocketAddr};
 use crate::{Result, Error, ErrorKind};
 
 use auth::Auth;
@@ -34,45 +33,37 @@ enum PortmapProc2 {
     // CallIt = 5,
 }
 
-pub(crate) fn portmap(addrs: Vec<SocketAddr>, prog: u32, vers: u32, auth: &Auth) -> Result<Vec<SocketAddr>> {
-    for addr in &addrs {
-        let mut addr = addr.clone();
-        addr.set_port(PORTMAP_PORT);
-        if let Some(conn) = TcpStream::connect(addr).ok() {
-            let client = Client::new(Some(conn), None);
-            let args = Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::Null as u32, &auth, &Auth::new_null());
+pub(crate) fn portmap(host: &String, prog: u32, vers: u32, auth: &Auth) -> Result<u16> {
+    if let Some(conn) = TcpStream::connect((host.as_str(), PORTMAP_PORT)).ok() {
+        let client = Client::new(Some(conn), None);
+        let args = Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::Null as u32, &auth, &Auth::new_null());
+        let mut buf = Vec::<u8>::new();
+        let res = args.pack(&mut buf);
+        if res.is_err() {
+            let _ = client.shutdown();
+            return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
+        }
+        if client.call(buf).is_ok() {
+            let args = GETPORT2args{
+                header: Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::GetPort as u32, &auth, &Auth::new_null()),
+                prog,
+                vers,
+                proto: IPPROTO_TCP,
+                port: 0,
+            };
             let mut buf = Vec::<u8>::new();
             let res = args.pack(&mut buf);
             if res.is_err() {
                 let _ = client.shutdown();
                 return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
             }
-            if client.call(buf).is_ok() {
-                let args = GETPORT2args{
-                    header: Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::GetPort as u32, &auth, &Auth::new_null()),
-                    prog,
-                    vers,
-                    proto: IPPROTO_TCP,
-                    port: 0,
-                };
-                let mut buf = Vec::<u8>::new();
-                let res = args.pack(&mut buf);
-                if res.is_err() {
-                    let _ = client.shutdown();
-                    return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
-                }
-                if let Some(res) = client.call(buf).ok() {
-                    let port = BigEndian::read_u32(res.as_slice()) as u16;
-                    let mut addrs = addrs.clone();
-                    for addr in &mut addrs {
-                        addr.set_port(port);
-                    }
-                    let _ = client.shutdown();
-                    return Ok(addrs);
-                }
+            if let Some(res) = client.call(buf).ok() {
+                let port = BigEndian::read_u32(res.as_slice()) as u16;
+                let _ = client.shutdown();
+                return Ok(port);
             }
-            let _ = client.shutdown();
         }
+        let _ = client.shutdown();
     }
     Err(Error::new(ErrorKind::Other, "error obtaining ports from portmapper"))
 }
