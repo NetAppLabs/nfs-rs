@@ -1,0 +1,171 @@
+package component:nfs-rs-component
+
+interface nfs {
+    record time {
+        seconds: u32,
+        nseconds: u32,
+    }
+
+    record attr {
+        attr-type: u32,
+        file-mode: u32,
+        nlink: u32,
+        uid: u32,
+        gid: u32,
+        filesize: u64,
+        used: u64,
+        spec-data: tuple<u32, u32>,
+        fsid: u64,
+        fileid: u64,
+        atime: time,
+        mtime: time,
+        ctime: time,
+    }
+
+    record path-conf {
+        attr: option<attr>,
+        linkmax: u32,
+        name-max: u32,
+        no-trunc: bool,
+        chown-restricted: bool,
+        case-insensitive: bool,
+        case-preserving: bool,
+    }
+
+    record readdir-entry {
+        fileid: u64,
+        file-name: string,
+        cookie: u64,
+    }
+
+    record readdirplus-entry {
+        fileid: u64,
+        file-name: string,
+        cookie: u64,
+        attr: option<attr>,
+        handle: list<u8>,
+    }
+
+    type mount = u32
+
+    parse-url-and-mount: func(url: string) -> result<mount>
+    null: func(mnt: mount) -> result
+    access: func(mnt: mount, fh: list<u8>, mode: u32) -> result<u32>
+    access-path: func(mnt: mount, path: string, mode: u32) -> result<u32>
+    close: func(mnt: mount, seqid: u32, stateid: u64) -> result
+    commit: func(mnt: mount, fh: list<u8>, offset: u64, count: u32) -> result
+    commit-path: func(mnt: mount, path: string, offset: u64, count: u32) -> result
+    create: func(mnt: mount, dir-fh: list<u8>, filename: string, mode: u32) -> result<list<u8>>
+    create-path: func(mnt: mount, path: string, mode: u32) -> result<list<u8>>
+    delegpurge: func(mnt: mount, clientid: u64) -> result
+    delegreturn: func(mnt: mount, stateid: u64) -> result
+    getattr: func(mnt: mount, fh: list<u8>) -> result<attr>
+    getattr-path: func(mnt: mount, path: string) -> result<attr>
+    setattr: func(mnt: mount, fh: list<u8>, guard-ctime: option<time>, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result
+    setattr-path: func(mnt: mount, path: string, specify-guard: bool, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result
+    getfh: func(mnt: mount) -> result
+    link: func(mnt: mount, src-fh: list<u8>, dst-dir-fh: list<u8>, dst-filename: string) -> result<attr>
+    link-path: func(mnt: mount, src-path: string, dst-path: string) -> result<attr>
+    symlink: func(mnt: mount, src-path: string, dst-dir-fh: list<u8>, dst-filename: string) -> result<list<u8>>
+    symlink-path: func(mnt: mount, src-path: string, dst-path: string) -> result<list<u8>>
+    readlink: func(mnt: mount, fh: list<u8>) -> result<string>
+    readlink-path: func(mnt: mount, path: string) -> result<string>
+    lookup: func(mnt: mount, path: string) -> result<list<u8>>
+    pathconf: func(mnt: mount, fh: list<u8>) -> result<path-conf>
+    pathconf-path: func(mnt: mount, path: string) -> result<path-conf>
+    read: func(mnt: mount, fh: list<u8>, offset: u64, count: u32) -> result<list<u8>>
+    read-path: func(mnt: mount, path: string, offset: u64, count: u32) -> result<list<u8>>
+    write: func(mnt: mount, fh: list<u8>, offset: u64, data: list<u8>) -> result<u32>
+    write-path: func(mnt: mount, path: string, offset: u64, data: list<u8>) -> result<u32>
+    readdir: func(mnt: mount, dir-fh: list<u8>) -> result<list<readdir-entry>>
+    readdir-path: func(mnt: mount, dir-path: string) -> result<list<readdir-entry>>
+    readdirplus: func(mnt: mount, dir-fh: list<u8>) -> result<list<readdirplus-entry>>
+    readdirplus-path: func(mnt: mount, dir-path: string) -> result<list<readdirplus-entry>>
+    mkdir: func(mnt: mount, dir-fh: list<u8>, dirname: string, mode: u32) -> result<list<u8>>
+    mkdir-path: func(mnt: mount, path: string, mode: u32) -> result<list<u8>>
+    remove: func(mnt: mount, dir-fh: list<u8>, filename: string) -> result
+    remove-path: func(mnt: mount, path: string) -> result
+    rmdir: func(mnt: mount, dir-fh: list<u8>, dirname: string) -> result
+    rmdir-path: func(mnt: mount, path: string) -> result
+    rename: func(mnt: mount, from-dir-fh: list<u8>, from-filename: string, to-dir-fh: list<u8>, to-filename: string) -> result
+    rename-path: func(mnt: mount, from-path: string, to-path: string) -> result
+    umount: func(mnt: mount) -> result
+}
+
+interface wasi-experimental-sockets {
+    record addr-ip4 {
+        n0: u8,
+        n1: u8,
+        h0: u8,
+        h1: u8,
+    }
+
+    record addr-ip4-port {
+        addr: addr-ip4,
+        port: ip-port,
+    }
+
+    record addr-ip6 {
+        n0: u16,
+        n1: u16,
+        n2: u16,
+        n3: u16,
+        h0: u16,
+        h1: u16,
+        h2: u16,
+        h3: u16,
+    }
+
+    record addr-ip6-port {
+        addr: addr-ip6,
+        port: ip-port,
+    }
+
+    union addr-u {
+        addr-ip4-port,
+        addr-ip6-port,
+    }
+
+    record addr {
+        tag: addr-type,
+        u: addr-u,
+    }
+
+    enum addr-type {
+        ip4,
+        ip6,
+    }
+
+    enum address-family {
+        inet4,
+        inet6,
+    }
+
+    enum socket-type {
+        dgram,
+        strm,
+    }
+
+    type error-code = u16
+    type addr-resolve-stream = u32
+    type fd = u32
+    type ip-port = u16
+    type riflags = u16
+    type size = u32
+
+    addr-resolve: func(host: string, port: option<ip-port>) -> result<addr-resolve-stream, error-code>
+    addr-resolve-stream-next: func(strm: addr-resolve-stream) -> result<option<addr>, error-code>
+    addr-resolve-stream-dispose: func(strm: addr-resolve-stream) -> result<_, error-code>
+    sock-open: func(af: address-family, socktype: socket-type) -> result<fd, error-code>
+    sock-close: func(s: fd) -> result<_, error-code>
+    sock-connect: func(s: fd, a: addr) -> result<_, error-code>
+    sock-addr-local: func(s: fd) -> result<addr, error-code>
+    sock-addr-remote: func(s: fd) -> result<addr, error-code>
+    sock-recv: func(s: fd, len: size, f: riflags) -> result<list<u8>, error-code>
+    sock-send: func(s: fd, buf: list<u8>, len: size, f: riflags) -> result<size, error-code>
+}
+
+world nfs-rs {
+    import wasi-experimental-sockets
+    export nfs
+}

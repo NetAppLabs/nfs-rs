@@ -4,8 +4,9 @@ mod mount;
 mod shared;
 #[allow(unused)]
 mod wasi_ext;
+mod component;
 
-pub use mount::Mount;
+pub use mount::{Mount, Attr, Pathconf, ReaddirEntry, ReaddirplusEntry};
 pub use shared::Time;
 pub use std::io::Error;
 
