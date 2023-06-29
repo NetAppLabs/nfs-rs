@@ -6,33 +6,36 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, S
 use std::time::Duration;
 use std::unimplemented;
 
-use bindings::component::nfs_rs_component::wasi_experimental_sockets;
+use bindings::wasi::io::streams;
+use bindings::wasi::sockets;
+use bindings::wasi::sockets::network::{Ipv4SocketAddress, Ipv6SocketAddress};
+use bindings::wasi::sockets::tcp::{IpSocketAddress, ErrorCode};
+use bindings::wasi::sockets::tcp_create_socket::{TcpSocket, IpAddressFamily};
 use xdr_codec::Write;
 
-mod errno;
-use errno::*;
+const ERRNO_SUCCESS: i32 = 0;
 
-fn to_error(code: u16, msg: &str) -> io::Error {
-    return io::Error::new(io::ErrorKind::Other, format!("{} - {}", msg, strerror(code)).as_str());
+fn to_error(code: ErrorCode, msg: &str) -> io::Error {
+    return io::Error::new(io::ErrorKind::Other, format!("{} - {}", msg, code.message()).as_str());
 }
 
 #[derive(Debug)]
 pub struct WasiFd {
-    fd: wasi_experimental_sockets::Fd,
+    fd: TcpSocket,
 }
 
 impl WasiFd {
-    pub unsafe fn from_raw(fd: wasi_experimental_sockets::Fd) -> WasiFd {
+    pub fn from_raw(fd: TcpSocket) -> WasiFd {
         WasiFd { fd }
     }
 
-    pub fn into_raw(self) -> wasi_experimental_sockets::Fd {
+    pub fn into_raw(self) -> TcpSocket {
         let ret = self.fd;
         mem::forget(self);
         ret
     }
 
-    pub fn as_raw(&self) -> wasi_experimental_sockets::Fd {
+    pub fn as_raw(&self) -> TcpSocket {
         self.fd
     }
 }
@@ -41,83 +44,65 @@ pub struct TcpStream {
     fd: WasiFd,
 }
 
-pub unsafe fn sock_addr_remote(fd: u32) -> io::Result<wasi_experimental_sockets::Addr> {
-    let res = wasi_experimental_sockets::sock_addr_remote(fd);
+pub fn sock_addr_remote(fd: u32) -> io::Result<IpSocketAddress> {
+    let res = sockets::tcp::remote_address(fd);
     if res.is_err() {
         return Err(to_error(res.unwrap_err(), "error getting remote address"));
     }
     Ok(res.unwrap())
 }
-pub unsafe fn sock_addr_local(fd: u32) -> io::Result<wasi_experimental_sockets::Addr> {
-    let res = wasi_experimental_sockets::sock_addr_local(fd);
+pub fn sock_addr_local(fd: u32) -> io::Result<IpSocketAddress> {
+    let res = sockets::tcp::local_address(fd);
     if res.is_err() {
         return Err(to_error(res.unwrap_err(), "error getting local address"));
     }
     Ok(res.unwrap())
 }
 
-pub unsafe fn to_socket_addr(addr: &wasi_experimental_sockets::Addr) -> io::Result<SocketAddr> {
-    match addr.u {
-        wasi_experimental_sockets::AddrU::AddrIp4Port(ip4) => Ok(SocketAddr::new(
+pub fn to_socket_addr(addr: &IpSocketAddress) -> io::Result<SocketAddr> {
+    match addr {
+        IpSocketAddress::Ipv4(ip4) => Ok(SocketAddr::new(
             IpAddr::V4(Ipv4Addr::new(
-                ip4.addr.n0,
-                ip4.addr.n1,
-                ip4.addr.h0,
-                ip4.addr.h1,
+                ip4.address.0,
+                ip4.address.1,
+                ip4.address.2,
+                ip4.address.3,
             )),
             ip4.port,
         )),
-        wasi_experimental_sockets::AddrU::AddrIp6Port(ip6) => Ok(SocketAddr::new(
+        IpSocketAddress::Ipv6(ip6) => Ok(SocketAddr::new(
             IpAddr::V6(Ipv6Addr::new(
-                ip6.addr.n0,
-                ip6.addr.n1,
-                ip6.addr.n2,
-                ip6.addr.n3,
-                ip6.addr.h0,
-                ip6.addr.h1,
-                ip6.addr.h2,
-                ip6.addr.h3,
+                ip6.address.0,
+                ip6.address.1,
+                ip6.address.2,
+                ip6.address.3,
+                ip6.address.4,
+                ip6.address.5,
+                ip6.address.6,
+                ip6.address.7,
             )),
             ip6.port,
         )),
     }
 }
 
-pub unsafe fn to_wasi_addr(addr: &SocketAddr) -> io::Result<wasi_experimental_sockets::Addr> {
+pub fn to_wasi_addr(addr: &SocketAddr) -> io::Result<IpSocketAddress> {
     match addr {
         SocketAddr::V4(ref addr) => {
             let octets = addr.ip().octets();
-            Ok(wasi_experimental_sockets::Addr {
-                tag: wasi_experimental_sockets::AddrType::Ip4,
-                u: wasi_experimental_sockets::AddrU::AddrIp4Port(wasi_experimental_sockets::AddrIp4Port {
-                    addr: wasi_experimental_sockets::AddrIp4 {
-                        n0: octets[0],
-                        n1: octets[1],
-                        h0: octets[2],
-                        h1: octets[3],
-                    },
-                    port: addr.port(),
-                }),
-            })
+            Ok(IpSocketAddress::Ipv4(Ipv4SocketAddress{
+                address: (octets[0], octets[1], octets[2], octets[3]),
+                port: addr.port(),
+            }))
         }
         SocketAddr::V6(ref addr) => {
             let segments = addr.ip().segments();
-            Ok(wasi_experimental_sockets::Addr {
-                tag: wasi_experimental_sockets::AddrType::Ip6,
-                u: wasi_experimental_sockets::AddrU::AddrIp6Port(wasi_experimental_sockets::AddrIp6Port {
-                    addr: wasi_experimental_sockets::AddrIp6 {
-                        n0: segments[0],
-                        n1: segments[1],
-                        n2: segments[2],
-                        n3: segments[3],
-                        h0: segments[4],
-                        h1: segments[5],
-                        h2: segments[6],
-                        h3: segments[7],
-                    },
-                    port: addr.port(),
-                }),
-            })
+            Ok(IpSocketAddress::Ipv6(Ipv6SocketAddress{
+                address: (segments[0], segments[1], segments[2], segments[3], segments[4], segments[5], segments[6], segments[7]),
+                port: addr.port(),
+                flow_info: 0,
+                scope_id: 0,
+            }))
         }
     }
 }
@@ -148,53 +133,61 @@ impl TcpStream {
 
         //println!("net.tcpstream.connect");
         for addr in to_socket_addrs(addr)? {
-            let x = unsafe { to_wasi_addr(&addr) };
+            let x = to_wasi_addr(&addr);
             if x.is_err() {
                 println!("TcpStream::connect to_wasi_addr err: {}", x.err().unwrap());
                 continue;
             }
-            let wasi_addr = x.unwrap(); // unsafe { to_wasi_addr(&addr).unwrap() };
+            let wasi_addr = x.unwrap(); // to_wasi_addr(&addr).unwrap()
 
-            let x = unsafe {
-                wasi_experimental_sockets::sock_open(wasi_experimental_sockets::AddressFamily::Inet4, wasi_experimental_sockets::SocketType::Strm)
+            let address_family = match wasi_addr {
+                IpSocketAddress::Ipv4(_) => IpAddressFamily::Ipv4,
+                IpSocketAddress::Ipv6(_) => IpAddressFamily::Ipv6,
             };
+            let x = sockets::tcp_create_socket::create_tcp_socket(address_family);
             if x.is_err() {
                 let code = x.unwrap_err();
-                println!("TcpStream::connect sock_open err: ({}) {}", code, strerror(code));
+                println!("TcpStream::connect sock_open err: ({}) {}", code, code.message());
                 continue;
             }
             let wasi_fd = x.unwrap();
 
-            let x = unsafe {
-                wasi_experimental_sockets::sock_connect(wasi_fd, wasi_addr)
-            };
+            let x = sockets::tcp::start_connect(wasi_fd, 0, wasi_addr);
             if x.is_err() {
                 let code = x.unwrap_err();
-                // if code != 0 {
-                    println!("TcpStream::connect sock_connect err: ({}) {}", code, strerror(code));
-                    let x = unsafe { wasi_experimental_sockets::sock_close(wasi_fd) };
-                    if x.is_err() {
-                        let code = x.unwrap_err();
-                        println!("TcpStream::connect sock_close err: ({}) {}", code, strerror(code));
-                    }
-                    continue;
-                // }
+                println!("TcpStream::connect sock_connect err: ({}) {}", code, code.message());
+                sockets::tcp::drop_tcp_socket(wasi_fd);
+                continue;
             }
 
-            let stream = Self{fd: unsafe { WasiFd::from_raw(wasi_fd) }};
+            // XXX: is there a need to call finish_connect?  input stream and output stream seem to always match wasi_fd (i.e. socket FD)
+            let x = sockets::tcp::finish_connect(wasi_fd);
+            if x.is_err() {
+                let code = x.unwrap_err();
+                println!("TcpStream::connect sock_connect err: ({}) {}", code, code.message());
+                sockets::tcp::drop_tcp_socket(wasi_fd);
+                continue;
+            }
+
+            let (stream_in, stream_out) = x.unwrap();
+            if stream_in != stream_out || stream_in != wasi_fd {
+                return Err(to_error(ErrorCode::NotSupported, format!("TcpStream::connect sock_connect wasi_fd: {} stream_in: {} stream_out: {}", wasi_fd, stream_in, stream_out).as_str()))
+            }
+
+            let stream = Self{fd: WasiFd::from_raw(wasi_fd)};
             if let Some(err) = stream.peer_addr().err() {
-                println!("TcpStream::connect sock_peer_addr err: {}", err);
-                let x = unsafe { wasi_experimental_sockets::sock_close(wasi_fd) };
-                if x.is_err() {
-                    let code = x.unwrap_err();
-                    println!("TcpStream::connect sock_close err: ({}) {}", code, strerror(code));
+                if let Some(os_err) = err.raw_os_error() {
+                    if os_err != ERRNO_SUCCESS { // XXX: don't print out "success" error
+                        println!("TcpStream::connect sock_peer_addr err: {}", err);
+                    }
                 }
+                sockets::tcp::drop_tcp_socket(wasi_fd);
                 continue;
             }
             return Ok(stream);
         }
 
-        Err(to_error(ERRNO_NOENT, "no valid socket address"))
+        Err(to_error(ErrorCode::NotConnected, "no valid socket address"))
     }
 
     pub fn connect_timeout(_: &SocketAddr, _: Duration) -> io::Result<TcpStream> {
@@ -222,21 +215,36 @@ impl TcpStream {
     }
 
     pub fn read(&self, mut buf: &mut [u8]) -> io::Result<usize> {
-        let res = unsafe {
-            wasi_experimental_sockets::sock_recv(self.fd.as_raw(), buf.len().try_into().unwrap(), 0)
-        };
+        let res = self.read_recursive(buf.len() as u64, 0);
         if res.is_err() {
-            let code = res.unwrap_err();
-            if code == ERRNO_AGAIN {
-                std::thread::sleep(std::time::Duration::from_millis(1));
-                return self.read(buf);
-            }
-            println!("TcpStream::read sock_recv err: ({}) {}", code, strerror(code));
-            return Err(to_error(code, "sock_recv error"));
+            let err = res.unwrap_err();
+            println!("TcpStream::read sock_recv err: {}", err);
+            return Err(err);
         }
         let received = res.unwrap();
         buf.write(received.as_slice());
         Ok(received.len())
+    }
+
+    fn read_recursive(&self, len: u64, recursions: usize) -> io::Result<Vec<u8>> {
+        let res = streams::blocking_read(self.fd.as_raw(), len);
+        if res.is_err() {
+            // XXX: documentation for wasi::io::streams::StreamError (which is the type of res.unwrap_err()) is this:
+            //  An error type returned from a stream operation. Currently this
+            //  doesn't provide any additional information.
+            //
+            // XXX: so thanks alot for that wasi!
+            //      especially since what we should be getting is ERRNO_AGAIN (or equivalent)
+            //      on which we should retry -- which is really all we can attempt here
+            // TODO: finalize the max recursions and sleep duration (or make them configurable somehow)
+            //       as of this writing, 1000 recursions, each with 1ms sleep, results in effective timeout of ~1s
+            if recursions > 1000 {
+                return Err(to_error(ErrorCode::Timeout, "sock_recv timeout"));
+            }
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            return self.read_recursive(len, recursions + 1);
+        }
+        Ok(res.unwrap().0)
     }
 
     pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
@@ -271,11 +279,11 @@ impl TcpStream {
     }
 
     pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
-        let res = unsafe { wasi_experimental_sockets::sock_send(self.fd.as_raw(), buf, buf.len().try_into().unwrap(), 0) };
+        let res = streams::blocking_write(self.fd.as_raw(), buf);
         if res.is_err() {
-            let code = res.unwrap_err();
-            println!("TcpStream::write sock_send err: ({}) {}", code, strerror(code));
-            return Err(to_error(code, "sock_send error"));
+            let err = res.unwrap_err();
+            println!("TcpStream::write sock_send err: {}", err);
+            return Err(to_error(ErrorCode::Unknown, "sock_send error"));
         }
         Ok(res.unwrap().try_into().unwrap())
     }
@@ -307,7 +315,7 @@ impl TcpStream {
     }
 
     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
-        unsafe { to_socket_addr(&sock_addr_remote(self.fd.fd)?) }
+        to_socket_addr(&sock_addr_remote(self.fd.fd)?)
     }
 
     pub fn socket_addr(&self) -> io::Result<SocketAddr> {
@@ -381,52 +389,30 @@ impl LookupHost {
 impl Iterator for LookupHost {
     type Item = SocketAddr;
     fn next(&mut self) -> Option<SocketAddr> {
-        let mut res = Err(ERRNO_AGAIN);
+        let mut res = Err(ErrorCode::Unknown);
         loop {
-            res = unsafe {
-                wasi_experimental_sockets::addr_resolve_stream_next(self.stream)
-            };
+            res = sockets::ip_name_lookup::resolve_next_address(self.stream);
             if res.is_err() {
-                let err = res.err().unwrap();
-                if err == ERRNO_AGAIN {
+                let code = res.unwrap_err();
+                if code == ErrorCode::WouldBlock { // TODO: also sleep and retry on ErrorCode::TemporaryResolverFailure?
                     std::thread::sleep(std::time::Duration::from_millis(50));
                     continue;
-                } else {
-                    let _ = unsafe {
-                        wasi_experimental_sockets::addr_resolve_stream_dispose(self.stream)
-                    };
-                    return None;
                 }
+                sockets::ip_name_lookup::drop_resolve_address_stream(self.stream);
+                return None;
             }
             break;
         }
-        if let Some(addr) = res.unwrap() {
-            unsafe { to_socket_addr(&addr).ok() }
-        } else {
-            let _ = unsafe {
-                wasi_experimental_sockets::addr_resolve_stream_dispose(self.stream)
+        if let Some(addr_) = res.unwrap() {
+            let addr = match addr_ {
+                sockets::network::IpAddress::Ipv4(addr4) => IpSocketAddress::Ipv4(Ipv4SocketAddress{port: self.port, address: addr4}),
+                sockets::network::IpAddress::Ipv6(addr6) => IpSocketAddress::Ipv6(Ipv6SocketAddress{port: self.port, address: addr6, flow_info: 0, scope_id: 0}),
             };
+            to_socket_addr(&addr).ok()
+        } else {
+            sockets::ip_name_lookup::drop_resolve_address_stream(self.stream);
             None
         }
-
-        // const IPV4_LEN: usize = 8;
-        // const IPV6_LEN: usize = 20;
-        // loop {
-        //     unsafe {
-        //         if self.index < self.res.len() {
-        //             let cur = self.res[self.index];
-        //             if let Some(addr) = to_socket_addr(&cur).ok() {
-        //                 let size = if addr.is_ipv4() { IPV4_LEN } else { IPV6_LEN };
-        //                 self.index += size;
-        //                 return Some(addr);
-        //             }
-        //             let size = if cur.tag == wasi_experimental_sockets::AddrType::Ip4 { IPV4_LEN } else { IPV6_LEN };
-        //             self.index += size;
-        //         } else {
-        //             return None;
-        //         }
-        //     }
-        // }
     }
 }
 
@@ -464,12 +450,10 @@ impl<'a> TryFrom<(&'a str, u16)> for LookupHost {
         //const BUF_LEN: usize = 20;
         //wasi_experimental_sockets::sock_addr_remote(fd,  buf.as_mut_ptr(), BUF_LEN).unwrap();
         // TODO: handle error
-        let res = unsafe {
-            wasi_experimental_sockets::addr_resolve(&host, p)
-        };
+        let res = sockets::ip_name_lookup::resolve_addresses(0, host, None, false);
         if res.is_err() {
             let code = res.unwrap_err();
-            println!("LookupHost::try_from addr_resolve err: ({}) {}", code, strerror(code));
+            println!("LookupHost::try_from addr_resolve err: ({}) {}", code, code.message());
             return Err(to_error(code, "addr_resolve error"));
         }
 
