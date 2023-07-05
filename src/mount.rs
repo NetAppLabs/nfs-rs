@@ -156,7 +156,7 @@ pub struct Attr {
     pub ctime: Time,
 }
 
-/// Struct describing path configuration for an NFS entry.
+/// Struct describing path configuration for an NFS entry as returned by [`Mount::pathconf`] and [`Mount::pathconf_path`].
 #[derive(Debug, Default, PartialEq)]
 pub struct Pathconf {
     pub attr: Option<Attr>,
@@ -168,7 +168,7 @@ pub struct Pathconf {
     pub case_preserving: bool,
 }
 
-/// Struct describing a single NFS entry as returned by [`Mount::readdir`].
+/// Struct describing a single NFS entry as returned by [`Mount::readdir`] and [`Mount::readdir_path`].
 #[derive(Debug)]
 pub struct ReaddirEntry {
     pub fileid: u64,
@@ -176,7 +176,7 @@ pub struct ReaddirEntry {
     pub cookie: u64,
 }
 
-/// Struct describing a single NFS entry as returned by [`Mount::readdirplus`].
+/// Struct describing a single NFS entry as returned by [`Mount::readdirplus`] and [`Mount::readdirplus_path`].
 #[derive(Debug)]
 pub struct ReaddirplusEntry {
     pub fileid: u64,

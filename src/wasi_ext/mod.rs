@@ -1,22 +1,27 @@
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
-use std::io::{self, IoSlice, IoSliceMut};
+use std::io;
+use std::io::{IoSlice, IoSliceMut};
 use std::mem;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, SocketAddrV6};
 use std::time::Duration;
 use std::unimplemented;
 
 use bindings::wasi::io::streams;
+use bindings::wasi::io::streams::StreamError;
 use bindings::wasi::sockets;
-use bindings::wasi::sockets::network::{Ipv4SocketAddress, Ipv6SocketAddress};
-use bindings::wasi::sockets::tcp::{IpSocketAddress, ErrorCode};
-use bindings::wasi::sockets::tcp_create_socket::{TcpSocket, IpAddressFamily};
+use bindings::wasi::sockets::network::{ErrorCode, IpAddressFamily, IpSocketAddress, Ipv4SocketAddress, Ipv6SocketAddress, Network};
+use bindings::wasi::sockets::tcp::TcpSocket;
 use xdr_codec::Write;
 
 const ERRNO_SUCCESS: i32 = 0;
 
-fn to_error(code: ErrorCode, msg: &str) -> io::Error {
-    return io::Error::new(io::ErrorKind::Other, format!("{} - {}", msg, code.message()).as_str());
+fn check_error<T>(res: &Result<T, ErrorCode>, err_msg: &str) -> io::Result<()> {
+    if res.is_err() {
+        let code = res.as_ref().err().unwrap();
+        return Err(io::Error::new(io::ErrorKind::Other, format!("{} - {}", err_msg, code.message()).as_str()));
+    }
+    Ok(())
 }
 
 #[derive(Debug)]
@@ -26,7 +31,7 @@ pub struct WasiFd {
 
 impl WasiFd {
     pub fn from_raw(fd: TcpSocket) -> WasiFd {
-        WasiFd { fd }
+        WasiFd{fd}
     }
 
     pub fn into_raw(self) -> TcpSocket {
@@ -46,22 +51,19 @@ pub struct TcpStream {
 
 pub fn sock_addr_remote(fd: u32) -> io::Result<IpSocketAddress> {
     let res = sockets::tcp::remote_address(fd);
-    if res.is_err() {
-        return Err(to_error(res.unwrap_err(), "error getting remote address"));
-    }
+    check_error(&res, "error getting remote address")?;
     Ok(res.unwrap())
 }
+
 pub fn sock_addr_local(fd: u32) -> io::Result<IpSocketAddress> {
     let res = sockets::tcp::local_address(fd);
-    if res.is_err() {
-        return Err(to_error(res.unwrap_err(), "error getting local address"));
-    }
+    check_error(&res, "error getting local address")?;
     Ok(res.unwrap())
 }
 
 pub fn to_socket_addr(addr: &IpSocketAddress) -> io::Result<SocketAddr> {
     match addr {
-        IpSocketAddress::Ipv4(ip4) => Ok(SocketAddr::new(
+        IpSocketAddress::Ipv4(ref ip4) => Ok(SocketAddr::new(
             IpAddr::V4(Ipv4Addr::new(
                 ip4.address.0,
                 ip4.address.1,
@@ -70,7 +72,7 @@ pub fn to_socket_addr(addr: &IpSocketAddress) -> io::Result<SocketAddr> {
             )),
             ip4.port,
         )),
-        IpSocketAddress::Ipv6(ip6) => Ok(SocketAddr::new(
+        IpSocketAddress::Ipv6(ref ip6) => Ok(SocketAddr::new(
             IpAddr::V6(Ipv6Addr::new(
                 ip6.address.0,
                 ip6.address.1,
@@ -94,7 +96,7 @@ pub fn to_wasi_addr(addr: &SocketAddr) -> io::Result<IpSocketAddress> {
                 address: (octets[0], octets[1], octets[2], octets[3]),
                 port: addr.port(),
             }))
-        }
+        },
         SocketAddr::V6(ref addr) => {
             let segments = addr.ip().segments();
             Ok(IpSocketAddress::Ipv6(Ipv6SocketAddress{
@@ -103,7 +105,7 @@ pub fn to_wasi_addr(addr: &SocketAddr) -> io::Result<IpSocketAddress> {
                 flow_info: 0,
                 scope_id: 0,
             }))
-        }
+        },
     }
 }
 
@@ -122,56 +124,55 @@ fn to_socket_addrs(addr: (&str, u16)) -> io::Result<Vec<SocketAddr>> {
         addrs.push(a);
     }
     if !addrs.is_empty() {
-        return Ok(addrs)
+        return Ok(addrs);
     }
     Err(io::Error::new(io::ErrorKind::Other, "could not resolve host"))
 }
 
 impl TcpStream {
     pub fn connect(addr: (&str, u16)) -> io::Result<TcpStream> {
-        //if let SocketAddr::V4(ipv4) = addr? {
-
-        //println!("net.tcpstream.connect");
         for addr in to_socket_addrs(addr)? {
-            let x = to_wasi_addr(&addr);
-            if x.is_err() {
-                println!("TcpStream::connect to_wasi_addr err: {}", x.err().unwrap());
+            let res = to_wasi_addr(&addr);
+            if res.is_err() {
+                println!("TcpStream::connect to_wasi_addr err: {}", res.err().unwrap());
                 continue;
             }
-            let wasi_addr = x.unwrap(); // to_wasi_addr(&addr).unwrap()
+            let wasi_addr = res.unwrap();
 
             let address_family = match wasi_addr {
                 IpSocketAddress::Ipv4(_) => IpAddressFamily::Ipv4,
                 IpSocketAddress::Ipv6(_) => IpAddressFamily::Ipv6,
             };
-            let x = sockets::tcp_create_socket::create_tcp_socket(address_family);
-            if x.is_err() {
-                let code = x.unwrap_err();
+            let res = sockets::tcp_create_socket::create_tcp_socket(address_family);
+            if res.is_err() {
+                let code = res.unwrap_err();
                 println!("TcpStream::connect sock_open err: ({}) {}", code, code.message());
                 continue;
             }
-            let wasi_fd = x.unwrap();
+            let wasi_fd = res.unwrap();
 
-            let x = sockets::tcp::start_connect(wasi_fd, 0, wasi_addr);
-            if x.is_err() {
-                let code = x.unwrap_err();
+            let res = sockets::tcp::start_connect(wasi_fd, 0, wasi_addr);
+            if res.is_err() {
+                let code = res.unwrap_err();
                 println!("TcpStream::connect sock_connect err: ({}) {}", code, code.message());
                 sockets::tcp::drop_tcp_socket(wasi_fd);
                 continue;
             }
 
             // XXX: is there a need to call finish_connect?  input stream and output stream seem to always match wasi_fd (i.e. socket FD)
-            let x = sockets::tcp::finish_connect(wasi_fd);
-            if x.is_err() {
-                let code = x.unwrap_err();
+            let res = sockets::tcp::finish_connect(wasi_fd);
+            if res.is_err() {
+                let code = res.unwrap_err();
                 println!("TcpStream::connect sock_connect err: ({}) {}", code, code.message());
                 sockets::tcp::drop_tcp_socket(wasi_fd);
                 continue;
             }
 
-            let (stream_in, stream_out) = x.unwrap();
+            let (stream_in, stream_out) = res.unwrap();
             if stream_in != stream_out || stream_in != wasi_fd {
-                return Err(to_error(ErrorCode::NotSupported, format!("TcpStream::connect sock_connect wasi_fd: {} stream_in: {} stream_out: {}", wasi_fd, stream_in, stream_out).as_str()))
+                println!("TcpStream::connect sock_connect unsupported stream mismatch wasi_fd: {} stream_in: {} stream_out: {}", wasi_fd, stream_in, stream_out);
+                sockets::tcp::drop_tcp_socket(wasi_fd);
+                continue;
             }
 
             let stream = Self{fd: WasiFd::from_raw(wasi_fd)};
@@ -187,7 +188,7 @@ impl TcpStream {
             return Ok(stream);
         }
 
-        Err(to_error(ErrorCode::NotConnected, "no valid socket address"))
+        Err(io::Error::new(io::ErrorKind::Other, "no valid socket address"))
     }
 
     pub fn connect_timeout(_: &SocketAddr, _: Duration) -> io::Result<TcpStream> {
@@ -215,36 +216,40 @@ impl TcpStream {
     }
 
     pub fn read(&self, mut buf: &mut [u8]) -> io::Result<usize> {
-        let res = self.read_recursive(buf.len() as u64, 0);
+        // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
+        //      what is probably more apt in our case, wasi::io::streams::blocking_read
+        //      however, this is a bit of a headache for us as these wasi::io::streams functions will return
+        //      wasi::io::streams::StreamError on failure, which wasi documents like this:
+        //
+        //  An error type returned from a stream operation. Currently this
+        //  doesn't provide any additional information.
+        //
+        // XXX: so thanks alot for that wasi!
+        //      especially since what we could be getting is ERRNO_AGAIN (or equivalent)
+        //      on which we should retry -- which is really all we can attempt here
+        // TODO: finalize the max attempts and sleep duration (or make them configurable somehow)
+        //       as of this writing, 1000 attempts, each with 1ms sleep, results in effective timeout of ~1s
+        const MAX_ATTEMPTS: i32 = 1000;
+        const SLEEP_DURATION: Duration = std::time::Duration::from_millis(1);
+        let wasi_fd = self.fd.as_raw();
+        let len = buf.len() as u64;
+        let mut res = Err(StreamError{});
+        for _ in 0..MAX_ATTEMPTS {
+            res = streams::blocking_read(wasi_fd, len);
+            if res.is_ok() {
+                break;
+            }
+            std::thread::sleep(SLEEP_DURATION);
+        }
         if res.is_err() {
-            let err = res.unwrap_err();
-            println!("TcpStream::read sock_recv err: {}", err);
-            return Err(err);
+            // XXX: again, since error response contains no information, all we can do is assume a timeout
+            //      occurred and return an error to that effect
+            return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error (possibly timeout)"));
         }
         let received = res.unwrap();
-        buf.write(received.as_slice());
-        Ok(received.len())
-    }
-
-    fn read_recursive(&self, len: u64, recursions: usize) -> io::Result<Vec<u8>> {
-        let res = streams::blocking_read(self.fd.as_raw(), len);
-        if res.is_err() {
-            // XXX: documentation for wasi::io::streams::StreamError (which is the type of res.unwrap_err()) is this:
-            //  An error type returned from a stream operation. Currently this
-            //  doesn't provide any additional information.
-            //
-            // XXX: so thanks alot for that wasi!
-            //      especially since what we should be getting is ERRNO_AGAIN (or equivalent)
-            //      on which we should retry -- which is really all we can attempt here
-            // TODO: finalize the max recursions and sleep duration (or make them configurable somehow)
-            //       as of this writing, 1000 recursions, each with 1ms sleep, results in effective timeout of ~1s
-            if recursions > 1000 {
-                return Err(to_error(ErrorCode::Timeout, "sock_recv timeout"));
-            }
-            std::thread::sleep(std::time::Duration::from_millis(1));
-            return self.read_recursive(len, recursions + 1);
-        }
-        Ok(res.unwrap().0)
+        let received_bytes = received.0;
+        buf.write(received_bytes.as_slice());
+        Ok(received_bytes.len())
     }
 
     pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
@@ -254,8 +259,8 @@ impl TcpStream {
                 Ok(n) => {
                     let tmp = buf;
                     buf = &mut tmp[n..];
-                }
-                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+                },
+                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {},
                 Err(e) => return Err(e),
             }
         }
@@ -283,7 +288,7 @@ impl TcpStream {
         if res.is_err() {
             let err = res.unwrap_err();
             println!("TcpStream::write sock_send err: {}", err);
-            return Err(to_error(ErrorCode::Unknown, "sock_send error"));
+            return Err(io::Error::new(io::ErrorKind::Other, "sock_send error"));
         }
         Ok(res.unwrap().try_into().unwrap())
     }
@@ -291,11 +296,9 @@ impl TcpStream {
     pub fn write_all(&self, mut buf: &[u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.write(buf) {
-                Ok(0) => {
-                    return Err(io::Error::new(io::ErrorKind::WriteZero, "failed to write whole buffer"));
-                }
+                Ok(0) => return Err(io::Error::new(io::ErrorKind::WriteZero, "failed to write whole buffer")),
                 Ok(n) => buf = &buf[n..],
-                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {},
                 Err(e) => return Err(e),
             }
         }
@@ -443,25 +446,10 @@ impl<'a> TryFrom<(&'a str, u16)> for LookupHost {
     type Error = io::Error;
 
     fn try_from((host, port): (&'a str, u16)) -> io::Result<LookupHost> {
-        let p = match port {
-            0 => None,
-            _ => Some(port),
-        };
-        //const BUF_LEN: usize = 20;
-        //wasi_experimental_sockets::sock_addr_remote(fd,  buf.as_mut_ptr(), BUF_LEN).unwrap();
-        // TODO: handle error
-        let res = sockets::ip_name_lookup::resolve_addresses(0, host, None, false);
-        if res.is_err() {
-            let code = res.unwrap_err();
-            println!("LookupHost::try_from addr_resolve err: ({}) {}", code, code.message());
-            return Err(to_error(code, "addr_resolve error"));
-        }
-
+        const NETWORK: Network = 0;
+        let res = sockets::ip_name_lookup::resolve_addresses(NETWORK, host, None, false);
+        check_error(&res, "addr_resolve error")?;
         let stream = res.unwrap();
-        // println!("LookupHost::try_from addr_resolve stream: {}", stream);
-        Ok(LookupHost {
-            stream,
-            port,
-        })
+        Ok(LookupHost{stream, port})
     }
 }

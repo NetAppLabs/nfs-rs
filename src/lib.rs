@@ -2,8 +2,10 @@ mod rpc;
 mod nfs3;
 mod mount;
 mod shared;
+#[cfg(target_os = "wasi")]
 #[allow(unused)]
 mod wasi_ext;
+#[cfg(target_os = "wasi")]
 mod component;
 
 pub use mount::{Mount, Attr, Pathconf, ReaddirEntry, ReaddirplusEntry};
@@ -394,35 +396,35 @@ mod tests {
     #[ignore]
     #[test]
     fn nfs3_works() {
-        let mount_result = parse_url_and_mount("nfs://127.0.0.1/Users/Shared/nfs/?nfsport=20490&mountport=20490");
+        // this unit test was written to verify that the RPC communication was working correctly
+        // it has been run against a go-nfs server that was serving a mount created via below shell script:
+        /*
+        #!/bin/bash
+
+        set -e
+
+        NFS_BASE=/Users/Shared/nfs
+        NFS_UID=$1
+        NFS_GID=$2
+        if [ -z $NFS_UID ]; then
+            NFS_UID=nobody
+        fi
+        if [ -z $NFS_GID ]; then
+            NFS_GID=nogroup
+        fi
+
+        mkdir -p $NFS_BASE/first $NFS_BASE/quatre
+        echo -n "In order to make sure that this file is exactly 123 bytes in size, I have written this text while watching its chars count." > $NFS_BASE/annar
+        touch $NFS_BASE/3 $NFS_BASE/first/comment $NFS_BASE/quatre/points
+        chmod 555 $NFS_BASE/quatre
+        chmod 775 $NFS_BASE/first
+        chmod 664 $NFS_BASE/annar
+        chmod 444 $NFS_BASE/3
+        chown -R $NFS_UID:$NFS_GID $NFS_BASE
+        */
+        let mount_result = parse_url_and_mount("nfs://localhost/Users/Shared/nfs/?nfsport=20490&mountport=20490");
         assert!(mount_result.is_ok(), "err = {}", mount_result.unwrap_err());
         let mount = mount_result.unwrap();
-        // XXX: fsinfo removed from trait as it should (probably?) be internal only
-        // let res = mount.fsinfo();
-        // assert!(res.is_ok(), "err = {}", res.unwrap_err());
-        // let fsinfo = res.unwrap(); // XXX: below assertions for fsinfo use values obtained from a call to fsinfo so don't assume these are actually expected/valid values
-        // assert!(fsinfo.attr.is_some());
-        // assert_eq!(fsinfo.dtpref, 8192);
-        // assert_eq!(fsinfo.wtmult, 4096);
-        // assert_eq!(fsinfo.wtpref, 1073741824);
-        // assert_eq!(fsinfo.wtmax, 1073741824);
-        // assert_eq!(fsinfo.rtmult, 4096);
-        // assert_eq!(fsinfo.rtpref, 1073741824);
-        // assert_eq!(fsinfo.rtmax, 1073741824);
-        // assert_eq!(fsinfo.size, 4611686018427387904);
-        // assert_eq!(fsinfo.properties, 27);
-        // XXX: fsstat removed from trait as it should (probably?) be internal only
-        // let res = mount.fsstat();
-        // assert!(res.is_ok(), "err = {}", res.unwrap_err());
-        // let fsstat = res.unwrap(); // XXX: below assertions for fsstat use values obtained from a call to fsstat so don't assume these are actually expected/valid values (also, fsstat returns dynamic values as opposed to fsinfo's static values)
-        // assert!(fsstat.attr.is_some());
-        // assert_eq!(fsstat.tbytes, 4611686018427387904);
-        // assert_eq!(fsstat.fbytes, 4611686018427387904);
-        // assert_eq!(fsstat.abytes, 4611686018427387904);
-        // assert_eq!(fsstat.tfiles, 4611686018427387904);
-        // assert_eq!(fsstat.ffiles, 4611686018427387904);
-        // assert_eq!(fsstat.afiles, 4611686018427387904);
-        // assert_eq!(fsstat.invarsec, 0);
         let res = mount.access_path("/3", 1|2|4|8|16|32);
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let three_access = res.unwrap();
@@ -594,13 +596,6 @@ mod tests {
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let res = mount.rename_path("/first/time-testifying", "/./first/./cross-examination");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
-        // FIXME: link not supported by go-nfs
-        // let res = mount.link_path("/first/cross-examination", "/pleading-the-fifth");
-        // assert!(res.is_ok(), "err = {}", res.unwrap_err());
-        // let link_attrs = res.unwrap();
-        // assert_eq!(link_attrs, crate::nfs3::Fattr::default()); // TODO: determine assertions to make (this one will fail)
-        // let res = mount.remove_path("/pleading-the-fifth");
-        // assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let res = mount.symlink_path("/first/cross-examination", "/pleading-the-fifth");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let res = mount.readlink_path("/pleading-the-fifth");
