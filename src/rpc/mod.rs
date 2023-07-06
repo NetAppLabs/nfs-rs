@@ -3,7 +3,10 @@ pub mod header;
 
 use byteorder::{BigEndian, ByteOrder};
 use xdr_codec::{Pack, Unpack, Read, Write};
-use std::net::{SocketAddr, TcpStream};
+#[cfg(target_os = "wasi")]
+use crate::wasi_ext::TcpStream;
+#[cfg(not(target_os = "wasi"))]
+use std::net::TcpStream;
 use crate::{Result, Error, ErrorKind};
 
 use auth::Auth;
@@ -30,45 +33,37 @@ enum PortmapProc2 {
     // CallIt = 5,
 }
 
-pub(crate) fn portmap(addrs: Vec<SocketAddr>, prog: u32, vers: u32, auth: &Auth) -> Result<Vec<SocketAddr>> {
-    for addr in &addrs {
-        let mut addr = addr.clone();
-        addr.set_port(PORTMAP_PORT);
-        if let Some(conn) = TcpStream::connect(addr).ok() {
-            let client = Client::new(Some(conn), None);
-            let args = Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::Null as u32, &auth, &Auth::new_null());
+pub(crate) fn portmap(host: &String, prog: u32, vers: u32, auth: &Auth) -> Result<u16> {
+    if let Some(conn) = TcpStream::connect((host.as_str(), PORTMAP_PORT)).ok() {
+        let client = Client::new(Some(conn), None);
+        let args = Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::Null as u32, &auth, &Auth::new_null());
+        let mut buf = Vec::<u8>::new();
+        let res = args.pack(&mut buf);
+        if res.is_err() {
+            let _ = client.shutdown();
+            return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
+        }
+        if client.call(buf).is_ok() {
+            let args = GETPORT2args{
+                header: Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::GetPort as u32, &auth, &Auth::new_null()),
+                prog,
+                vers,
+                proto: IPPROTO_TCP,
+                port: 0,
+            };
             let mut buf = Vec::<u8>::new();
             let res = args.pack(&mut buf);
             if res.is_err() {
                 let _ = client.shutdown();
                 return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
             }
-            if client.call(buf).is_ok() {
-                let args = GETPORT2args{
-                    header: Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::GetPort as u32, &auth, &Auth::new_null()),
-                    prog,
-                    vers,
-                    proto: IPPROTO_TCP,
-                    port: 0,
-                };
-                let mut buf = Vec::<u8>::new();
-                let res = args.pack(&mut buf);
-                if res.is_err() {
-                    let _ = client.shutdown();
-                    return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
-                }
-                if let Some(res) = client.call(buf).ok() {
-                    let port = BigEndian::read_u32(res.as_slice()) as u16;
-                    let mut addrs = addrs.clone();
-                    for addr in &mut addrs {
-                        addr.set_port(port);
-                    }
-                    let _ = client.shutdown();
-                    return Ok(addrs);
-                }
+            if let Some(res) = client.call(buf).ok() {
+                let port = BigEndian::read_u32(res.as_slice()) as u16;
+                let _ = client.shutdown();
+                return Ok(port);
             }
-            let _ = client.shutdown();
         }
+        let _ = client.shutdown();
     }
     Err(Error::new(ErrorKind::Other, "error obtaining ports from portmapper"))
 }
@@ -85,6 +80,14 @@ struct GETPORT2args {
 impl<Out: Write> Pack<Out> for GETPORT2args {
     fn pack(&self, out: &mut Out) -> xdr_codec::Result<usize> {
         Ok(self.header.pack(out)? + self.prog.pack(out)? + self.vers.pack(out)? + self.proto.pack(out)? + self.port.pack(out)?)
+    }
+}
+
+fn parse_xdr_response<T>(res: xdr_codec::Result<T>, response_part_being_parsed: &str) -> Result<T> {
+    if res.is_err() {
+        Err(Error::new(ErrorKind::Other, format!("could not parse response {}", response_part_being_parsed).as_str()))
+    } else {
+        Ok(res.unwrap())
     }
 }
 
@@ -108,36 +111,39 @@ impl Client {
     }
 
     pub(crate) fn call(&self, msg_body: Vec<u8>) -> Result<Vec<u8>> {
+        const SIZE_HDR_BIT: u32 = 0x80000000;
+        const SIZE_HDR_BITS: u32 = SIZE_HDR_BIT - 1;
+
+        // construct request message, along with a dummy request message size, and pack it into a byte buffer
         let reqmsg = Message::new(msg_body);
-        let mut buf = Vec::<u8>::new();
+        let mut buf = vec![0u8; 4]; // initializing with 4 zero bytes as a dummy request message size
         let b = reqmsg.pack(&mut buf);
         if b.is_err() {
             return Err(Error::new(ErrorKind::Other, b.unwrap_err()));
         }
 
-        let mut hdr_buf = [0u8; 4];
-        BigEndian::write_u32(&mut hdr_buf, b.unwrap() as u32 | 0x80000000);
-        let mut hdr_buf_vec = hdr_buf.to_vec();
-        hdr_buf_vec.append(&mut buf);
+        // overwrite previously written dummy request message size with real request message size
+        BigEndian::write_u32(&mut buf[0..4], b.unwrap() as u32 | SIZE_HDR_BIT);
 
+        // send the byte buffer to RPC service
+        #[allow(unused_mut)]
         let mut conn = self.get_conn(&reqmsg);
-        let _ = conn.write_all(hdr_buf_vec.as_slice())?;
-        let _ = conn.flush()?;
+        let _ = conn.write_all(buf.as_slice())?;
 
+        // read response message size from RPC service
         let mut hdr = [0u8; 4];
         let _ = conn.read_exact(&mut hdr)?;
-        let sz = BigEndian::read_u32(&hdr) & 0x7fffffff;
+        let sz = BigEndian::read_u32(&hdr) & SIZE_HDR_BITS;
 
+        // read response message from RPC service
         let mut res = vec![0u8; sz as usize];
         let _ = conn.read_exact(&mut res)?;
 
+        // unpack response message
         let mut r = res.as_slice();
-        let z: xdr_codec::Result<Message> = xdr_codec::unpack(&mut r);
-        if z.is_err() {
-            return Err(Error::new(ErrorKind::Other, "could not parse response message"));
-        }
+        let resmsg = parse_xdr_response(xdr_codec::unpack::<_, Message>(&mut r), "message")?;
 
-        let resmsg = z.unwrap();
+        // verify response message matches expected
         if resmsg.xid != reqmsg.xid {
             return Err(Error::new(ErrorKind::Other, "response id does not match expected one"));
         }
@@ -145,41 +151,37 @@ impl Client {
             return Err(Error::new(ErrorKind::Other, "response type does not match expected one"));
         }
 
+        // unpack message status
         let mut zbuf = resmsg.body.as_slice();
-        let zres: xdr_codec::Result<u32> = xdr_codec::unpack(&mut zbuf);
-        if zres.is_err() {
-            return Err(Error::new(ErrorKind::Other, "could not parse response message status"));
+        let messagestatus = parse_xdr_response(xdr_codec::unpack::<_, MessageStatus>(&mut zbuf), "message status")?;
+
+        // check message status
+        match messagestatus {
+            MessageStatus::Accepted => {},
+            _ => return Err(Error::new(ErrorKind::Other, "could not parse response due to bad status")),
         }
 
-        let msgstatus = zres.unwrap();
-        match msgstatus { // FIXME: add message status enum and cover each known value
-            0 => {
-                let padding: xdr_codec::Result<u32> = xdr_codec::unpack(&mut zbuf);
-                if padding.is_err() {
-                    return Err(Error::new(ErrorKind::Other, "could not parse response message padding"));
-                }
-                let opaquelen: xdr_codec::Result<u32> = xdr_codec::unpack(&mut zbuf);
-                if opaquelen.is_err() {
-                    return Err(Error::new(ErrorKind::Other, "could not parse response message opaque length"));
-                }
-                let opaquelen = opaquelen.unwrap();
-                if opaquelen > 0 {
-                    // "seek" opaquelen bytes from current position
-                    let seek = xdr_codec::unpack_opaque_flex(&mut zbuf, Some(opaquelen as usize));
-                    if seek.is_err() {
-                        return Err(Error::new(ErrorKind::Other, "could not parse response"));
-                    }
-                }
-                let acceptstatus: xdr_codec::Result<u32> = xdr_codec::unpack(&mut zbuf);
-                if acceptstatus.is_err() {
-                    return Err(Error::new(ErrorKind::Other, "could not parse response message accept status"));
-                }
-                match acceptstatus.unwrap() { // FIXME: add accept status enum and cover each known value
-                    0 => Ok(zbuf.to_vec()),
-                    _ => Err(Error::new(ErrorKind::Other, "request rejected")),
-                }
-            },
-            _ => Err(Error::new(ErrorKind::Other, "could not parse response due to bad status")),
+        // unpack padding
+        let _padding = parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message padding")?;
+        // TODO: should there be a "seek" for padding, equivalent to what is done for opaque length?
+
+        // unpack opaque length
+        let opaquelen = parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message opaque length")?;
+        if opaquelen > 0 {
+            // "seek" opaquelen bytes from current position
+            let seek = xdr_codec::unpack_opaque_flex(&mut zbuf, Some(opaquelen as usize));
+            if seek.is_err() {
+                return Err(Error::new(ErrorKind::Other, "could not parse response"));
+            }
+        }
+
+        // unpack accept status
+        let acceptstatus = parse_xdr_response(xdr_codec::unpack::<_, AcceptStatus>(&mut zbuf), "message accept status")?;
+
+        // check accept status
+        match acceptstatus {
+            AcceptStatus::Success => Ok(zbuf.to_vec()),
+            _ => Err(Error::new(ErrorKind::Other, "request rejected")),
         }
     }
 
@@ -210,6 +212,58 @@ impl<In: Read> Unpack<In> for MessageType {
                 match e {
                     x if x == MessageType::Request as i32 => MessageType::Request,
                     x if x == MessageType::Response as i32 => MessageType::Response,
+                    e => return Err(xdr_codec::Error::invalidenum(e)),
+                }
+            },
+            sz,
+        ))
+    }
+}
+
+enum MessageStatus {
+    Accepted = 0,
+    Denied = 1,
+}
+
+impl<In: Read> Unpack<In> for MessageStatus {
+    fn unpack(input: &mut In) -> xdr_codec::Result<(MessageStatus, usize)> {
+        let mut sz = 0;
+        Ok((
+            {
+                let (e, esz): (i32, _) = Unpack::unpack(input)?;
+                sz += esz;
+                match e {
+                    x if x == MessageStatus::Accepted as i32 => MessageStatus::Accepted,
+                    x if x == MessageStatus::Denied as i32 => MessageStatus::Denied,
+                    e => return Err(xdr_codec::Error::invalidenum(e)),
+                }
+            },
+            sz,
+        ))
+    }
+}
+
+enum AcceptStatus {
+    Success = 0,
+    ProgUnavail = 1,
+    ProgMismatch = 2,
+    ProcUnavail = 3,
+    GarbageArgs = 4,
+}
+
+impl<In: Read> Unpack<In> for AcceptStatus {
+    fn unpack(input: &mut In) -> xdr_codec::Result<(AcceptStatus, usize)> {
+        let mut sz = 0;
+        Ok((
+            {
+                let (e, esz): (i32, _) = Unpack::unpack(input)?;
+                sz += esz;
+                match e {
+                    x if x == AcceptStatus::Success as i32 => AcceptStatus::Success,
+                    x if x == AcceptStatus::ProgUnavail as i32 => AcceptStatus::ProgUnavail,
+                    x if x == AcceptStatus::ProgMismatch as i32 => AcceptStatus::ProgMismatch,
+                    x if x == AcceptStatus::ProcUnavail as i32 => AcceptStatus::ProcUnavail,
+                    x if x == AcceptStatus::GarbageArgs as i32 => AcceptStatus::GarbageArgs,
                     e => return Err(xdr_codec::Error::invalidenum(e)),
                 }
             },

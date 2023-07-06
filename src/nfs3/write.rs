@@ -40,6 +40,7 @@ impl Mount {
 }
 
 #[cfg(test)]
+#[cfg(not(target_os = "wasi"))]
 mod tests {
     use super::*;
 
