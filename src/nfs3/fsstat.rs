@@ -22,7 +22,7 @@ impl Mount {
 
         match x.unwrap().0 {
             FSSTAT3res::NFS3_OK(ok) => Ok(ok.into()),
-            _ => Err(Error::new(ErrorKind::Other, "getting file system stats failed")),
+            FSSTAT3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

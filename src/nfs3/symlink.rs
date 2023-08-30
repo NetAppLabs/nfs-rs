@@ -30,7 +30,7 @@ impl Mount {
 
         match x.unwrap().0 {
             SYMLINK3res::NFS3_OK(ok) => from_post_op_fh3(ok.obj),
-            _ => Err(Error::new(ErrorKind::Other, "creating symbolic link failed")),
+            SYMLINK3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

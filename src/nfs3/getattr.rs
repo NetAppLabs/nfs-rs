@@ -27,7 +27,7 @@ impl Mount {
 
         match x.unwrap().0 {
             GETATTR3res::NFS3_OK(ok) => Ok(ok.obj_attributes.into()),
-            _ => Err(Error::new(ErrorKind::Other, "getting attributes failed")),
+            GETATTR3res::default(e) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

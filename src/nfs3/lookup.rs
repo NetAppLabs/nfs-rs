@@ -9,18 +9,18 @@ impl Mount {
     }
 
     pub(crate) fn lookup_raw(&self, path: &str) -> Result<LOOKUP3resok> {
-        let mut res = LOOKUP3resok{
+        let mut res = Ok(LOOKUP3resok{
             object: nfs_fh3{data: self.fh.to_vec()},
             dir_attributes: post_op_attr::FALSE,
             obj_attributes: post_op_attr::FALSE,
-        };
+        });
         path_clean::clean(path).split("/").for_each(|n| {
-            if n != "." && n != "" {
-                res = self.lookup_filename(res.object.data.to_vec(), n.into()).unwrap();
+            if res.as_mut().is_ok() && n != "." && n != "" {
+                res = self.lookup_filename(res.as_mut().ok().unwrap().object.data.to_vec(), n.into());
             }
         });
 
-        Ok(res)
+        res
     }
 
     fn lookup_filename(&self, dir_fh: Vec<u8>, filename: &str) -> Result<LOOKUP3resok> {
@@ -44,8 +44,8 @@ impl Mount {
         }
 
         match x.unwrap().0 {
-            LOOKUP3res::NFS3_OK(y) => Ok(y),
-            _ => Err(Error::new(ErrorKind::Other, "lookup failed")),
+            LOOKUP3res::NFS3_OK(ok) => Ok(ok),
+            LOOKUP3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

@@ -54,7 +54,7 @@ pub struct ACCESS3args {
 
 pub enum ACCESS3res {
     NFS3_OK(ACCESS3resok),
-    default(Box<ACCESS3resfail>),
+    default((nfsstat3, Box<ACCESS3resfail>)),
 }
 
 pub struct ACCESS3resfail {
@@ -74,7 +74,7 @@ pub struct COMMIT3args {
 
 pub enum COMMIT3res {
     NFS3_OK(COMMIT3resok),
-    default(Box<COMMIT3resfail>),
+    default((nfsstat3, Box<COMMIT3resfail>)),
 }
 
 pub struct COMMIT3resfail {
@@ -111,7 +111,7 @@ pub struct CREATE3args {
 
 pub enum CREATE3res {
     NFS3_OK(CREATE3resok),
-    default(Box<CREATE3resfail>),
+    default((nfsstat3, Box<CREATE3resfail>)),
 }
 
 pub struct CREATE3resfail {
@@ -131,7 +131,7 @@ pub struct FSINFO3args {
 
 pub enum FSINFO3res {
     NFS3_OK(FSINFO3resok),
-    default(Box<FSINFO3resfail>),
+    default((nfsstat3, Box<FSINFO3resfail>)),
 }
 
 pub struct FSINFO3resfail {
@@ -159,7 +159,7 @@ pub struct FSSTAT3args {
 
 pub enum FSSTAT3res {
     NFS3_OK(FSSTAT3resok),
-    default(Box<FSSTAT3resfail>),
+    default((nfsstat3, Box<FSSTAT3resfail>)),
 }
 
 pub struct FSSTAT3resfail {
@@ -200,7 +200,7 @@ pub struct GETATTR3args {
 
 pub enum GETATTR3res {
     NFS3_OK(GETATTR3resok),
-    default,
+    default(nfsstat3),
 }
 
 pub struct GETATTR3resok {
@@ -226,7 +226,7 @@ pub struct LINK3args {
 
 pub enum LINK3res {
     NFS3_OK(LINK3resok),
-    default(Box<LINK3resfail>),
+    default((nfsstat3, Box<LINK3resfail>)),
 }
 
 pub struct LINK3resfail {
@@ -263,7 +263,7 @@ pub struct LOOKUP3args {
 
 pub enum LOOKUP3res {
     NFS3_OK(LOOKUP3resok),
-    default(Box<LOOKUP3resfail>),
+    default((nfsstat3, Box<LOOKUP3resfail>)),
 }
 
 pub struct LOOKUP3resfail {
@@ -301,7 +301,7 @@ pub struct MKDIR3args {
 
 pub enum MKDIR3res {
     NFS3_OK(MKDIR3resok),
-    default(Box<MKDIR3resfail>),
+    default((nfsstat3, Box<MKDIR3resfail>)),
 }
 
 pub struct MKDIR3resfail {
@@ -321,7 +321,7 @@ pub struct MKNOD3args {
 
 pub enum MKNOD3res {
     NFS3_OK(MKNOD3resok),
-    default(Box<MKNOD3resfail>),
+    default((nfsstat3, Box<MKNOD3resfail>)),
 }
 
 pub struct MKNOD3resfail {
@@ -341,7 +341,7 @@ pub struct PATHCONF3args {
 
 pub enum PATHCONF3res {
     NFS3_OK(PATHCONF3resok),
-    default(Box<PATHCONF3resfail>),
+    default((nfsstat3, Box<PATHCONF3resfail>)),
 }
 
 pub struct PATHCONF3resfail {
@@ -386,7 +386,7 @@ pub struct READ3args {
 
 pub enum READ3res {
     NFS3_OK(READ3resok),
-    default(Box<READ3resfail>),
+    default((nfsstat3, Box<READ3resfail>)),
 }
 
 pub struct READ3resfail {
@@ -426,7 +426,7 @@ pub struct READDIR3args {
 
 pub enum READDIR3res {
     NFS3_OK(READDIR3resok),
-    default(Box<READDIR3resfail>),
+    default((nfsstat3, Box<READDIR3resfail>)),
 }
 
 pub struct READDIR3resfail {
@@ -449,7 +449,7 @@ pub struct READDIRPLUS3args {
 
 pub enum READDIRPLUS3res {
     NFS3_OK(READDIRPLUS3resok),
-    default(Box<READDIRPLUS3resfail>),
+    default((nfsstat3, Box<READDIRPLUS3resfail>)),
 }
 
 pub struct READDIRPLUS3resfail {
@@ -485,7 +485,7 @@ pub struct READLINK3args {
 
 pub enum READLINK3res {
     NFS3_OK(READLINK3resok),
-    default(Box<READLINK3resfail>),
+    default((nfsstat3, Box<READLINK3resfail>)),
 }
 
 pub struct READLINK3resfail {
@@ -514,7 +514,7 @@ pub struct REMOVE3args {
 
 pub enum REMOVE3res {
     NFS3_OK(REMOVE3resok),
-    default(Box<REMOVE3resfail>),
+    default((nfsstat3, Box<REMOVE3resfail>)),
 }
 
 pub struct REMOVE3resfail {
@@ -544,7 +544,7 @@ pub struct RENAME3args {
 
 pub enum RENAME3res {
     NFS3_OK(RENAME3resok),
-    default(Box<RENAME3resfail>),
+    default((nfsstat3, Box<RENAME3resfail>)),
 }
 
 pub struct RENAME3resfail {
@@ -574,7 +574,7 @@ pub struct RMDIR3args {
 
 pub enum RMDIR3res {
     NFS3_OK(RMDIR3resok),
-    default(Box<RMDIR3resfail>),
+    default((nfsstat3, Box<RMDIR3resfail>)),
 }
 
 pub struct RMDIR3resfail {
@@ -610,7 +610,7 @@ pub struct SETATTR3args {
 
 pub enum SETATTR3res {
     NFS3_OK(SETATTR3resok),
-    default(Box<SETATTR3resfail>),
+    default((nfsstat3, Box<SETATTR3resfail>)),
 }
 
 pub struct SETATTR3resfail {
@@ -660,7 +660,7 @@ pub struct SYMLINK3args {
 
 pub enum SYMLINK3res {
     NFS3_OK(SYMLINK3resok),
-    default(Box<SYMLINK3resfail>),
+    default((nfsstat3, Box<SYMLINK3resfail>)),
 }
 
 pub struct SYMLINK3resfail {
@@ -703,7 +703,7 @@ pub struct WRITE3args {
 
 pub enum WRITE3res {
     NFS3_OK(WRITE3resok),
-    default(Box<WRITE3resfail>),
+    default((nfsstat3, Box<WRITE3resfail>)),
 }
 
 pub struct WRITE3resfail {
@@ -1267,7 +1267,7 @@ impl<Out: xdr_codec::Write> xdr_codec::Pack<Out> for GETATTR3res {
             &GETATTR3res::NFS3_OK(ref val) => {
                 (nfsstat3::NFS3_OK as i32).pack(out)? + val.pack(out)?
             }
-            &GETATTR3res::default => return Err(xdr_codec::Error::invalidcase(-1)),
+            &GETATTR3res::default(_) => return Err(xdr_codec::Error::invalidcase(-1)),
         })
     }
 }
@@ -2440,19 +2440,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for ACCESS3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => ACCESS3res::NFS3_OK({
+                nfsstat3::NFS3_OK => ACCESS3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => ACCESS3res::default({
+                x => ACCESS3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -2528,19 +2528,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for COMMIT3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => COMMIT3res::NFS3_OK({
+                nfsstat3::NFS3_OK => COMMIT3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => COMMIT3res::default({
+                x => COMMIT3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -2674,19 +2674,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for CREATE3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => CREATE3res::NFS3_OK({
+                nfsstat3::NFS3_OK => CREATE3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => CREATE3res::default({
+                x => CREATE3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -2757,19 +2757,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for FSINFO3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => FSINFO3res::NFS3_OK({
+                nfsstat3::NFS3_OK => FSINFO3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => FSINFO3res::default({
+                x => FSINFO3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -2880,19 +2880,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for FSSTAT3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => FSSTAT3res::NFS3_OK({
+                nfsstat3::NFS3_OK => FSSTAT3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => FSSTAT3res::default({
+                x => FSSTAT3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -3041,16 +3041,16 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for GETATTR3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => GETATTR3res::NFS3_OK({
+                nfsstat3::NFS3_OK => GETATTR3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => GETATTR3res::default,
+                x => GETATTR3res::default(x),
             },
             sz,
         ))
@@ -3136,19 +3136,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for LINK3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => LINK3res::NFS3_OK({
+                nfsstat3::NFS3_OK => LINK3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => LINK3res::default({
+                x => LINK3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -3277,19 +3277,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for LOOKUP3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => LOOKUP3res::NFS3_OK({
+                nfsstat3::NFS3_OK => LOOKUP3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => LOOKUP3res::default({
+                x => LOOKUP3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -3428,19 +3428,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for MKDIR3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => MKDIR3res::NFS3_OK({
+                nfsstat3::NFS3_OK => MKDIR3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => MKDIR3res::default({
+                x => MKDIR3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -3516,19 +3516,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for MKNOD3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => MKNOD3res::NFS3_OK({
+                nfsstat3::NFS3_OK => MKNOD3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => MKNOD3res::default({
+                x => MKNOD3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -3599,19 +3599,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for PATHCONF3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => PATHCONF3res::NFS3_OK({
+                nfsstat3::NFS3_OK => PATHCONF3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => PATHCONF3res::default({
+                x => PATHCONF3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -3785,19 +3785,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for READ3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => READ3res::NFS3_OK({
+                nfsstat3::NFS3_OK => READ3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => READ3res::default({
+                x => READ3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -3956,19 +3956,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for READDIR3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => READDIR3res::NFS3_OK({
+                nfsstat3::NFS3_OK => READDIR3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => READDIR3res::default({
+                x => READDIR3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -4059,19 +4059,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for READDIRPLUS3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => READDIRPLUS3res::NFS3_OK({
+                nfsstat3::NFS3_OK => READDIRPLUS3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => READDIRPLUS3res::default({
+                x => READDIRPLUS3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -4195,19 +4195,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for READLINK3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => READLINK3res::NFS3_OK({
+                nfsstat3::NFS3_OK => READLINK3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => READLINK3res::default({
+                x => READLINK3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -4305,19 +4305,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for REMOVE3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => REMOVE3res::NFS3_OK({
+                nfsstat3::NFS3_OK => REMOVE3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => REMOVE3res::default({
+                x => REMOVE3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -4420,19 +4420,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for RENAME3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => RENAME3res::NFS3_OK({
+                nfsstat3::NFS3_OK => RENAME3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => RENAME3res::default({
+                x => RENAME3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -4535,19 +4535,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for RMDIR3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => RMDIR3res::NFS3_OK({
+                nfsstat3::NFS3_OK => RMDIR3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => RMDIR3res::default({
+                x => RMDIR3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -4676,19 +4676,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for SETATTR3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => SETATTR3res::NFS3_OK({
+                nfsstat3::NFS3_OK => SETATTR3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => SETATTR3res::default({
+                x => SETATTR3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -4869,19 +4869,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for SYMLINK3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => SYMLINK3res::NFS3_OK({
+                nfsstat3::NFS3_OK => SYMLINK3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => SYMLINK3res::default({
+                x => SYMLINK3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,
@@ -5045,19 +5045,19 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for WRITE3res {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (nfsstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => WRITE3res::NFS3_OK({
+                nfsstat3::NFS3_OK => WRITE3res::NFS3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => WRITE3res::default({
+                x => WRITE3res::default({
                     let (v, csz) = xdr_codec::Unpack::unpack(input)?;
                     sz += csz;
-                    v
+                    (x, v)
                 }),
             },
             sz,

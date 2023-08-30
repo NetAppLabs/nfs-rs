@@ -68,8 +68,8 @@ impl Mount {
         }
 
         match x.unwrap().0 {
-            READDIRPLUS3res::NFS3_OK(y) => Ok(y),
-            _ => Err(Error::new(ErrorKind::Other, "reading directory failed")),
+            READDIRPLUS3res::NFS3_OK(ok) => Ok(ok),
+            READDIRPLUS3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 

@@ -29,7 +29,7 @@ impl Mount {
 
         match x.unwrap().0 {
             READ3res::NFS3_OK(ok) => Ok(ok.data),
-            _ => Err(Error::new(ErrorKind::Other, "reading failed")),
+            READ3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

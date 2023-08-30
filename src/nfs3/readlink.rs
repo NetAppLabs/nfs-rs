@@ -25,7 +25,7 @@ impl Mount {
 
         match x.unwrap().0 {
             READLINK3res::NFS3_OK(ok) => Ok(ok.data.0),
-            _ => Err(Error::new(ErrorKind::Other, "reading symbolic link failed")),
+            READLINK3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

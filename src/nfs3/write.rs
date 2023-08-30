@@ -34,7 +34,7 @@ impl Mount {
 
         match x.unwrap().0 {
             WRITE3res::NFS3_OK(ok) => Ok(ok.count),
-            _ => Err(Error::new(ErrorKind::Other, "writing failed")),
+            WRITE3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

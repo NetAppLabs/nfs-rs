@@ -29,7 +29,7 @@ impl Mount {
 
         match x.unwrap().0 {
             COMMIT3res::NFS3_OK(_) => Ok(()),
-            _ => Err(Error::new(ErrorKind::Other, "committing failed")),
+            COMMIT3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

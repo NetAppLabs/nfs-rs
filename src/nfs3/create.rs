@@ -35,8 +35,8 @@ impl Mount {
         }
 
         match x.unwrap().0 {
-            CREATE3res::NFS3_OK(y) => from_post_op_fh3(y.obj),
-            _ => Err(Error::new(ErrorKind::Other, "creating file failed")),
+            CREATE3res::NFS3_OK(ok) => from_post_op_fh3(ok.obj),
+            CREATE3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

@@ -37,7 +37,7 @@ fn get_mount(mnt: WitMount) -> Result<&'static Arc<RwLock<Box<dyn Mount>>>, WitE
     let mount = mounts.get(&mnt);
     if mount.is_none() {
         return Err(WitError{
-            os_error_code: None,
+            nfs_error_code: None,
             message: "mount not found".to_string(),
         });
     }
@@ -137,9 +137,18 @@ fn into_wit_readdirplus_entry(entry: ReaddirplusEntry) -> WitReaddirplusEntry {
     }
 }
 
-fn into_wit_err(err: Error) -> WitError {
+fn into_wit_err(mut err: Error) -> WitError {
+    if let Some(inner_err) = err.get_mut() {
+        if inner_err.is::<crate::nfs3::ErrorCode>() {
+            let nfs_error_code = inner_err.downcast_mut::<crate::nfs3::ErrorCode>().unwrap();
+            return WitError{
+                nfs_error_code: Some(*nfs_error_code as i32),
+                message: nfs_error_code.to_string(),
+            }
+        }
+    }
     WitError{
-        os_error_code: err.raw_os_error(),
+        nfs_error_code: None,
         message: err.to_string(),
     }
 }

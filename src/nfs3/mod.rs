@@ -111,6 +111,47 @@ fn from_post_op_fh3(pofh: post_op_fh3) -> Result<Vec<u8>> {
     }
 }
 
+#[allow(unused)]
+pub(crate) use nfs3xdr::nfsstat3 as ErrorCode;
+
+impl std::error::Error for ErrorCode {}
+
+impl std::fmt::Display for ErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ErrorCode::NFS3_OK => write!(f, "call completed successfully"),
+            ErrorCode::NFS3ERR_PERM => write!(f, "permission denied"),
+            ErrorCode::NFS3ERR_NOENT => write!(f, "no such file or directory"),
+            ErrorCode::NFS3ERR_IO => write!(f, "i/o error occurred while processing the requested operation"),
+            ErrorCode::NFS3ERR_NXIO => write!(f, "i/o error - no such device or address"),
+            ErrorCode::NFS3ERR_ACCES => write!(f, "permission denied"), // FIXME: should message be different from nfsstat3::NFS3ERR_PERM?
+            ErrorCode::NFS3ERR_EXIST => write!(f, "file exists"),
+            ErrorCode::NFS3ERR_XDEV => write!(f, "cross-device hard link not allowed"),
+            ErrorCode::NFS3ERR_NODEV => write!(f, "no such device"),
+            ErrorCode::NFS3ERR_NOTDIR => write!(f, "not a directory"),
+            ErrorCode::NFS3ERR_ISDIR => write!(f, "is a directory"),
+            ErrorCode::NFS3ERR_INVAL => write!(f, "invalid or unsupported argument"),
+            ErrorCode::NFS3ERR_FBIG => write!(f, "file too large"),
+            ErrorCode::NFS3ERR_NOSPC => write!(f, "no space left on device"),
+            ErrorCode::NFS3ERR_ROFS => write!(f, "read-only file system"),
+            ErrorCode::NFS3ERR_MLINK => write!(f, "too many hard links"),
+            ErrorCode::NFS3ERR_NAMETOOLONG => write!(f, "name is too long"),
+            ErrorCode::NFS3ERR_NOTEMPTY => write!(f, "directory not empty"),
+            ErrorCode::NFS3ERR_DQUOT => write!(f, "resource (quota) hard limit exceeded"),
+            ErrorCode::NFS3ERR_STALE => write!(f, "invalid file handle"),
+            ErrorCode::NFS3ERR_REMOTE => write!(f, "too many levels of remote in path"),
+            ErrorCode::NFS3ERR_BADHANDLE => write!(f, "illegal NFS file handle"),
+            ErrorCode::NFS3ERR_NOT_SYNC => write!(f, "update synchronization mismatch"),
+            ErrorCode::NFS3ERR_BAD_COOKIE => write!(f, "cookie is stale"),
+            ErrorCode::NFS3ERR_NOTSUPP => write!(f, "operation is not supported"),
+            ErrorCode::NFS3ERR_TOOSMALL => write!(f, "buffer or request is too small"),
+            ErrorCode::NFS3ERR_SERVERFAULT => write!(f, "internal server error"),
+            ErrorCode::NFS3ERR_BADTYPE => write!(f, "type not supported by server"),
+            ErrorCode::NFS3ERR_JUKEBOX => write!(f, "try again"),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 struct MOUNT3args {
     header: rpc::Header,

@@ -25,7 +25,7 @@ impl Mount {
 
         match x.unwrap().0 {
             ACCESS3res::NFS3_OK(ok) => Ok(ok.access),
-            _ => Err(Error::new(ErrorKind::Other, "access check failed")),
+            ACCESS3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

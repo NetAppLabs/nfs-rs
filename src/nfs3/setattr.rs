@@ -44,7 +44,7 @@ impl Mount {
 
         match x.unwrap().0 {
             SETATTR3res::NFS3_OK(_) => Ok(()),
-            _ => Err(Error::new(ErrorKind::Other, "setting attributes failed")),
+            SETATTR3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

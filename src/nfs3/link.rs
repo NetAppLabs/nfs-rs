@@ -34,7 +34,7 @@ impl Mount {
                 nfs3::nfs3xdr::post_op_attr::TRUE(a) => Ok(a.into()),
                 _ => Err(Error::new(ErrorKind::Other, "linking failed")),
             },
-            _ => Err(Error::new(ErrorKind::Other, "linking failed")),
+            LINK3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
     }
 }

@@ -47,7 +47,7 @@ interface nfs {
     }
 
     record error {
-        os-error-code: option<s32>,
+        nfs-error-code: option<s32>,
         message: string,
     }
 
