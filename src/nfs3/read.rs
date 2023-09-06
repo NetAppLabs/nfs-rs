@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn read_path(&self, path: &str, offset: u64, count: u32) -> Result<Vec<u8>> {
-        self.read(&self.lookup(path)?, offset, count)
+        self.read(&self.lookup_path(path)?, offset, count)
     }
 
     pub fn read(&self, fh: &Vec<u8>, offset: u64, count: u32) -> Result<Vec<u8>> {

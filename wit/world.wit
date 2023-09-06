@@ -75,7 +75,8 @@ interface nfs {
     symlink-path: func(mnt: mount, src-path: string, dst-path: string) -> result<list<u8>, error>
     readlink: func(mnt: mount, fh: list<u8>) -> result<string, error>
     readlink-path: func(mnt: mount, path: string) -> result<string, error>
-    lookup: func(mnt: mount, path: string) -> result<list<u8>, error>
+    lookup: func(mnt: mount, dir-fh: list<u8>, filename: string) -> result<list<u8>, error>
+    lookup-path: func(mnt: mount, path: string) -> result<list<u8>, error>
     pathconf: func(mnt: mount, fh: list<u8>) -> result<path-conf, error>
     pathconf-path: func(mnt: mount, path: string) -> result<path-conf, error>
     read: func(mnt: mount, fh: list<u8>, offset: u64, count: u32) -> result<list<u8>, error>

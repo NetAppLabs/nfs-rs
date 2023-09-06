@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn write_path(&self, path: &str, offset: u64, data: &Vec<u8>) -> Result<u32> {
-        self.write(&self.lookup(path)?, offset, data)
+        self.write(&self.lookup_path(path)?, offset, data)
     }
 
     pub fn write(&self, fh: &Vec<u8>, offset: u64, data: &Vec<u8>) -> Result<u32> {

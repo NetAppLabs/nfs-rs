@@ -122,8 +122,12 @@ impl crate::Mount for Mount3 {
         self.m.readlink_path(path)
     }
 
-    fn lookup(&self, path: &str) -> Result<Vec<u8>> {
-        self.m.lookup(path)
+    fn lookup(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<Vec<u8>> {
+        self.m.lookup(dir_fh, filename)
+    }
+
+    fn lookup_path(&self, path: &str) -> Result<Vec<u8>> {
+        self.m.lookup_path(path)
     }
 
     fn pathconf(&self, fh: &Vec<u8>) -> Result<crate::mount::Pathconf> {

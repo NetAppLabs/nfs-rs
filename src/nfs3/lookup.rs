@@ -4,11 +4,15 @@ use super::nfs3xdr::{LOOKUP3args, LOOKUP3resok, LOOKUP3res, diropargs3, filename
 use crate::nfs3;
 
 impl Mount {
-    pub fn lookup(&self, path: &str) -> Result<Vec<u8>> {
-        Ok(self.lookup_raw(path)?.object.data)
+    pub fn lookup_path(&self, path: &str) -> Result<Vec<u8>> {
+        Ok(self.lookup_path_raw(path)?.object.data)
     }
 
-    pub(crate) fn lookup_raw(&self, path: &str) -> Result<LOOKUP3resok> {
+    pub fn lookup(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<Vec<u8>> {
+        Ok(self.lookup_raw(dir_fh, filename)?.object.data)
+    }
+
+    pub(crate) fn lookup_path_raw(&self, path: &str) -> Result<LOOKUP3resok> {
         let mut res = Ok(LOOKUP3resok{
             object: nfs_fh3{data: self.fh.to_vec()},
             dir_attributes: post_op_attr::FALSE,
@@ -16,17 +20,17 @@ impl Mount {
         });
         path_clean::clean(path).split("/").for_each(|n| {
             if res.as_mut().is_ok() && n != "." && n != "" {
-                res = self.lookup_filename(res.as_mut().ok().unwrap().object.data.to_vec(), n.into());
+                res = self.lookup_raw(&res.as_mut().ok().unwrap().object.data, n.into());
             }
         });
 
         res
     }
 
-    fn lookup_filename(&self, dir_fh: Vec<u8>, filename: &str) -> Result<LOOKUP3resok> {
+    fn lookup_raw(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<LOOKUP3resok> {
         let args = LOOKUP3args{
             what: diropargs3{
-                dir: nfs_fh3{data: dir_fh},
+                dir: nfs_fh3{data: dir_fh.to_vec()},
                 name: filename3(filename.to_string()),
             },
         };

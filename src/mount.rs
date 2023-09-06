@@ -73,7 +73,11 @@ pub trait Mount: std::fmt::Debug + Send + Sync {
     fn readlink_path(&self, path: &str) -> Result<String>;
 
     /// Procedure LOOKUP searches a directory for a specific name and returns the file handle for the corresponding file system object.
-    fn lookup(&self, path: &str) -> Result<Vec<u8>>;
+    fn lookup(&self, dir_fh: &Vec<u8>, dirname: &str) -> Result<Vec<u8>>;
+
+    /// Same as [`Mount::lookup`] but instead of taking in a directory file handle and filename, takes in a path for which directory file handle is obtained by performing LOOKUP procedure
+    /// for each directory in the path, in turn.
+    fn lookup_path(&self, path: &str) -> Result<Vec<u8>>;
 
     /// Procedure PATHCONF retrieves the pathconf information for a file or directory.
     fn pathconf(&self, fh: &Vec<u8>) -> Result<Pathconf>;

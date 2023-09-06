@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn access_path(&self, path: &str, mode: u32) -> Result<u32> {
-        self.access(&self.lookup(path)?, mode)
+        self.access(&self.lookup_path(path)?, mode)
     }
 
     pub fn access(&self, fh: &Vec<u8>, mode: u32) -> Result<u32> {

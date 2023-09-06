@@ -341,9 +341,15 @@ impl WitNFS for Component {
             .map_err(into_wit_err)
     }
 
-    fn lookup(mnt: WitMount, path: String) -> Result<Vec<u8>, WitError> {
+    fn lookup(mnt: WitMount, dir_fh: Vec<u8>, filename: String) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.lookup(path.as_str())
+        mount.lookup(&dir_fh, filename.as_str())
+            .map_err(into_wit_err)
+    }
+
+    fn lookup_path(mnt: WitMount, path: String) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(mnt)?.read().unwrap();
+        mount.lookup_path(path.as_str())
             .map_err(into_wit_err)
     }
 

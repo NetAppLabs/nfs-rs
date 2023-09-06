@@ -6,7 +6,7 @@ use crate::nfs3;
 impl Mount {
     pub fn mkdir_path(&self, path: &str, mode: u32) -> Result<Vec<u8>> {
         let (dir, dirname) = nfs3::split_path(path)?;
-        let dir_fh = self.lookup(dir.as_str())?;
+        let dir_fh = self.lookup_path(dir.as_str())?;
         self.mkdir(&dir_fh, dirname.as_str(), mode)
     }
 

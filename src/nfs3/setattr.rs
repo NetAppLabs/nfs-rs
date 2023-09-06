@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn setattr_path(&self, path: &str, specify_guard: bool, mode: Option<u32>, uid: Option<u32>, gid: Option<u32>, size: Option<u64>, atime: Option<Time>, mtime: Option<Time>) -> Result<()> {
-        let res = self.lookup_raw(path)?;
+        let res = self.lookup_path_raw(path)?;
         let guard_ctime = match (specify_guard, res.obj_attributes) {
             (true, post_op_attr::TRUE(ok)) => Some(Time{seconds: ok.ctime.seconds, nseconds: ok.ctime.nseconds}),
             _ => None,
