@@ -152,6 +152,28 @@ impl std::fmt::Display for ErrorCode {
     }
 }
 
+#[allow(unused)]
+pub(crate) use mount3xdr::mountstat3 as MountErrorCode;
+
+impl std::error::Error for MountErrorCode {}
+
+impl std::fmt::Display for MountErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            MountErrorCode::MNT3_OK => write!(f, "call completed successfully"),
+            MountErrorCode::MNT3ERR_PERM => write!(f, "permission denied"),
+            MountErrorCode::MNT3ERR_NOENT => write!(f, "no such file or directory"),
+            MountErrorCode::MNT3ERR_IO => write!(f, "i/o error occurred while processing the requested operation"),
+            MountErrorCode::MNT3ERR_ACCES => write!(f, "permission denied"), // FIXME: should message be different from mountstat3::MNT3ERR_PERM?
+            MountErrorCode::MNT3ERR_NOTDIR => write!(f, "not a directory"),
+            MountErrorCode::MNT3ERR_INVAL => write!(f, "invalid or unsupported argument"),
+            MountErrorCode::MNT3ERR_NAMETOOLONG => write!(f, "name is too long"),
+            MountErrorCode::MNT3ERR_NOTSUPP => write!(f, "operation is not supported"),
+            MountErrorCode::MNT3ERR_SERVERFAULT => write!(f, "internal server error"),
+        }
+    }
+}
+
 #[derive(Debug, PartialEq)]
 struct MOUNT3args {
     header: rpc::Header,

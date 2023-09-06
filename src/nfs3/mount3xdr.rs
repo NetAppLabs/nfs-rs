@@ -52,7 +52,7 @@ pub struct mountres1_ok {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum mountres3 {
     MNT3_OK(mountres3_ok),
-    default,
+    default(mountstat3),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -168,7 +168,7 @@ impl<Out: xdr_codec::Write> xdr_codec::Pack<Out> for mountres3 {
             &mountres3::MNT3_OK(ref val) => {
                 (mountstat3::MNT3_OK as i32).pack(out)? + val.pack(out)?
             }
-            &mountres3::default => return Err(xdr_codec::Error::invalidcase(-1)),
+            &mountres3::default(_) => return Err(xdr_codec::Error::invalidcase(-1)),
         })
     }
 }
@@ -364,16 +364,16 @@ impl<In: xdr_codec::Read> xdr_codec::Unpack<In> for mountres3 {
         let mut sz = 0;
         Ok((
             match {
-                let (v, dsz): (i32, _) = xdr_codec::Unpack::unpack(input)?;
+                let (v, dsz): (mountstat3, _) = xdr_codec::Unpack::unpack(input)?;
                 sz += dsz;
                 v
             } {
-                x if x == (0i32 as i32) => mountres3::MNT3_OK({
+                mountstat3::MNT3_OK => mountres3::MNT3_OK({
                     let (v, fsz) = xdr_codec::Unpack::unpack(input)?;
                     sz += fsz;
                     v
                 }),
-                _ => mountres3::default,
+                x => mountres3::default(x),
             },
             sz,
         ))

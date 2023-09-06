@@ -252,7 +252,7 @@ pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
 
     let res = match x.unwrap().0 {
         mountres3::MNT3_OK(ok) => Ok(ok),
-        _ => Err(Error::new(ErrorKind::Other, "mounting failed")),
+        mountres3::default(e) => Err(Error::new(ErrorKind::Other, e)),
     }?;
 
     let m = Mount{rpc: client, auth, fh: res.fhandle.0, dir, dircount, maxcount};

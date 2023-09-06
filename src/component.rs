@@ -146,6 +146,13 @@ fn into_wit_err(mut err: Error) -> WitError {
                 message: nfs_error_code.to_string(),
             }
         }
+        if inner_err.is::<crate::nfs3::MountErrorCode>() {
+            let mount_error_code = inner_err.downcast_mut::<crate::nfs3::MountErrorCode>().unwrap();
+            return WitError{
+                nfs_error_code: Some(*mount_error_code as i32), // XXX: MOUNT error code values match those of NFS error codes but should we really do this?
+                message: mount_error_code.to_string(),
+            }
+        }
     }
     WitError{
         nfs_error_code: None,
