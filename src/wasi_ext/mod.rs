@@ -325,8 +325,15 @@ impl TcpStream {
         unimplemented!("socket_addr")
     }
 
-    pub fn shutdown(&self, _: Shutdown) -> io::Result<()> {
-        unimplemented!("shutdown")
+    pub fn shutdown(&self, shutdown_type: Shutdown) -> io::Result<()> {
+        let shutdown_type = match shutdown_type {
+            Shutdown::Read => sockets::tcp::ShutdownType::Receive,
+            Shutdown::Write => sockets::tcp::ShutdownType::Send,
+            Shutdown::Both => sockets::tcp::ShutdownType::Both,
+        };
+        let res = sockets::tcp::shutdown(self.fd.fd, shutdown_type);
+        check_error(&res, "shutdown error")?;
+        Ok(res.unwrap())
     }
 
     pub fn duplicate(&self) -> io::Result<TcpStream> {
