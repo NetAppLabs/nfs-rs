@@ -1,3 +1,8 @@
+#[cfg(target_os = "wasi")]
+cargo_component_bindings::generate!();
+#[cfg(target_os = "wasi")]
+struct Component;
+
 mod rpc;
 mod nfs3;
 mod mount;
@@ -38,10 +43,8 @@ fn get_uid_gid() -> (u32, u32) {
     #[cfg(not(unix))]
     let uid_gid = || { (65534, 65534) };
     #[cfg(unix)]
-    let uid_gid = || {
-        let uid = nix::unistd::getuid();
-        let gid = nix::unistd::getgid();
-        (uid.into(), gid.into())
+    let uid_gid = || unsafe {
+        (nix::libc::getuid(), nix::libc::getgid())
     };
     uid_gid()
 }

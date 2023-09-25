@@ -10,8 +10,8 @@ use crate::{
     Time,
     parse_url_and_mount,
 };
-use bindings::exports::component::nfs_rs::nfs::{
-    Nfs as WitNFS,
+use crate::bindings::exports::component::nfs_rs::nfs::{
+    Guest as WitNFS,
     Error as WitError,
     Mount as WitMount,
     Attr as WitAttr,
@@ -160,9 +160,7 @@ fn into_wit_err(mut err: Error) -> WitError {
     }
 }
 
-struct Component;
-
-impl WitNFS for Component {
+impl WitNFS for crate::Component {
     fn parse_url_and_mount(url: String) -> Result<WitMount, WitError> {
         let ret = parse_url_and_mount(url.as_str());
         if ret.is_err() {
@@ -476,5 +474,3 @@ impl WitNFS for Component {
         ret.map_err(into_wit_err)
     }
 }
-
-bindings::export!(Component);

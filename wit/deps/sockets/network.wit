@@ -1,3 +1,4 @@
+package wasi:sockets
 
 interface network {
     /// An opaque resource that represents access to (a subset of) the network.

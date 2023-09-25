@@ -1,1 +1,2 @@
-sockets = "https://github.com/WebAssembly/wasi-sockets/archive/main.tar.gz"
+#sockets = "https://github.com/WebAssembly/wasi-sockets/archive/2534b91.tar.gz" # last version before resource-ification
+#sockets = "https://github.com/WebAssembly/wasi-sockets/archive/main.tar.gz"

@@ -18,11 +18,11 @@ impl Mount {
             dir_attributes: post_op_attr::FALSE,
             obj_attributes: post_op_attr::FALSE,
         });
-        path_clean::clean(path).split("/").for_each(|n| {
-            if res.as_mut().is_ok() && n != "." && n != "" {
-                res = self.lookup_raw(&res.as_mut().ok().unwrap().object.data, n.into());
+        for n in &path_clean::clean(path) {
+            if res.as_mut().is_ok() && n != "" && n != "/" && n != "." {
+                res = self.lookup_raw(&res.as_mut().ok().unwrap().object.data, &n.to_string_lossy());
             }
-        });
+        }
 
         res
     }

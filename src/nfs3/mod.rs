@@ -86,13 +86,10 @@ fn rpc_header(prog: u32, vers: u32, proc: u32, cred: &Auth) -> rpc::Header {
 }
 
 fn split_path(path: &str) -> Result<(String, String)> {
-    let cleaned = path_clean::clean(path);
-    let split: Vec<String> = cleaned.split("/").map(|x| x.to_string()).collect();
-    if let Some((name, dir)) = split.split_last() {
-        Ok((dir.join("/"), name.to_owned()))
-    } else {
-        Err(Error::new(ErrorKind::Other, "invalid path"))
-    }
+    let cleaned = &path_clean::clean(path);
+    let dir = cleaned.parent().map_or("/".to_string(), |x| x.to_string_lossy().to_string());
+    let name = cleaned.file_name().unwrap_or_default().to_string_lossy().to_string();
+    Ok((dir, name))
 }
 
 #[allow(unused, dead_code, non_camel_case_types, deprecated)]

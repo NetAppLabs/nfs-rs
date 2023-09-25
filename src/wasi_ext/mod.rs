@@ -7,11 +7,13 @@ use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, S
 use std::time::Duration;
 use std::unimplemented;
 
-use bindings::wasi::io::streams;
-use bindings::wasi::io::streams::StreamError;
-use bindings::wasi::sockets;
-use bindings::wasi::sockets::network::{ErrorCode, IpAddressFamily, IpSocketAddress, Ipv4SocketAddress, Ipv6SocketAddress, Network};
-use bindings::wasi::sockets::tcp::TcpSocket;
+use crate::bindings::wasi::poll::poll;
+use crate::bindings::wasi::io::streams;
+use crate::bindings::wasi::io::streams::{InputStream, OutputStream};
+use crate::bindings::wasi::sockets;
+use crate::bindings::wasi::sockets::ip_name_lookup::ResolveAddressStream;
+use crate::bindings::wasi::sockets::network::{ErrorCode, IpAddressFamily, IpSocketAddress, Ipv4SocketAddress, Ipv6SocketAddress, Network};
+use crate::bindings::wasi::sockets::tcp::TcpSocket;
 use xdr_codec::Write;
 
 const ERRNO_SUCCESS: i32 = 0;
@@ -218,11 +220,8 @@ impl TcpStream {
     pub fn read(&self, mut buf: &mut [u8]) -> io::Result<usize> {
         // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
         //      what is probably more apt in our case, wasi::io::streams::blocking_read
-        //      however, this is a bit of a headache for us as these wasi::io::streams functions will return
-        //      wasi::io::streams::StreamError on failure, which wasi documents like this:
-        //
-        //  An error type returned from a stream operation. Currently this
-        //  doesn't provide any additional information.
+        //      however, this is a bit of a headache for us as both of these functions will return Err(())
+        //      on failure, which doesn't provide any additional information.
         //
         // XXX: so thanks alot for that wasi!
         //      especially since what we could be getting is ERRNO_AGAIN (or equivalent)
@@ -233,7 +232,7 @@ impl TcpStream {
         const SLEEP_DURATION: Duration = std::time::Duration::from_millis(1);
         let wasi_fd = self.fd.as_raw();
         let len = buf.len() as u64;
-        let mut res = Err(StreamError{});
+        let mut res = Err(());
         for _ in 0..MAX_ATTEMPTS {
             res = streams::blocking_read(wasi_fd, len);
             if res.is_ok() {
@@ -284,13 +283,12 @@ impl TcpStream {
     }
 
     pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
-        let res = streams::blocking_write(self.fd.as_raw(), buf);
-        if res.is_err() {
-            let err = res.unwrap_err();
-            println!("TcpStream::write sock_send err: {}", err);
-            return Err(io::Error::new(io::ErrorKind::Other, "sock_send error"));
-        }
-        Ok(res.unwrap().try_into().unwrap())
+        // XXX: according to the documentation for wasi::io::streams::OutputStream::blocking_write_and_flush,
+        //      it only writes up to 4096 bytes - so we have to make sure not to pass in all of `buf`, if it
+        //      is larger than that
+        let sz = buf.len().min(4096);
+        streams::blocking_write_and_flush(self.fd.as_raw(), &buf[..sz]);
+        Ok(sz)
     }
 
     pub fn write_all(&self, mut buf: &[u8]) -> io::Result<()> {
