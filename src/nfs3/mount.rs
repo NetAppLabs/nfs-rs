@@ -220,10 +220,10 @@ pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
     let auth = crate::Auth::new_unix("nfs-rs", args.uid, args.gid);
     let nfsport = ensure_port(&args.host, args.nfsport, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
     let mountport = ensure_port(&args.host, args.mountport, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
-    let nfs_conn = TcpStream::connect((args.host.as_str(), nfsport))?;
+    let nfs_conn = TcpStream::connect((&*args.host, nfsport))?;
     let nfs_addr = nfs_conn.peer_addr()?;
     let mount_conn = if mountport != nfs_addr.port() {
-        TcpStream::connect((args.host.as_str(), mountport))?
+        TcpStream::connect((&*args.host, mountport))?
     } else {
         nfs_conn.try_clone()?
     };

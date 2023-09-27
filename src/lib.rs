@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn parse_url_bad_scheme() {
         for scheme in ["ftp", "scp", "ssh"] {
-            let res = parse_url(format!("{}://localhost/some/export/path", scheme).as_str());
+            let res = parse_url(&format!("{}://localhost/some/export/path", scheme));
             assert!(res.is_err());
             let err = res.unwrap_err();
             assert_eq!(err.kind(), ErrorKind::InvalidInput);
@@ -500,7 +500,7 @@ mod tests {
         ];
         for i in 0..100 {
             let name = format!("19{:02}.txt", i);
-            let res = mount.create_path(format!("/first/place/{}", name).as_str(), 0o664);
+            let res = mount.create_path(&format!("/first/place/{}", name), 0o664);
             assert!(res.is_ok(), "err = {}", res.unwrap_err());
             expected_post_create_names.push(name);
         }
@@ -523,7 +523,7 @@ mod tests {
         assert_eq!(post_create_names_plus, expected_post_create_names);
         for name in expected_post_create_names {
             if name != "." && name != ".." {
-                let res = mount.remove_path(format!("/first/place/{}", name).as_str());
+                let res = mount.remove_path(&format!("/first/place/{}", name));
                 assert!(res.is_ok(), "err = {}", res.unwrap_err());
             }
         }

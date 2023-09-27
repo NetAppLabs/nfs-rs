@@ -162,7 +162,7 @@ fn into_wit_err(mut err: Error) -> WitError {
 
 impl WitNFS for crate::Component {
     fn parse_url_and_mount(url: String) -> Result<WitMount, WitError> {
-        let ret = parse_url_and_mount(url.as_str());
+        let ret = parse_url_and_mount(&url);
         if ret.is_err() {
             return Err(into_wit_err(ret.unwrap_err()));
         }
@@ -185,7 +185,7 @@ impl WitNFS for crate::Component {
 
     fn access_path(mnt: WitMount, path: String, mode: u32) -> Result<u32, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.access_path(path.as_str(), mode)
+        mount.access_path(&path, mode)
             .map_err(into_wit_err)
     }
 
@@ -203,19 +203,19 @@ impl WitNFS for crate::Component {
 
     fn commit_path(mnt: WitMount, path: String, offset: u64, count: u32) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.commit_path(path.as_str(), offset, count)
+        mount.commit_path(&path, offset, count)
             .map_err(into_wit_err)
     }
 
     fn create(mnt: WitMount, dir_fh: Vec<u8>, filename: String, mode: u32) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.create(&dir_fh, filename.as_str(), mode)
+        mount.create(&dir_fh, &filename, mode)
             .map_err(into_wit_err)
     }
 
     fn create_path(mnt: WitMount, path: String, mode: u32) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.create_path(path.as_str(), mode)
+        mount.create_path(&path, mode)
             .map_err(into_wit_err)
     }
 
@@ -240,7 +240,7 @@ impl WitNFS for crate::Component {
 
     fn getattr_path(mnt: WitMount, path: String) -> Result<WitAttr, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.getattr_path(path.as_str())
+        mount.getattr_path(&path)
             .map(into_wit_attr)
             .map_err(into_wit_err)
     }
@@ -283,7 +283,7 @@ impl WitNFS for crate::Component {
     ) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
         mount.setattr_path(
-            path.as_str(),
+            &path,
             specify_guard,
             mode,
             uid,
@@ -303,27 +303,27 @@ impl WitNFS for crate::Component {
 
     fn link(mnt: WitMount, src_fh: Vec<u8>, dst_dir_fh: Vec<u8>, dst_filename: String) -> Result<WitAttr, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.link(&src_fh, &dst_dir_fh, dst_filename.as_str())
+        mount.link(&src_fh, &dst_dir_fh, &dst_filename)
             .map(into_wit_attr)
             .map_err(into_wit_err)
     }
 
     fn link_path(mnt: WitMount, src_path: String, dst_path: String) -> Result<WitAttr, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.link_path(src_path.as_str(), dst_path.as_str())
+        mount.link_path(&src_path, &dst_path)
             .map(into_wit_attr)
             .map_err(into_wit_err)
     }
 
     fn symlink(mnt: WitMount, src_path: String, dst_dir_fh: Vec<u8>, dst_filename: String) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.symlink(src_path.as_str(), &dst_dir_fh, dst_filename.as_str())
+        mount.symlink(&src_path, &dst_dir_fh, &dst_filename)
             .map_err(into_wit_err)
     }
 
     fn symlink_path(mnt: WitMount, src_path: String, dst_path: String) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.symlink_path(src_path.as_str(), dst_path.as_str())
+        mount.symlink_path(&src_path, &dst_path)
             .map_err(into_wit_err)
     }
 
@@ -335,19 +335,19 @@ impl WitNFS for crate::Component {
 
     fn readlink_path(mnt: WitMount, path: String) -> Result<String, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.readlink_path(path.as_str())
+        mount.readlink_path(&path)
             .map_err(into_wit_err)
     }
 
     fn lookup(mnt: WitMount, dir_fh: Vec<u8>, filename: String) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.lookup(&dir_fh, filename.as_str())
+        mount.lookup(&dir_fh, &filename)
             .map_err(into_wit_err)
     }
 
     fn lookup_path(mnt: WitMount, path: String) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.lookup_path(path.as_str())
+        mount.lookup_path(&path)
             .map_err(into_wit_err)
     }
 
@@ -360,7 +360,7 @@ impl WitNFS for crate::Component {
 
     fn pathconf_path(mnt: WitMount, path: String) -> Result<WitPathconf, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.pathconf_path(path.as_str())
+        mount.pathconf_path(&path)
             .map(into_wit_path_conf)
             .map_err(into_wit_err)
     }
@@ -373,7 +373,7 @@ impl WitNFS for crate::Component {
 
     fn read_path(mnt: WitMount, path: String, offset: u64, count: u32) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.read_path(path.as_str(), offset, count)
+        mount.read_path(&path, offset, count)
             .map_err(into_wit_err)
     }
 
@@ -385,7 +385,7 @@ impl WitNFS for crate::Component {
 
     fn write_path(mnt: WitMount, path: String, offset: u64, data: Vec<u8>) -> Result<u32, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.write_path(path.as_str(), offset, &data)
+        mount.write_path(&path, offset, &data)
             .map_err(into_wit_err)
     }
 
@@ -398,7 +398,7 @@ impl WitNFS for crate::Component {
 
     fn readdir_path(mnt: WitMount, dir_path: String) -> Result<Vec<WitReaddirEntry>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.readdir_path(dir_path.as_str())
+        mount.readdir_path(&dir_path)
             .map(into_wit_readdir_entries)
             .map_err(into_wit_err)
     }
@@ -412,56 +412,56 @@ impl WitNFS for crate::Component {
 
     fn readdirplus_path(mnt: WitMount, dir_path: String) -> Result<Vec<WitReaddirplusEntry>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.readdirplus_path(dir_path.as_str())
+        mount.readdirplus_path(&dir_path)
             .map(into_wit_readdirplus_entries)
             .map_err(into_wit_err)
     }
 
     fn mkdir(mnt: WitMount, dir_fh: Vec<u8>, dirname: String, mode: u32) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.mkdir(&dir_fh, dirname.as_str(), mode)
+        mount.mkdir(&dir_fh, &dirname, mode)
             .map_err(into_wit_err)
     }
 
     fn mkdir_path(mnt: WitMount, path: String, mode: u32) -> Result<Vec<u8>, WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.mkdir_path(path.as_str(), mode)
+        mount.mkdir_path(&path, mode)
             .map_err(into_wit_err)
     }
 
     fn remove(mnt: WitMount, dir_fh: Vec<u8>, filename: String) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.remove(&dir_fh, filename.as_str())
+        mount.remove(&dir_fh, &filename)
             .map_err(into_wit_err)
     }
 
     fn remove_path(mnt: WitMount, path: String) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.remove_path(path.as_str())
+        mount.remove_path(&path)
             .map_err(into_wit_err)
     }
 
     fn rmdir(mnt: WitMount, dir_fh: Vec<u8>, dirname: String) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.rmdir(&dir_fh, dirname.as_str())
+        mount.rmdir(&dir_fh, &dirname)
             .map_err(into_wit_err)
     }
 
     fn rmdir_path(mnt: WitMount, path: String) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.rmdir_path(path.as_str())
+        mount.rmdir_path(&path)
             .map_err(into_wit_err)
     }
 
     fn rename(mnt: WitMount, from_dir_fh: Vec<u8>, from_filename: String, to_dir_fh: Vec<u8>, to_filename: String) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.rename(&from_dir_fh, from_filename.as_str(), &to_dir_fh, to_filename.as_str())
+        mount.rename(&from_dir_fh, &from_filename, &to_dir_fh, &to_filename)
             .map_err(into_wit_err)
     }
 
     fn rename_path(mnt: WitMount, from_path: String, to_path: String) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
-        mount.rename_path(from_path.as_str(), to_path.as_str())
+        mount.rename_path(&from_path, &to_path)
             .map_err(into_wit_err)
     }
 

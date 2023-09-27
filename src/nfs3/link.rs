@@ -7,8 +7,8 @@ impl Mount {
     pub fn link_path(&self, src_path: &str, dst_path: &str) -> Result<Fattr> {
         let (dst_dir, dst_filename) = split_path(dst_path)?;
         let src_fh = self.lookup_path(src_path)?;
-        let dst_dir_fh = self.lookup_path(dst_dir.as_str())?;
-        self.link(&src_fh, &dst_dir_fh, dst_filename.as_str())
+        let dst_dir_fh = self.lookup_path(&dst_dir)?;
+        self.link(&src_fh, &dst_dir_fh, &dst_filename)
     }
 
     pub fn link(&self, src_fh: &Vec<u8>, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<Fattr> {

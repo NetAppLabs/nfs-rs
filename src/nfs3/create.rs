@@ -6,7 +6,7 @@ use crate::nfs3;
 impl Mount {
     pub fn create_path(&self, path: &str, mode: u32) -> Result<Vec<u8>> {
         let (dir, filename) = nfs3::split_path(path)?;
-        self.create(&self.lookup_path(dir.as_str())?, filename.as_str(), mode)
+        self.create(&self.lookup_path(&dir)?, &filename, mode)
     }
 
     pub fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<Vec<u8>> {

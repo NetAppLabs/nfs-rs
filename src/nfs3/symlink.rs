@@ -6,8 +6,8 @@ use crate::nfs3;
 impl Mount {
     pub fn symlink_path(&self, src_path: &str, dst_path: &str) -> Result<Vec<u8>> {
         let (dst_dir, dst_filename) = split_path(dst_path)?;
-        let dst_dir_fh = self.lookup_path(dst_dir.as_str())?;
-        self.symlink(src_path, &dst_dir_fh, dst_filename.as_str())
+        let dst_dir_fh = self.lookup_path(&dst_dir)?;
+        self.symlink(src_path, &dst_dir_fh, &dst_filename)
     }
 
     pub fn symlink(&self, src_path: &str, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<Vec<u8>> {
