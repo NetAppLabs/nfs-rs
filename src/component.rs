@@ -171,7 +171,7 @@ impl WitNFS for crate::Component {
         Ok(mnt)
     }
 
-    fn null(mnt: WitMount) -> Result<(), WitError> {
+    fn null_op(mnt: WitMount) -> Result<(), WitError> {
         let mount = get_mount(mnt)?.read().unwrap();
         mount.null()
             .map_err(into_wit_err)

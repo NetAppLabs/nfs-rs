@@ -52,7 +52,7 @@ interface nfs {
     type mount = u32
 
     parse-url-and-mount: func(url: string) -> result<mount, error>
-    null: func(mnt: mount) -> result<_, error>
+    null-op: func(mnt: mount) -> result<_, error>
     access: func(mnt: mount, fh: list<u8>, mode: u32) -> result<u32, error>
     access-path: func(mnt: mount, path: string, mode: u32) -> result<u32, error>
     close: func(mnt: mount, seqid: u32, stateid: u64) -> result<_, error>

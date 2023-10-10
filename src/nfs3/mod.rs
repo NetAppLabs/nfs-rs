@@ -92,10 +92,10 @@ fn split_path(path: &str) -> Result<(String, String)> {
     Ok((dir, name))
 }
 
-#[allow(unused, dead_code, non_camel_case_types, deprecated)]
+#[allow(unused, non_camel_case_types)]
 mod nfs3xdr;
 
-#[allow(unused, dead_code, non_camel_case_types, deprecated)]
+#[allow(unused, non_camel_case_types)]
 mod mount3xdr;
 
 use xdr_codec::Pack;
