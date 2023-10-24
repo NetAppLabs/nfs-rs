@@ -220,30 +220,11 @@ impl TcpStream {
     pub fn read(&self, mut buf: &mut [u8]) -> io::Result<usize> {
         // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
         //      what is probably more apt in our case, wasi::io::streams::blocking_read
-        //      however, this is a bit of a headache for us as both of these functions will return Err(())
-        //      on failure, which doesn't provide any additional information.
-        //
-        // XXX: so thanks alot for that wasi!
-        //      especially since what we could be getting is ERRNO_AGAIN (or equivalent)
-        //      on which we should retry -- which is really all we can attempt here
-        // TODO: finalize the max attempts and sleep duration (or make them configurable somehow)
-        //       as of this writing, 1000 attempts, each with 1ms sleep, results in effective timeout of ~1s
-        const MAX_ATTEMPTS: i32 = 1000;
-        const SLEEP_DURATION: Duration = std::time::Duration::from_millis(1);
         let wasi_fd = self.fd.as_raw();
         let len = buf.len() as u64;
-        let mut res = Err(());
-        for _ in 0..MAX_ATTEMPTS {
-            res = streams::blocking_read(wasi_fd, len);
-            if res.is_ok() {
-                break;
-            }
-            std::thread::sleep(SLEEP_DURATION);
-        }
+        let res = streams::blocking_read(wasi_fd, len);
         if res.is_err() {
-            // XXX: again, since error response contains no information, all we can do is assume a timeout
-            //      occurred and return an error to that effect
-            return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error (possibly timeout)"));
+            return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error"));
         }
         let received = res.unwrap();
         let received_bytes = received.0;
