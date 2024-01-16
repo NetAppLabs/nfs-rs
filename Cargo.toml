@@ -19,11 +19,17 @@ thiserror = "1.0.48"
 url = "2.4.1"
 xdr-codec = "0.4.4"
 
+[package.metadata.component]
+package = "component:nfs-rs"
+
+[package.metadata.component.bindings]
+implementor = "Component"
+
 [package.metadata.component.target]
 path = "wit"
 world = "nfs-rs"
 
 [package.metadata.component.target.dependencies]
-"wasi:poll" = { path = "wit/deps/poll" }
+"wasi:clocks" = { path = "wit/deps/clocks" }
 "wasi:io" = { path = "wit/deps/io" }
 "wasi:sockets" = { path = "wit/deps/sockets" }

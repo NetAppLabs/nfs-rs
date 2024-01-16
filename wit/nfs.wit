@@ -49,49 +49,49 @@ interface nfs {
         message: string,
     }
 
-    type mount = u32
+    type mount = u32;
 
-    parse-url-and-mount: func(url: string) -> result<mount, error>
-    null-op: func(mnt: mount) -> result<_, error>
-    access: func(mnt: mount, fh: list<u8>, mode: u32) -> result<u32, error>
-    access-path: func(mnt: mount, path: string, mode: u32) -> result<u32, error>
-    close: func(mnt: mount, seqid: u32, stateid: u64) -> result<_, error>
-    commit: func(mnt: mount, fh: list<u8>, offset: u64, count: u32) -> result<_, error>
-    commit-path: func(mnt: mount, path: string, offset: u64, count: u32) -> result<_, error>
-    create: func(mnt: mount, dir-fh: list<u8>, filename: string, mode: u32) -> result<list<u8>, error>
-    create-path: func(mnt: mount, path: string, mode: u32) -> result<list<u8>, error>
-    delegpurge: func(mnt: mount, clientid: u64) -> result<_, error>
-    delegreturn: func(mnt: mount, stateid: u64) -> result<_, error>
-    getattr: func(mnt: mount, fh: list<u8>) -> result<attr, error>
-    getattr-path: func(mnt: mount, path: string) -> result<attr, error>
-    setattr: func(mnt: mount, fh: list<u8>, guard-ctime: option<time>, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result<_, error>
-    setattr-path: func(mnt: mount, path: string, specify-guard: bool, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result<_, error>
-    getfh: func(mnt: mount) -> result<_, error>
-    link: func(mnt: mount, src-fh: list<u8>, dst-dir-fh: list<u8>, dst-filename: string) -> result<attr, error>
-    link-path: func(mnt: mount, src-path: string, dst-path: string) -> result<attr, error>
-    symlink: func(mnt: mount, src-path: string, dst-dir-fh: list<u8>, dst-filename: string) -> result<list<u8>, error>
-    symlink-path: func(mnt: mount, src-path: string, dst-path: string) -> result<list<u8>, error>
-    readlink: func(mnt: mount, fh: list<u8>) -> result<string, error>
-    readlink-path: func(mnt: mount, path: string) -> result<string, error>
-    lookup: func(mnt: mount, dir-fh: list<u8>, filename: string) -> result<list<u8>, error>
-    lookup-path: func(mnt: mount, path: string) -> result<list<u8>, error>
-    pathconf: func(mnt: mount, fh: list<u8>) -> result<path-conf, error>
-    pathconf-path: func(mnt: mount, path: string) -> result<path-conf, error>
-    read: func(mnt: mount, fh: list<u8>, offset: u64, count: u32) -> result<list<u8>, error>
-    read-path: func(mnt: mount, path: string, offset: u64, count: u32) -> result<list<u8>, error>
-    write: func(mnt: mount, fh: list<u8>, offset: u64, data: list<u8>) -> result<u32, error>
-    write-path: func(mnt: mount, path: string, offset: u64, data: list<u8>) -> result<u32, error>
-    readdir: func(mnt: mount, dir-fh: list<u8>) -> result<list<readdir-entry>, error>
-    readdir-path: func(mnt: mount, dir-path: string) -> result<list<readdir-entry>, error>
-    readdirplus: func(mnt: mount, dir-fh: list<u8>) -> result<list<readdirplus-entry>, error>
-    readdirplus-path: func(mnt: mount, dir-path: string) -> result<list<readdirplus-entry>, error>
-    mkdir: func(mnt: mount, dir-fh: list<u8>, dirname: string, mode: u32) -> result<list<u8>, error>
-    mkdir-path: func(mnt: mount, path: string, mode: u32) -> result<list<u8>, error>
-    remove: func(mnt: mount, dir-fh: list<u8>, filename: string) -> result<_, error>
-    remove-path: func(mnt: mount, path: string) -> result<_, error>
-    rmdir: func(mnt: mount, dir-fh: list<u8>, dirname: string) -> result<_, error>
-    rmdir-path: func(mnt: mount, path: string) -> result<_, error>
-    rename: func(mnt: mount, from-dir-fh: list<u8>, from-filename: string, to-dir-fh: list<u8>, to-filename: string) -> result<_, error>
-    rename-path: func(mnt: mount, from-path: string, to-path: string) -> result<_, error>
-    umount: func(mnt: mount) -> result<_, error>
+    parse-url-and-mount: func(url: string) -> result<mount, error>;
+    null-op: func(mnt: mount) -> result<_, error>;
+    access: func(mnt: mount, fh: list<u8>, mode: u32) -> result<u32, error>;
+    access-path: func(mnt: mount, path: string, mode: u32) -> result<u32, error>;
+    close: func(mnt: mount, seqid: u32, stateid: u64) -> result<_, error>;
+    commit: func(mnt: mount, fh: list<u8>, offset: u64, count: u32) -> result<_, error>;
+    commit-path: func(mnt: mount, path: string, offset: u64, count: u32) -> result<_, error>;
+    create: func(mnt: mount, dir-fh: list<u8>, filename: string, mode: u32) -> result<list<u8>, error>;
+    create-path: func(mnt: mount, path: string, mode: u32) -> result<list<u8>, error>;
+    delegpurge: func(mnt: mount, clientid: u64) -> result<_, error>;
+    delegreturn: func(mnt: mount, stateid: u64) -> result<_, error>;
+    getattr: func(mnt: mount, fh: list<u8>) -> result<attr, error>;
+    getattr-path: func(mnt: mount, path: string) -> result<attr, error>;
+    setattr: func(mnt: mount, fh: list<u8>, guard-ctime: option<time>, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result<_, error>;
+    setattr-path: func(mnt: mount, path: string, specify-guard: bool, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result<_, error>;
+    getfh: func(mnt: mount) -> result<_, error>;
+    link: func(mnt: mount, src-fh: list<u8>, dst-dir-fh: list<u8>, dst-filename: string) -> result<attr, error>;
+    link-path: func(mnt: mount, src-path: string, dst-path: string) -> result<attr, error>;
+    symlink: func(mnt: mount, src-path: string, dst-dir-fh: list<u8>, dst-filename: string) -> result<list<u8>, error>;
+    symlink-path: func(mnt: mount, src-path: string, dst-path: string) -> result<list<u8>, error>;
+    readlink: func(mnt: mount, fh: list<u8>) -> result<string, error>;
+    readlink-path: func(mnt: mount, path: string) -> result<string, error>;
+    lookup: func(mnt: mount, dir-fh: list<u8>, filename: string) -> result<list<u8>, error>;
+    lookup-path: func(mnt: mount, path: string) -> result<list<u8>, error>;
+    pathconf: func(mnt: mount, fh: list<u8>) -> result<path-conf, error>;
+    pathconf-path: func(mnt: mount, path: string) -> result<path-conf, error>;
+    read: func(mnt: mount, fh: list<u8>, offset: u64, count: u32) -> result<list<u8>, error>;
+    read-path: func(mnt: mount, path: string, offset: u64, count: u32) -> result<list<u8>, error>;
+    write: func(mnt: mount, fh: list<u8>, offset: u64, data: list<u8>) -> result<u32, error>;
+    write-path: func(mnt: mount, path: string, offset: u64, data: list<u8>) -> result<u32, error>;
+    readdir: func(mnt: mount, dir-fh: list<u8>) -> result<list<readdir-entry>, error>;
+    readdir-path: func(mnt: mount, dir-path: string) -> result<list<readdir-entry>, error>;
+    readdirplus: func(mnt: mount, dir-fh: list<u8>) -> result<list<readdirplus-entry>, error>;
+    readdirplus-path: func(mnt: mount, dir-path: string) -> result<list<readdirplus-entry>, error>;
+    mkdir: func(mnt: mount, dir-fh: list<u8>, dirname: string, mode: u32) -> result<list<u8>, error>;
+    mkdir-path: func(mnt: mount, path: string, mode: u32) -> result<list<u8>, error>;
+    remove: func(mnt: mount, dir-fh: list<u8>, filename: string) -> result<_, error>;
+    remove-path: func(mnt: mount, path: string) -> result<_, error>;
+    rmdir: func(mnt: mount, dir-fh: list<u8>, dirname: string) -> result<_, error>;
+    rmdir-path: func(mnt: mount, path: string) -> result<_, error>;
+    rename: func(mnt: mount, from-dir-fh: list<u8>, from-filename: string, to-dir-fh: list<u8>, to-filename: string) -> result<_, error>;
+    rename-path: func(mnt: mount, from-path: string, to-path: string) -> result<_, error>;
+    umount: func(mnt: mount) -> result<_, error>;
 }
