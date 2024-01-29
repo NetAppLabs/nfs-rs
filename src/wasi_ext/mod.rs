@@ -3,9 +3,11 @@ use std::fmt;
 use std::io;
 use std::io::{IoSlice, IoSliceMut};
 use std::mem;
-use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddr, SocketAddrV4, SocketAddrV6};
+use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddrV4, SocketAddrV6};
 use std::time::Duration;
 use std::unimplemented;
+
+pub use std::net::SocketAddr;
 
 use crate::bindings::wasi::io::streams::{InputStream, OutputStream};
 use crate::bindings::wasi::sockets;
@@ -90,80 +92,65 @@ pub fn to_wasi_addr(addr: &SocketAddr) -> io::Result<IpSocketAddress> {
     }
 }
 
-fn to_socket_addrs(addr: (&str, u16)) -> io::Result<Vec<SocketAddr>> {
-    let (host, port) = addr;
-    if let Ok(addr) = host.parse::<Ipv4Addr>() {
-        let addr = SocketAddrV4::new(addr, port);
-        return Ok(vec![SocketAddr::V4(addr)]);
+pub trait ToSocketAddrs {
+    type Iter: Iterator<Item = SocketAddr>;
+
+    fn to_socket_addrs(&self) -> io::Result<Self::Iter>;
+}
+
+impl ToSocketAddrs for (&str, u16) {
+    type Iter = <Vec<SocketAddr> as IntoIterator>::IntoIter;
+    fn to_socket_addrs(&self) -> io::Result<<Vec<SocketAddr> as IntoIterator>::IntoIter> {
+        let (host, port) = *self;
+        if let Ok(addr) = host.parse::<Ipv4Addr>() {
+            let addr = SocketAddrV4::new(addr, port);
+            return Ok(vec![SocketAddr::V4(addr)].into_iter());
+        }
+        if let Ok(addr) = host.parse::<Ipv6Addr>() {
+            let addr = SocketAddrV6::new(addr, port, 0, 0);
+            return Ok(vec![SocketAddr::V6(addr)].into_iter());
+        }
+        let mut addrs = vec![];
+        for a in LookupHost::try_from(*self)? {
+            addrs.push(a);
+        }
+        if !addrs.is_empty() {
+            return Ok(addrs.into_iter());
+        }
+        Err(io::Error::new(io::ErrorKind::Other, "could not resolve host"))
     }
-    if let Ok(addr) = host.parse::<Ipv6Addr>() {
-        let addr = SocketAddrV6::new(addr, port, 0, 0);
-        return Ok(vec![SocketAddr::V6(addr)]);
-    }
-    let mut addrs = vec![];
-    for a in LookupHost::try_from(addr)? {
-        addrs.push(a);
-    }
-    if !addrs.is_empty() {
-        return Ok(addrs);
-    }
-    Err(io::Error::new(io::ErrorKind::Other, "could not resolve host"))
 }
 
 impl TcpStream {
-    pub fn connect(addr: (&str, u16)) -> io::Result<TcpStream> {
-        for addr in to_socket_addrs(addr)? {
-            let res = to_wasi_addr(&addr);
-            if res.is_err() {
-                println!("TcpStream::connect to_wasi_addr err: {}", res.err().unwrap());
-                continue;
-            }
-            let wasi_addr = res.unwrap();
-
-            let address_family = match wasi_addr {
-                IpSocketAddress::Ipv4(_) => IpAddressFamily::Ipv4,
-                IpSocketAddress::Ipv6(_) => IpAddressFamily::Ipv6,
-            };
-            let res = sockets::tcp_create_socket::create_tcp_socket(address_family);
-            if res.is_err() {
-                let code = res.unwrap_err();
-                println!("TcpStream::connect sock_open err: ({}) {}", code, code.message());
-                continue;
-            }
-            let sock = res.unwrap();
-
-            let nw = sockets::instance_network::instance_network();
-            let res = sock.start_connect(&nw, wasi_addr);
-            if res.is_err() {
-                let code = res.unwrap_err();
-                println!("TcpStream::connect sock_connect err: ({}) {}", code, code.message());
-                // sock.drop_tcp_socket(); FIXME: replace with call to shutdown?
-                continue;
-            }
-
-            let res = sock.finish_connect();
-            if res.is_err() {
-                let code = res.unwrap_err();
-                println!("TcpStream::connect sock_connect err: ({}) {}", code, code.message());
-                // sock.drop_tcp_socket(); FIXME: replace with call to shutdown?
-                continue;
-            }
-
-            let (input, output) = res.unwrap();
-            let stream = Self{sock, input, output};
-            if let Some(err) = stream.peer_addr().err() {
-                if let Some(os_err) = err.raw_os_error() {
-                    if os_err != ERRNO_SUCCESS { // XXX: don't print out "success" error
-                        println!("TcpStream::connect sock_peer_addr err: {}", err);
-                    }
-                }
-                // sock.drop_tcp_socket(); FIXME: replace with call to shutdown?
-                continue;
-            }
-            return Ok(stream);
+    pub fn connect(addr: &SocketAddr) -> io::Result<TcpStream> {
+        let res = to_wasi_addr(&addr);
+        if res.is_err() {
+            return Err(res.unwrap_err());
         }
 
-        Err(io::Error::new(io::ErrorKind::Other, "no valid socket address"))
+        let wasi_addr = res.unwrap();
+        let address_family = match wasi_addr {
+            IpSocketAddress::Ipv4(_) => IpAddressFamily::Ipv4,
+            IpSocketAddress::Ipv6(_) => IpAddressFamily::Ipv6,
+        };
+        let res = sockets::tcp_create_socket::create_tcp_socket(address_family);
+        check_error(&res, "create tcp socket error")?;
+
+        let sock = res.unwrap();
+        let nw = sockets::instance_network::instance_network();
+        let res = sock.start_connect(&nw, wasi_addr);
+        check_error(&res, "start connect error")?;
+
+        let res = sock.finish_connect();
+        check_error(&res, "finish connect error")?;
+
+        let (input, output) = res.unwrap();
+        let stream = Self{sock, input, output};
+        if let Some(err) = stream.peer_addr().err() {
+            return Err(err);
+        }
+
+        Ok(stream)
     }
 
     pub fn connect_timeout(_: &SocketAddr, _: Duration) -> io::Result<TcpStream> {
