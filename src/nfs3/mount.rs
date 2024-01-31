@@ -208,19 +208,22 @@ impl crate::Mount for Mount3 {
     }
 }
 
-fn ensure_port(host: &String, port: u16, prog: u32, vers: u32, auth: &crate::Auth) -> Result<u16> {
+fn ensure_port(addrs: &Vec<SocketAddr>, port: u16, prog: u32, vers: u32, auth: &crate::Auth) -> Result<u16> {
     if port != 0 {
         return Ok(port);
     }
-    rpc::portmap(host, prog, vers, auth)
+    rpc::portmap(addrs, prog, vers, auth)
 }
 
 pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
+    // start by resolving host address and assigning portmapper port to each resolved address
+    let addrs = (args.host.as_str(), rpc::PORTMAP_PORT).to_socket_addrs()?.collect();
     let auth = crate::Auth::new_unix("nfs-rs", args.uid, args.gid);
-    let nfsport = ensure_port(&args.host, args.nfsport, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
-    let addrs = (args.host.as_str(), nfsport).to_socket_addrs().unwrap();
-    for addr in addrs {
-        let res = mount_on_addr(&addr, &args, &auth);
+    let nfsport = ensure_port(&addrs, args.nfsport, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
+    let mountport = ensure_port(&addrs, args.mountport, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
+    for mut addr in addrs {
+        addr.set_port(nfsport); // replace portmapper port with NFS port obtained above
+        let res = mount_on_addr(&addr, &args, &auth, mountport);
         if res.is_ok() {
             return Ok(res.unwrap());
         }
@@ -228,12 +231,11 @@ pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
     Err(io::Error::new(io::ErrorKind::Other, "no valid socket address"))
 }
 
-fn mount_on_addr(addr: &SocketAddr, args: &crate::MountArgs, auth: &crate::Auth) -> Result<Box<dyn crate::Mount>> {
+fn mount_on_addr(addr: &SocketAddr, args: &crate::MountArgs, auth: &crate::Auth, mountport: u16) -> Result<Box<dyn crate::Mount>> {
     let nfs_conn = TcpStream::connect(addr)?;
     let nfs_addr = nfs_conn.peer_addr()?;
     let dir: String = args.dirpath.to_owned();
     let (dircount, maxcount) = (args.dircount, args.maxcount);
-    let mountport = ensure_port(&args.host, args.mountport, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
     let mount_conn = if mountport != nfs_addr.port() {
         let mut mount_addr = addr.clone();
         mount_addr.set_port(mountport);

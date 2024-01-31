@@ -4,9 +4,9 @@ pub mod header;
 use byteorder::{BigEndian, ByteOrder};
 use xdr_codec::{Pack, Unpack, Read, Write};
 #[cfg(target_os = "wasi")]
-use crate::wasi_ext::{SocketAddr, TcpStream, ToSocketAddrs};
+use crate::wasi_ext::{SocketAddr, TcpStream};
 #[cfg(not(target_os = "wasi"))]
-use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
+use std::net::{SocketAddr, TcpStream};
 use crate::{Result, Error, ErrorKind};
 
 use auth::Auth;
@@ -33,8 +33,7 @@ enum PortmapProc2 {
     // CallIt = 5,
 }
 
-pub(crate) fn portmap(host: &String, prog: u32, vers: u32, auth: &Auth) -> Result<u16> {
-    let addrs = (host.as_str(), PORTMAP_PORT).to_socket_addrs().unwrap();
+pub(crate) fn portmap(addrs: &Vec<SocketAddr>, prog: u32, vers: u32, auth: &Auth) -> Result<u16> {
     for addr in addrs {
         let res = portmap_on_addr(&addr, prog, vers, auth);
         if res.is_ok() {
