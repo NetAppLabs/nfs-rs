@@ -1,11 +1,12 @@
-package component:nfs-rs
+package component:nfs-rs;
 
 world nfs-rs {
-    import wasi:poll/poll
-    import wasi:io/streams
-    import wasi:sockets/network
-    import wasi:sockets/ip-name-lookup
-    import wasi:sockets/tcp
-    import wasi:sockets/tcp-create-socket
-    export nfs
+    import wasi:io/poll@0.2.0;
+    import wasi:io/streams@0.2.0;
+    import wasi:sockets/network@0.2.0;
+    import wasi:sockets/instance-network@0.2.0;
+    import wasi:sockets/ip-name-lookup@0.2.0;
+    import wasi:sockets/tcp@0.2.0;
+    import wasi:sockets/tcp-create-socket@0.2.0;
+    export nfs;
 }

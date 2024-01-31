@@ -1,8 +1,9 @@
 
 #[cfg(target_os = "wasi")]
-use crate::wasi_ext::TcpStream;
+use crate::wasi_ext::{SocketAddr, TcpStream, ToSocketAddrs};
 #[cfg(not(target_os = "wasi"))]
-use std::net::TcpStream;
+use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
+use std::io;
 
 use xdr_codec::{Pack, Unpack};
 use super::{Mount, Error, ErrorKind, Result, MOUNT3args, Time};
@@ -207,23 +208,38 @@ impl crate::Mount for Mount3 {
     }
 }
 
-fn ensure_port(host: &String, port: u16, prog: u32, vers: u32, auth: &crate::Auth) -> Result<u16> {
+fn ensure_port(addrs: &Vec<SocketAddr>, port: u16, prog: u32, vers: u32, auth: &crate::Auth) -> Result<u16> {
     if port != 0 {
         return Ok(port);
     }
-    rpc::portmap(host, prog, vers, auth)
+    rpc::portmap(addrs, prog, vers, auth)
 }
 
 pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
-    let dir = args.dirpath;
-    let (dircount, maxcount) = (args.dircount, args.maxcount);
+    // start by resolving host address and assigning portmapper port to each resolved address
+    let addrs = (args.host.as_str(), rpc::PORTMAP_PORT).to_socket_addrs()?.collect();
     let auth = crate::Auth::new_unix("nfs-rs", args.uid, args.gid);
-    let nfsport = ensure_port(&args.host, args.nfsport, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
-    let mountport = ensure_port(&args.host, args.mountport, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
-    let nfs_conn = TcpStream::connect((&*args.host, nfsport))?;
+    let nfsport = ensure_port(&addrs, args.nfsport, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
+    let mountport = ensure_port(&addrs, args.mountport, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
+    for mut addr in addrs {
+        addr.set_port(nfsport); // replace portmapper port with NFS port obtained above
+        let res = mount_on_addr(&addr, &args, &auth, mountport);
+        if res.is_ok() {
+            return Ok(res.unwrap());
+        }
+    }
+    Err(io::Error::new(io::ErrorKind::Other, "no valid socket address"))
+}
+
+fn mount_on_addr(addr: &SocketAddr, args: &crate::MountArgs, auth: &crate::Auth, mountport: u16) -> Result<Box<dyn crate::Mount>> {
+    let nfs_conn = TcpStream::connect(addr)?;
     let nfs_addr = nfs_conn.peer_addr()?;
+    let dir: String = args.dirpath.to_owned();
+    let (dircount, maxcount) = (args.dircount, args.maxcount);
     let mount_conn = if mountport != nfs_addr.port() {
-        TcpStream::connect((&*args.host, mountport))?
+        let mut mount_addr = addr.clone();
+        mount_addr.set_port(mountport);
+        TcpStream::connect(&mount_addr)?
     } else {
         nfs_conn.try_clone()?
     };
@@ -259,7 +275,7 @@ pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
         mountres3::default(e) => Err(Error::new(ErrorKind::Other, e)),
     }?;
 
-    let m = Mount{rpc: client, auth, fh: res.fhandle.0, dir, dircount, maxcount};
+    let m = Mount{rpc: client, auth: auth.clone(), fh: res.fhandle.0, dir, dircount, maxcount};
     let _ = m.null()?;
     let _ = m.fsinfo()?; // XXX: use returned FS info for something? github.com/sahlberg/libnfs must be calling this for something...
 
