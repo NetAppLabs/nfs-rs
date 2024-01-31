@@ -9,7 +9,6 @@ edition = "2021"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-cargo-component-bindings = { git = "https://github.com/bytecodealliance/cargo-component" }
 byteorder = "1.4.3"
 bytes = "1.5.0"
 nix = "0.27.1"
@@ -17,6 +16,7 @@ path-clean = "1.0.1"
 rand = "0.8.5"
 thiserror = "1.0.48"
 url = "2.4.1"
+wit-bindgen = "0.16.0"
 xdr-codec = "0.4.4"
 
 [package.metadata.component]

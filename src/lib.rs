@@ -1,5 +1,7 @@
 #[cfg(target_os = "wasi")]
-cargo_component_bindings::generate!();
+#[allow(unused)]
+mod bindings;
+
 #[cfg(target_os = "wasi")]
 struct Component;
 
