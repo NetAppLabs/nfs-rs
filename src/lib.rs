@@ -5,6 +5,11 @@ mod bindings;
 #[cfg(target_os = "wasi")]
 struct Component;
 
+#[cfg(target_os = "wasi")]
+pub struct NfsMount {
+    id: u32,
+}
+
 mod rpc;
 mod nfs3;
 mod mount;

@@ -13,7 +13,8 @@ use crate::{
 use crate::bindings::exports::component::nfs_rs::nfs::{
     Guest as WitNFS,
     Error as WitError,
-    Mount as WitMount,
+    GuestNfsMount as WitMount,
+    OwnNfsMount as WitNFSMount,
     Attr as WitAttr,
     Time as WitTime,
     PathConf as WitPathconf,
@@ -21,9 +22,9 @@ use crate::bindings::exports::component::nfs_rs::nfs::{
     ReaddirplusEntry as WitReaddirplusEntry,
 };
 
-static mut MOUNTS: Option<HashMap<WitMount, Arc<RwLock<Box<dyn Mount>>>>> = None;
+static mut MOUNTS: Option<HashMap<u32, Arc<RwLock<Box<dyn Mount>>>>> = None;
 
-fn get_mounts() -> &'static mut HashMap<WitMount, Arc<RwLock<Box<dyn Mount>>>> {
+fn get_mounts() -> &'static mut HashMap<u32, Arc<RwLock<Box<dyn Mount>>>> {
     unsafe {
         if MOUNTS.is_none() {
             MOUNTS = Some(HashMap::new());
@@ -32,7 +33,7 @@ fn get_mounts() -> &'static mut HashMap<WitMount, Arc<RwLock<Box<dyn Mount>>>> {
     }
 }
 
-fn get_mount(mnt: WitMount) -> Result<&'static Arc<RwLock<Box<dyn Mount>>>, WitError> {
+fn get_mount(mnt: u32) -> Result<&'static Arc<RwLock<Box<dyn Mount>>>, WitError> {
     let mounts = get_mounts();
     let mount = mounts.get(&mnt);
     if mount.is_none() {
@@ -44,7 +45,7 @@ fn get_mount(mnt: WitMount) -> Result<&'static Arc<RwLock<Box<dyn Mount>>>, WitE
     Ok(mount.unwrap())
 }
 
-fn add_mount(mount: Box<dyn Mount>) -> WitMount {
+fn add_mount(mount: Box<dyn Mount>) -> u32 {
     let mounts = get_mounts();
     let mut mnt = rand::random::<u32>();
     while mnt == 0 || mounts.contains_key(&mnt) {
@@ -54,7 +55,7 @@ fn add_mount(mount: Box<dyn Mount>) -> WitMount {
     mnt
 }
 
-fn remove_mount(mnt: WitMount) {
+fn remove_mount(mnt: u32) {
     let mounts = get_mounts();
     mounts.remove(&mnt);
 }
@@ -161,92 +162,94 @@ fn into_wit_err(mut err: Error) -> WitError {
 }
 
 impl WitNFS for crate::Component {
-    fn parse_url_and_mount(url: String) -> Result<WitMount, WitError> {
+    fn parse_url_and_mount(url: String,) -> Result<WitNFSMount, WitError> {
         let ret = parse_url_and_mount(&url);
         if ret.is_err() {
             return Err(into_wit_err(ret.unwrap_err()));
         }
 
-        let mnt = add_mount(ret.unwrap());
-        Ok(mnt)
+        let id = add_mount(ret.unwrap());
+        Ok(WitNFSMount::new(crate::NfsMount{id}))
     }
+}
 
-    fn null_op(mnt: WitMount) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+impl WitMount for crate::NfsMount {
+    fn null_op(&self) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.null()
             .map_err(into_wit_err)
     }
 
-    fn access(mnt: WitMount, fh: Vec<u8>, mode: u32) -> Result<u32, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn access(&self, fh: Vec<u8>, mode: u32) -> Result<u32, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.access(&fh, mode)
             .map_err(into_wit_err)
     }
 
-    fn access_path(mnt: WitMount, path: String, mode: u32) -> Result<u32, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn access_path(&self, path: String, mode: u32) -> Result<u32, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.access_path(&path, mode)
             .map_err(into_wit_err)
     }
 
-    fn close(mnt: WitMount, seqid: u32, stateid: u64) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn close(&self, seqid: u32, stateid: u64) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.close(seqid, stateid)
             .map_err(into_wit_err)
     }
 
-    fn commit(mnt: WitMount, fh: Vec<u8>, offset: u64, count: u32) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn commit(&self, fh: Vec<u8>, offset: u64, count: u32) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.commit(&fh, offset, count)
             .map_err(into_wit_err)
     }
 
-    fn commit_path(mnt: WitMount, path: String, offset: u64, count: u32) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn commit_path(&self, path: String, offset: u64, count: u32) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.commit_path(&path, offset, count)
             .map_err(into_wit_err)
     }
 
-    fn create(mnt: WitMount, dir_fh: Vec<u8>, filename: String, mode: u32) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn create(&self, dir_fh: Vec<u8>, filename: String, mode: u32) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.create(&dir_fh, &filename, mode)
             .map_err(into_wit_err)
     }
 
-    fn create_path(mnt: WitMount, path: String, mode: u32) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn create_path(&self, path: String, mode: u32) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.create_path(&path, mode)
             .map_err(into_wit_err)
     }
 
-    fn delegpurge(mnt: WitMount, clientid: u64) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn delegpurge(&self, clientid: u64) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.delegpurge(clientid)
             .map_err(into_wit_err)
     }
 
-    fn delegreturn(mnt: WitMount, stateid: u64) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn delegreturn(&self, stateid: u64) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.delegreturn(stateid)
             .map_err(into_wit_err)
     }
 
-    fn getattr(mnt: WitMount, fh: Vec<u8>) -> Result<WitAttr, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn getattr(&self, fh: Vec<u8>) -> Result<WitAttr, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.getattr(&fh)
             .map(into_wit_attr)
             .map_err(into_wit_err)
     }
 
-    fn getattr_path(mnt: WitMount, path: String) -> Result<WitAttr, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn getattr_path(&self, path: String) -> Result<WitAttr, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.getattr_path(&path)
             .map(into_wit_attr)
             .map_err(into_wit_err)
     }
 
     fn setattr(
-        mnt: WitMount,
+        &self,
         fh: Vec<u8>,
         guard_ctime: Option<WitTime>,
         mode: Option<u32>,
@@ -256,7 +259,7 @@ impl WitNFS for crate::Component {
         atime: Option<WitTime>,
         mtime: Option<WitTime>,
     ) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.setattr(
             &fh,
             guard_ctime.map(from_wit_time),
@@ -271,7 +274,7 @@ impl WitNFS for crate::Component {
     }
 
     fn setattr_path(
-        mnt: WitMount,
+        &self,
         path: String,
         specify_guard: bool,
         mode: Option<u32>,
@@ -281,7 +284,7 @@ impl WitNFS for crate::Component {
         atime: Option<WitTime>,
         mtime: Option<WitTime>,
     ) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.setattr_path(
             &path,
             specify_guard,
@@ -295,181 +298,181 @@ impl WitNFS for crate::Component {
             .map_err(into_wit_err)
     }
 
-    fn getfh(mnt: WitMount) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn getfh(&self) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.getfh()
             .map_err(into_wit_err)
     }
 
-    fn link(mnt: WitMount, src_fh: Vec<u8>, dst_dir_fh: Vec<u8>, dst_filename: String) -> Result<WitAttr, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn link(&self, src_fh: Vec<u8>, dst_dir_fh: Vec<u8>, dst_filename: String) -> Result<WitAttr, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.link(&src_fh, &dst_dir_fh, &dst_filename)
             .map(into_wit_attr)
             .map_err(into_wit_err)
     }
 
-    fn link_path(mnt: WitMount, src_path: String, dst_path: String) -> Result<WitAttr, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn link_path(&self, src_path: String, dst_path: String) -> Result<WitAttr, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.link_path(&src_path, &dst_path)
             .map(into_wit_attr)
             .map_err(into_wit_err)
     }
 
-    fn symlink(mnt: WitMount, src_path: String, dst_dir_fh: Vec<u8>, dst_filename: String) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn symlink(&self, src_path: String, dst_dir_fh: Vec<u8>, dst_filename: String) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.symlink(&src_path, &dst_dir_fh, &dst_filename)
             .map_err(into_wit_err)
     }
 
-    fn symlink_path(mnt: WitMount, src_path: String, dst_path: String) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn symlink_path(&self, src_path: String, dst_path: String) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.symlink_path(&src_path, &dst_path)
             .map_err(into_wit_err)
     }
 
-    fn readlink(mnt: WitMount, fh: Vec<u8>) -> Result<String, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn readlink(&self, fh: Vec<u8>) -> Result<String, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.readlink(&fh)
             .map_err(into_wit_err)
     }
 
-    fn readlink_path(mnt: WitMount, path: String) -> Result<String, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn readlink_path(&self, path: String) -> Result<String, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.readlink_path(&path)
             .map_err(into_wit_err)
     }
 
-    fn lookup(mnt: WitMount, dir_fh: Vec<u8>, filename: String) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn lookup(&self, dir_fh: Vec<u8>, filename: String) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.lookup(&dir_fh, &filename)
             .map_err(into_wit_err)
     }
 
-    fn lookup_path(mnt: WitMount, path: String) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn lookup_path(&self, path: String) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.lookup_path(&path)
             .map_err(into_wit_err)
     }
 
-    fn pathconf(mnt: WitMount, fh: Vec<u8>) -> Result<WitPathconf, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn pathconf(&self, fh: Vec<u8>) -> Result<WitPathconf, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.pathconf(&fh)
             .map(into_wit_path_conf)
             .map_err(into_wit_err)
     }
 
-    fn pathconf_path(mnt: WitMount, path: String) -> Result<WitPathconf, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn pathconf_path(&self, path: String) -> Result<WitPathconf, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.pathconf_path(&path)
             .map(into_wit_path_conf)
             .map_err(into_wit_err)
     }
 
-    fn read(mnt: WitMount, fh: Vec<u8>, offset: u64, count: u32) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn read(&self, fh: Vec<u8>, offset: u64, count: u32) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.read(&fh, offset, count)
             .map_err(into_wit_err)
     }
 
-    fn read_path(mnt: WitMount, path: String, offset: u64, count: u32) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn read_path(&self, path: String, offset: u64, count: u32) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.read_path(&path, offset, count)
             .map_err(into_wit_err)
     }
 
-    fn write(mnt: WitMount, fh: Vec<u8>, offset: u64, data: Vec<u8>) -> Result<u32, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn write(&self, fh: Vec<u8>, offset: u64, data: Vec<u8>) -> Result<u32, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.write(&fh, offset, &data)
             .map_err(into_wit_err)
     }
 
-    fn write_path(mnt: WitMount, path: String, offset: u64, data: Vec<u8>) -> Result<u32, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn write_path(&self, path: String, offset: u64, data: Vec<u8>) -> Result<u32, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.write_path(&path, offset, &data)
             .map_err(into_wit_err)
     }
 
-    fn readdir(mnt: WitMount, dir_fh: Vec<u8>) -> Result<Vec<WitReaddirEntry>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn readdir(&self, dir_fh: Vec<u8>) -> Result<Vec<WitReaddirEntry>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.readdir(&dir_fh)
             .map(into_wit_readdir_entries)
             .map_err(into_wit_err)
     }
 
-    fn readdir_path(mnt: WitMount, dir_path: String) -> Result<Vec<WitReaddirEntry>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn readdir_path(&self, dir_path: String) -> Result<Vec<WitReaddirEntry>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.readdir_path(&dir_path)
             .map(into_wit_readdir_entries)
             .map_err(into_wit_err)
     }
 
-    fn readdirplus(mnt: WitMount, dir_fh: Vec<u8>) -> Result<Vec<WitReaddirplusEntry>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn readdirplus(&self, dir_fh: Vec<u8>) -> Result<Vec<WitReaddirplusEntry>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.readdirplus(&dir_fh)
             .map(into_wit_readdirplus_entries)
             .map_err(into_wit_err)
     }
 
-    fn readdirplus_path(mnt: WitMount, dir_path: String) -> Result<Vec<WitReaddirplusEntry>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn readdirplus_path(&self, dir_path: String) -> Result<Vec<WitReaddirplusEntry>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.readdirplus_path(&dir_path)
             .map(into_wit_readdirplus_entries)
             .map_err(into_wit_err)
     }
 
-    fn mkdir(mnt: WitMount, dir_fh: Vec<u8>, dirname: String, mode: u32) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn mkdir(&self, dir_fh: Vec<u8>, dirname: String, mode: u32) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.mkdir(&dir_fh, &dirname, mode)
             .map_err(into_wit_err)
     }
 
-    fn mkdir_path(mnt: WitMount, path: String, mode: u32) -> Result<Vec<u8>, WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn mkdir_path(&self, path: String, mode: u32) -> Result<Vec<u8>, WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.mkdir_path(&path, mode)
             .map_err(into_wit_err)
     }
 
-    fn remove(mnt: WitMount, dir_fh: Vec<u8>, filename: String) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn remove(&self, dir_fh: Vec<u8>, filename: String) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.remove(&dir_fh, &filename)
             .map_err(into_wit_err)
     }
 
-    fn remove_path(mnt: WitMount, path: String) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn remove_path(&self, path: String) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.remove_path(&path)
             .map_err(into_wit_err)
     }
 
-    fn rmdir(mnt: WitMount, dir_fh: Vec<u8>, dirname: String) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn rmdir(&self, dir_fh: Vec<u8>, dirname: String) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.rmdir(&dir_fh, &dirname)
             .map_err(into_wit_err)
     }
 
-    fn rmdir_path(mnt: WitMount, path: String) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn rmdir_path(&self, path: String) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.rmdir_path(&path)
             .map_err(into_wit_err)
     }
 
-    fn rename(mnt: WitMount, from_dir_fh: Vec<u8>, from_filename: String, to_dir_fh: Vec<u8>, to_filename: String) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn rename(&self, from_dir_fh: Vec<u8>, from_filename: String, to_dir_fh: Vec<u8>, to_filename: String) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.rename(&from_dir_fh, &from_filename, &to_dir_fh, &to_filename)
             .map_err(into_wit_err)
     }
 
-    fn rename_path(mnt: WitMount, from_path: String, to_path: String) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn rename_path(&self, from_path: String, to_path: String) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         mount.rename_path(&from_path, &to_path)
             .map_err(into_wit_err)
     }
 
-    fn umount(mnt: WitMount) -> Result<(), WitError> {
-        let mount = get_mount(mnt)?.read().unwrap();
+    fn umount(&self) -> Result<(), WitError> {
+        let mount = get_mount(self.id)?.read().unwrap();
         let ret = mount.umount();
         if ret.is_ok() {
-            remove_mount(mnt);
+            remove_mount(self.id);
         }
         ret.map_err(into_wit_err)
     }
