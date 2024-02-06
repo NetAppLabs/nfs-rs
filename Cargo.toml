@@ -23,7 +23,6 @@ xdr-codec = "0.4.4"
 package = "component:nfs-rs"
 
 [package.metadata.component.bindings]
-implementor = "Component"
 
 [package.metadata.component.target]
 path = "wit"
