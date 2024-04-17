@@ -1,6 +1,11 @@
 #[cfg(target_os = "wasi")]
 #[allow(unused)]
 mod bindings;
+#[cfg(target_os = "wasi")]
+#[allow(unused)]
+mod wasi_ext;
+#[cfg(target_os = "wasi")]
+mod component;
 
 #[cfg(target_os = "wasi")]
 struct Component;
@@ -10,15 +15,18 @@ pub struct NfsMount {
     id: u32,
 }
 
+#[cfg(target_os = "wasi")]
+bindings::export!(Component with_types_in bindings);
+
+#[cfg(target_os = "wasi")]
+pub(crate) use wasi_ext::{SocketAddr, TcpStream, ToSocketAddrs};
+#[cfg(not(target_os = "wasi"))]
+pub(crate) use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
+
 mod rpc;
 mod nfs3;
 mod mount;
 mod shared;
-#[cfg(target_os = "wasi")]
-#[allow(unused)]
-mod wasi_ext;
-#[cfg(target_os = "wasi")]
-mod component;
 
 pub use mount::{Mount, Attr, Pathconf, ReaddirEntry, ReaddirplusEntry};
 pub use shared::Time;

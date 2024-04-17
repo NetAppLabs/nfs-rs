@@ -3,11 +3,7 @@ pub mod header;
 
 use byteorder::{BigEndian, ByteOrder};
 use xdr_codec::{Pack, Unpack, Read, Write};
-#[cfg(target_os = "wasi")]
-use crate::wasi_ext::{SocketAddr, TcpStream};
-#[cfg(not(target_os = "wasi"))]
-use std::net::{SocketAddr, TcpStream};
-use crate::{Result, Error, ErrorKind};
+use crate::{Result, Error, ErrorKind, SocketAddr, TcpStream};
 
 use auth::Auth;
 pub(crate) use header::Header;

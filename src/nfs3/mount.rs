@@ -1,14 +1,10 @@
 
-#[cfg(target_os = "wasi")]
-use crate::wasi_ext::{SocketAddr, TcpStream, ToSocketAddrs};
-#[cfg(not(target_os = "wasi"))]
-use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 use std::io;
 
 use xdr_codec::{Pack, Unpack};
 use super::{Mount, Error, ErrorKind, Result, MOUNT3args, Time};
 use super::mount3xdr::{dirpath, mountres3};
-use crate::{nfs3, rpc};
+use crate::{SocketAddr, TcpStream, ToSocketAddrs, nfs3, rpc};
 
 // const MNT_PATH_LEN: u32 = 1024;
 

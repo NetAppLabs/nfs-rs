@@ -14,7 +14,7 @@ use crate::bindings::exports::component::nfs_rs::nfs::{
     Guest as WitNFS,
     Error as WitError,
     GuestNfsMount as WitMount,
-    OwnNfsMount as WitNFSMount,
+    NfsMount as WitNFSMount,
     Attr as WitAttr,
     Time as WitTime,
     PathConf as WitPathconf,
@@ -162,7 +162,9 @@ fn into_wit_err(mut err: Error) -> WitError {
 }
 
 impl WitNFS for crate::Component {
-    fn parse_url_and_mount(url: String,) -> Result<WitNFSMount, WitError> {
+    type NfsMount = crate::NfsMount;
+
+    fn parse_url_and_mount(url: String) -> Result<WitNFSMount, WitError> {
         let ret = parse_url_and_mount(&url);
         if ret.is_err() {
             return Err(into_wit_err(ret.unwrap_err()));

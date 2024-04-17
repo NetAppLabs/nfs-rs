@@ -40,7 +40,7 @@ impl Mount {
 }
 
 #[cfg(test)]
-#[cfg(not(target_os = "wasi"))]
+#[cfg(not(target_arch = "wasm32"))] // usize and u32 are the same for wasm32, so below test won't compile due to overflow in (u32::MAX as usize) + 1
 mod tests {
     use super::*;
 
