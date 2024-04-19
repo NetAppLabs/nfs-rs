@@ -32,19 +32,19 @@ pub struct TcpStream {
     output: OutputStream,
 }
 
-pub fn sock_addr_remote(sock: &TcpSocket) -> io::Result<IpSocketAddress> {
+fn sock_addr_remote(sock: &TcpSocket) -> io::Result<IpSocketAddress> {
     let res = sock.remote_address();
     check_error(&res, "error getting remote address")?;
     Ok(res.unwrap())
 }
 
-pub fn sock_addr_local(sock: &TcpSocket) -> io::Result<IpSocketAddress> {
+fn sock_addr_local(sock: &TcpSocket) -> io::Result<IpSocketAddress> {
     let res = sock.local_address();
     check_error(&res, "error getting local address")?;
     Ok(res.unwrap())
 }
 
-pub fn to_socket_addr(addr: &IpSocketAddress) -> io::Result<SocketAddr> {
+fn to_socket_addr(addr: &IpSocketAddress) -> io::Result<SocketAddr> {
     match addr {
         IpSocketAddress::Ipv4(ref ip4) => Ok(SocketAddr::new(
             IpAddr::V4(Ipv4Addr::new(
@@ -71,7 +71,7 @@ pub fn to_socket_addr(addr: &IpSocketAddress) -> io::Result<SocketAddr> {
     }
 }
 
-pub fn to_wasi_addr(addr: &SocketAddr) -> io::Result<IpSocketAddress> {
+fn to_wasi_addr(addr: &SocketAddr) -> io::Result<IpSocketAddress> {
     match addr {
         SocketAddr::V4(ref addr) => {
             let octets = addr.ip().octets();
@@ -319,7 +319,7 @@ impl fmt::Debug for TcpStream {
     }
 }
 
-pub struct LookupHost {
+struct LookupHost {
     stream: ResolveAddressStream,
     port: u16,
 }
