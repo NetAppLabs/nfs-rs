@@ -1,6 +1,12 @@
 package component:nfs-rs;
 
 world nfs-rs {
+    import wasi:cli/environment@0.2.0;
+    import wasi:cli/exit@0.2.0;
+    import wasi:cli/stdin@0.2.0;
+    import wasi:cli/stdout@0.2.0;
+    import wasi:cli/stderr@0.2.0;
+    import wasi:clocks/wall-clock@0.2.0;
     import wasi:io/poll@0.2.0;
     import wasi:io/streams@0.2.0;
     import wasi:sockets/network@0.2.0;
@@ -8,5 +14,16 @@ world nfs-rs {
     import wasi:sockets/ip-name-lookup@0.2.0;
     import wasi:sockets/tcp@0.2.0;
     import wasi:sockets/tcp-create-socket@0.2.0;
-    export nfs;
+
+    export wasi:cli/environment@0.2.0;
+    export wasi:cli/exit@0.2.0;
+    export wasi:cli/stdin@0.2.0;
+    export wasi:cli/stdout@0.2.0;
+    export wasi:cli/stderr@0.2.0;
+    export wasi:clocks/wall-clock@0.2.0;
+    export wasi:filesystem/preopens@0.2.0;
+    export wasi:filesystem/types@0.2.0;
+    export wasi:io/error@0.2.0;
+    export wasi:io/poll@0.2.0;
+    export wasi:io/streams@0.2.0;
 }

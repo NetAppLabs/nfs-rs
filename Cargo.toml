@@ -16,6 +16,7 @@ path-clean = "1.0.1"
 rand = "0.8.5"
 thiserror = "1.0.58"
 url = "2.5.0"
+wit-bindgen = { version = "0.24.0" }
 wit-bindgen-rt = { version = "0.24.0", features = ["bitflags"] }
 xdr-codec = "0.4.4"
 
@@ -29,6 +30,9 @@ path = "wit"
 world = "nfs-rs"
 
 [package.metadata.component.target.dependencies]
+"wasi:random" = { path = "wit/deps/random" }
+"wasi:cli" = { path = "wit/deps/cli" }
 "wasi:clocks" = { path = "wit/deps/clocks" }
 "wasi:io" = { path = "wit/deps/io" }
+"wasi:filesystem" = { path = "wit/deps/filesystem" }
 "wasi:sockets" = { path = "wit/deps/sockets" }

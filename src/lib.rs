@@ -8,12 +8,7 @@ mod wasi_ext;
 mod component;
 
 #[cfg(target_os = "wasi")]
-struct Component;
-
-#[cfg(target_os = "wasi")]
-pub struct NfsMount {
-    id: u32,
-}
+pub(crate) use component::*;
 
 #[cfg(target_os = "wasi")]
 bindings::export!(Component with_types_in bindings);
@@ -23,6 +18,9 @@ pub(crate) use wasi_ext::{SocketAddr, TcpStream, ToSocketAddrs};
 #[cfg(not(target_os = "wasi"))]
 pub(crate) use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 
+#[cfg(not(target_os = "wasi"))]
+pub use std::io::Error;
+
 mod rpc;
 mod nfs3;
 mod mount;
@@ -30,7 +28,6 @@ mod shared;
 
 pub use mount::{Mount, Attr, Pathconf, ReaddirEntry, ReaddirplusEntry};
 pub use shared::Time;
-pub use std::io::Error;
 
 use std::io::{Result, ErrorKind};
 use url::Url;
@@ -58,18 +55,13 @@ fn get_uid_gid() -> (u32, u32) {
     #[cfg(not(unix))]
     let uid_gid = || { (65534, 65534) };
     #[cfg(unix)]
-    let uid_gid = || unsafe {
-        (nix::libc::getuid(), nix::libc::getgid())
-    };
+    let uid_gid = || unsafe { (nix::libc::getuid(), nix::libc::getgid()) };
     uid_gid()
 }
 
 fn parse_url(url: &str) -> Result<MountArgs> {
-    let res = Url::parse_with_params(url, &[("version", "3"), ("readdir-buffer", "8192,8192")]);
-    if res.is_err() {
-        return Err(Error::new(ErrorKind::InvalidInput, res.unwrap_err()));
-    }
-    let mut parsed_url = res.unwrap();
+    let mut parsed_url = Url::parse_with_params(url, &[("version", "3"), ("readdir-buffer", "8192,8192")])
+        .map_err(|err| Error::new(ErrorKind::InvalidInput, err))?;
     if parsed_url.scheme() != "nfs" {
         return Err(Error::new(ErrorKind::InvalidInput, "specified URL does not have scheme nfs"));
     }

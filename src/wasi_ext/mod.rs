@@ -27,9 +27,9 @@ fn check_error<T>(res: &Result<T, ErrorCode>, err_msg: &str) -> io::Result<()> {
 }
 
 pub struct TcpStream {
-    sock: TcpSocket,
-    input: InputStream,
-    output: OutputStream,
+    sock: Option<TcpSocket>,
+    input: Option<InputStream>,
+    output: Option<OutputStream>,
 }
 
 fn sock_addr_remote(sock: &TcpSocket) -> io::Result<IpSocketAddress> {
@@ -121,6 +121,21 @@ impl ToSocketAddrs for (&str, u16) {
     }
 }
 
+fn check_error_retrying_on_would_block<X, T>(x: &X, f: fn(x: &X) -> Result<T, ErrorCode>, err_msg: &str) -> io::Result<T>
+where T: std::fmt::Debug {
+    loop {
+        let res = f(x);
+        if !res.is_err() {
+            return Ok(res.unwrap());
+        }
+        let code = res.unwrap_err();
+        if code != ErrorCode::WouldBlock {
+            return Err(io::Error::new(io::ErrorKind::Other, format!("{} - {}", err_msg, code.message()).as_str()));
+        }
+        std::thread::sleep(std::time::Duration::from_millis(1));
+    }
+}
+
 impl TcpStream {
     pub fn connect(addr: &SocketAddr) -> io::Result<TcpStream> {
         let res = to_wasi_addr(&addr);
@@ -141,11 +156,12 @@ impl TcpStream {
         let res = sock.start_connect(&nw, wasi_addr);
         check_error(&res, "start connect error")?;
 
-        let res = sock.finish_connect();
-        check_error(&res, "finish connect error")?;
-
-        let (input, output) = res.unwrap();
-        let stream = Self{sock, input, output};
+        let (input, output) = check_error_retrying_on_would_block(
+            &sock,
+            |s: &TcpSocket| s.finish_connect(),
+            "finish connect error",
+        )?;
+        let stream = Self{sock: Some(sock), input: Some(input), output: Some(output)};
         if let Some(err) = stream.peer_addr().err() {
             return Err(err);
         }
@@ -181,7 +197,7 @@ impl TcpStream {
         // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
         //      what is probably more apt in our case, wasi::io::streams::blocking_read
         let len = buf.len() as u64;
-        let res = self.input.blocking_read(len);
+        let res = self.input.as_ref().unwrap().blocking_read(len);
         if res.is_err() {
             return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error"));
         }
@@ -193,7 +209,7 @@ impl TcpStream {
     pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.read(buf) {
-                Ok(0) => break,
+                // Ok(0) => break,
                 Ok(n) => {
                     let tmp = buf;
                     buf = &mut tmp[n..];
@@ -226,7 +242,7 @@ impl TcpStream {
         //      it only writes up to 4096 bytes - so we have to make sure not to pass in all of `buf`, if it
         //      is larger than that
         let sz = buf.len().min(4096);
-        self.output.blocking_write_and_flush(&buf[..sz]);
+        self.output.as_ref().unwrap().blocking_write_and_flush(&buf[..sz]);
         Ok(sz)
     }
 
@@ -255,7 +271,7 @@ impl TcpStream {
     }
 
     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
-        to_socket_addr(&sock_addr_remote(&self.sock)?)
+        to_socket_addr(&sock_addr_remote(&self.sock.as_ref().unwrap())?)
     }
 
     pub fn socket_addr(&self) -> io::Result<SocketAddr> {
@@ -268,7 +284,7 @@ impl TcpStream {
             Shutdown::Write => sockets::tcp::ShutdownType::Send,
             Shutdown::Both => sockets::tcp::ShutdownType::Both,
         };
-        let res = self.sock.shutdown(shutdown_type);
+        let res = self.sock.as_ref().unwrap().shutdown(shutdown_type);
         check_error(&res, "shutdown error")
     }
 
@@ -303,18 +319,43 @@ impl TcpStream {
     pub fn try_clone(&self) -> io::Result<TcpStream> {
         Ok(unsafe {
             TcpStream{
-                sock: TcpSocket::from_handle(self.sock.handle()),
-                input: InputStream::from_handle(self.input.handle()),
-                output: OutputStream::from_handle(self.output.handle()),
+                sock: Some(TcpSocket::from_handle(self.sock.as_ref().unwrap().handle())),
+                input: Some(InputStream::from_handle(self.input.as_ref().unwrap().handle())),
+                output: Some(OutputStream::from_handle(self.output.as_ref().unwrap().handle())),
             }
         })
+    }
+}
+
+impl Drop for TcpStream {
+    fn drop(&mut self) {
+        self.input.take().and_then(|input| -> Option<InputStream> {
+            // FIXME: verify whether doing anything more is needed (i.o.w. verify that there is no memory leak)
+            // unsafe { InputStream::drop(input.handle()) };
+            std::mem::forget(input);
+            None
+        });
+        self.output.take().and_then(|output| -> Option<OutputStream> {
+            // FIXME: verify whether doing anything more is needed (i.o.w. verify that there is no memory leak)
+            // unsafe { OutputStream::drop(output.handle()) };
+            std::mem::forget(output);
+            None
+        });
+        self.sock.take().and_then(|sock| -> Option<TcpSocket> {
+            // FIXME: verify whether doing anything more is needed (i.o.w. verify that there is no memory leak)
+            // unsafe { TcpSocket::drop(sock.handle()) };
+            std::mem::forget(sock);
+            None
+        });
     }
 }
 
 impl fmt::Debug for TcpStream {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("TcpStream")
-            .field("sock", &self.sock.handle())
+            .field("sock", &self.sock.as_ref().unwrap().handle())
+            .field("input", &self.input.as_ref().unwrap().handle())
+            .field("output", &self.output.as_ref().unwrap().handle())
             .finish()
     }
 }
@@ -333,30 +374,19 @@ impl LookupHost {
 impl Iterator for LookupHost {
     type Item = SocketAddr;
     fn next(&mut self) -> Option<SocketAddr> {
-        let mut res = Err(ErrorCode::Unknown);
-        loop {
-            res = self.stream.resolve_next_address();
-            if res.is_err() {
-                let code = res.unwrap_err();
-                if code == ErrorCode::WouldBlock { // TODO: also sleep and retry on ErrorCode::TemporaryResolverFailure?
-                    std::thread::sleep(std::time::Duration::from_millis(50));
-                    continue;
-                }
-                // self.stream.drop_resolve_address_stream(); FIXME?
-                return None;
-            }
-            break;
-        }
-        if let Some(addr_) = res.unwrap() {
+        check_error_retrying_on_would_block(
+            &self.stream,
+            |stream: &ResolveAddressStream| stream.resolve_next_address(),
+            "host lookup error",
+        )
+        .map(|a| a.map(|addr_| {
             let addr = match addr_ {
                 sockets::network::IpAddress::Ipv4(addr4) => IpSocketAddress::Ipv4(Ipv4SocketAddress{port: self.port, address: addr4}),
                 sockets::network::IpAddress::Ipv6(addr6) => IpSocketAddress::Ipv6(Ipv6SocketAddress{port: self.port, address: addr6, flow_info: 0, scope_id: 0}),
             };
-            to_socket_addr(&addr).ok()
-        } else {
-            // self.stream.drop_resolve_address_stream(); FIXME?
-            None
-        }
+            to_socket_addr(&addr).unwrap()
+        }))
+        .map_err(|_e| Option::<SocketAddr>::None).unwrap()
     }
 }
 

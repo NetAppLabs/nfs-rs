@@ -3,7 +3,360 @@
 #[allow(dead_code)]
 pub mod wasi {
     #[allow(dead_code)]
+    pub mod cli {
+        #[allow(dead_code, clippy::all)]
+        pub mod environment {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            use super::super::super::_rt;
+            #[allow(unused_unsafe, clippy::all)]
+            /// Get the POSIX-style environment variables.
+            ///
+            /// Each environment variable is provided as a pair of string variable names
+            /// and string value.
+            ///
+            /// Morally, these are a value import, but until value imports are available
+            /// in the component model, this import function should return the same
+            /// values each time it is called.
+            pub fn get_environment() -> _rt::Vec<(_rt::String, _rt::String)> {
+                unsafe {
+                    #[repr(align(4))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:cli/environment@0.2.0")]
+                    extern "C" {
+                        #[link_name = "get-environment"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = *ptr0.add(0).cast::<*mut u8>();
+                    let l2 = *ptr0.add(4).cast::<usize>();
+                    let base9 = l1;
+                    let len9 = l2;
+                    let mut result9 = _rt::Vec::with_capacity(len9);
+                    for i in 0..len9 {
+                        let base = base9.add(i * 16);
+                        let e9 = {
+                            let l3 = *base.add(0).cast::<*mut u8>();
+                            let l4 = *base.add(4).cast::<usize>();
+                            let len5 = l4;
+                            let bytes5 = _rt::Vec::from_raw_parts(l3.cast(), len5, len5);
+                            let l6 = *base.add(8).cast::<*mut u8>();
+                            let l7 = *base.add(12).cast::<usize>();
+                            let len8 = l7;
+                            let bytes8 = _rt::Vec::from_raw_parts(l6.cast(), len8, len8);
+
+                            (_rt::string_lift(bytes5), _rt::string_lift(bytes8))
+                        };
+                        result9.push(e9);
+                    }
+                    _rt::cabi_dealloc(base9, len9 * 16, 4);
+                    result9
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            /// Get the POSIX-style arguments to the program.
+            pub fn get_arguments() -> _rt::Vec<_rt::String> {
+                unsafe {
+                    #[repr(align(4))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:cli/environment@0.2.0")]
+                    extern "C" {
+                        #[link_name = "get-arguments"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = *ptr0.add(0).cast::<*mut u8>();
+                    let l2 = *ptr0.add(4).cast::<usize>();
+                    let base6 = l1;
+                    let len6 = l2;
+                    let mut result6 = _rt::Vec::with_capacity(len6);
+                    for i in 0..len6 {
+                        let base = base6.add(i * 8);
+                        let e6 = {
+                            let l3 = *base.add(0).cast::<*mut u8>();
+                            let l4 = *base.add(4).cast::<usize>();
+                            let len5 = l4;
+                            let bytes5 = _rt::Vec::from_raw_parts(l3.cast(), len5, len5);
+
+                            _rt::string_lift(bytes5)
+                        };
+                        result6.push(e6);
+                    }
+                    _rt::cabi_dealloc(base6, len6 * 8, 4);
+                    result6
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            /// Return a path that programs should use as their initial current working
+            /// directory, interpreting `.` as shorthand for this.
+            pub fn initial_cwd() -> Option<_rt::String> {
+                unsafe {
+                    #[repr(align(4))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 12]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 12]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:cli/environment@0.2.0")]
+                    extern "C" {
+                        #[link_name = "initial-cwd"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = i32::from(*ptr0.add(0).cast::<u8>());
+                    match l1 {
+                        0 => None,
+                        1 => {
+                            let e = {
+                                let l2 = *ptr0.add(4).cast::<*mut u8>();
+                                let l3 = *ptr0.add(8).cast::<usize>();
+                                let len4 = l3;
+                                let bytes4 = _rt::Vec::from_raw_parts(l2.cast(), len4, len4);
+
+                                _rt::string_lift(bytes4)
+                            };
+                            Some(e)
+                        }
+                        _ => _rt::invalid_enum_discriminant(),
+                    }
+                }
+            }
+        }
+
+        #[allow(dead_code, clippy::all)]
+        pub mod exit {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            #[allow(unused_unsafe, clippy::all)]
+            /// Exit the current instance and any linked instances.
+            pub fn exit(status: Result<(), ()>) {
+                unsafe {
+                    let result0 = match status {
+                        Ok(_) => 0i32,
+                        Err(_) => 1i32,
+                    };
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:cli/exit@0.2.0")]
+                    extern "C" {
+                        #[link_name = "exit"]
+                        fn wit_import(_: i32);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: i32) {
+                        unreachable!()
+                    }
+                    wit_import(result0);
+                }
+            }
+        }
+
+        #[allow(dead_code, clippy::all)]
+        pub mod stdin {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            pub type InputStream = super::super::super::wasi::io::streams::InputStream;
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn get_stdin() -> InputStream {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:cli/stdin@0.2.0")]
+                    extern "C" {
+                        #[link_name = "get-stdin"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    super::super::super::wasi::io::streams::InputStream::from_handle(ret as u32)
+                }
+            }
+        }
+
+        #[allow(dead_code, clippy::all)]
+        pub mod stdout {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            pub type OutputStream = super::super::super::wasi::io::streams::OutputStream;
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn get_stdout() -> OutputStream {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:cli/stdout@0.2.0")]
+                    extern "C" {
+                        #[link_name = "get-stdout"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    super::super::super::wasi::io::streams::OutputStream::from_handle(ret as u32)
+                }
+            }
+        }
+
+        #[allow(dead_code, clippy::all)]
+        pub mod stderr {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            pub type OutputStream = super::super::super::wasi::io::streams::OutputStream;
+            #[allow(unused_unsafe, clippy::all)]
+            pub fn get_stderr() -> OutputStream {
+                unsafe {
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:cli/stderr@0.2.0")]
+                    extern "C" {
+                        #[link_name = "get-stderr"]
+                        fn wit_import() -> i32;
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import() -> i32 {
+                        unreachable!()
+                    }
+                    let ret = wit_import();
+                    super::super::super::wasi::io::streams::OutputStream::from_handle(ret as u32)
+                }
+            }
+        }
+    }
+    #[allow(dead_code)]
     pub mod clocks {
+        #[allow(dead_code, clippy::all)]
+        pub mod wall_clock {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            /// A time and date in seconds plus nanoseconds.
+            #[repr(C)]
+            #[derive(Clone, Copy)]
+            pub struct Datetime {
+                pub seconds: u64,
+                pub nanoseconds: u32,
+            }
+            impl ::core::fmt::Debug for Datetime {
+                fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                    f.debug_struct("Datetime")
+                        .field("seconds", &self.seconds)
+                        .field("nanoseconds", &self.nanoseconds)
+                        .finish()
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            /// Read the current value of the clock.
+            ///
+            /// This clock is not monotonic, therefore calling this function repeatedly
+            /// will not necessarily produce a sequence of non-decreasing values.
+            ///
+            /// The returned timestamps represent the number of seconds since
+            /// 1970-01-01T00:00:00Z, also known as [POSIX's Seconds Since the Epoch],
+            /// also known as [Unix Time].
+            ///
+            /// The nanoseconds field of the output is always less than 1000000000.
+            ///
+            /// [POSIX's Seconds Since the Epoch]: https://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap04.html#tag_21_04_16
+            /// [Unix Time]: https://en.wikipedia.org/wiki/Unix_time
+            pub fn now() -> Datetime {
+                unsafe {
+                    #[repr(align(8))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 16]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 16]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:clocks/wall-clock@0.2.0")]
+                    extern "C" {
+                        #[link_name = "now"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = *ptr0.add(0).cast::<i64>();
+                    let l2 = *ptr0.add(8).cast::<i32>();
+                    Datetime {
+                        seconds: l1 as u64,
+                        nanoseconds: l2 as u32,
+                    }
+                }
+            }
+            #[allow(unused_unsafe, clippy::all)]
+            /// Query the resolution of the clock.
+            ///
+            /// The nanoseconds field of the output is always less than 1000000000.
+            pub fn resolution() -> Datetime {
+                unsafe {
+                    #[repr(align(8))]
+                    struct RetArea([::core::mem::MaybeUninit<u8>; 16]);
+                    let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 16]);
+                    let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                    #[cfg(target_arch = "wasm32")]
+                    #[link(wasm_import_module = "wasi:clocks/wall-clock@0.2.0")]
+                    extern "C" {
+                        #[link_name = "resolution"]
+                        fn wit_import(_: *mut u8);
+                    }
+
+                    #[cfg(not(target_arch = "wasm32"))]
+                    fn wit_import(_: *mut u8) {
+                        unreachable!()
+                    }
+                    wit_import(ptr0);
+                    let l1 = *ptr0.add(0).cast::<i64>();
+                    let l2 = *ptr0.add(8).cast::<i32>();
+                    Datetime {
+                        seconds: l1 as u64,
+                        nanoseconds: l2 as u32,
+                    }
+                }
+            }
+        }
+
         #[allow(dead_code, clippy::all)]
         pub mod monotonic_clock {
             #[used]
@@ -106,6 +459,115 @@ pub mod wasi {
     }
     #[allow(dead_code)]
     pub mod io {
+        #[allow(dead_code, clippy::all)]
+        pub mod error {
+            #[used]
+            #[doc(hidden)]
+            #[cfg(target_arch = "wasm32")]
+            static __FORCE_SECTION_REF: fn() =
+                super::super::super::__link_custom_section_describing_imports;
+            use super::super::super::_rt;
+            /// A resource which represents some error information.
+            ///
+            /// The only method provided by this resource is `to-debug-string`,
+            /// which provides some human-readable information about the error.
+            ///
+            /// In the `wasi:io` package, this resource is returned through the
+            /// `wasi:io/streams/stream-error` type.
+            ///
+            /// To provide more specific error information, other interfaces may
+            /// provide functions to further "downcast" this error into more specific
+            /// error information. For example, `error`s returned in streams derived
+            /// from filesystem types to be described using the filesystem's own
+            /// error-code type, using the function
+            /// `wasi:filesystem/types/filesystem-error-code`, which takes a parameter
+            /// `borrow<error>` and returns
+            /// `option<wasi:filesystem/types/error-code>`.
+            ///
+            /// The set of functions which can "downcast" an `error` into a more
+            /// concrete type is open.
+
+            #[derive(Debug)]
+            #[repr(transparent)]
+            pub struct Error {
+                handle: _rt::Resource<Error>,
+            }
+
+            impl Error {
+                #[doc(hidden)]
+                pub unsafe fn from_handle(handle: u32) -> Self {
+                    Self {
+                        handle: _rt::Resource::from_handle(handle),
+                    }
+                }
+
+                #[doc(hidden)]
+                pub fn take_handle(&self) -> u32 {
+                    _rt::Resource::take_handle(&self.handle)
+                }
+
+                #[doc(hidden)]
+                pub fn handle(&self) -> u32 {
+                    _rt::Resource::handle(&self.handle)
+                }
+            }
+
+            unsafe impl _rt::WasmResource for Error {
+                #[inline]
+                unsafe fn drop(_handle: u32) {
+                    #[cfg(not(target_arch = "wasm32"))]
+                    unreachable!();
+
+                    #[cfg(target_arch = "wasm32")]
+                    {
+                        #[link(wasm_import_module = "wasi:io/error@0.2.0")]
+                        extern "C" {
+                            #[link_name = "[resource-drop]error"]
+                            fn drop(_: u32);
+                        }
+
+                        drop(_handle);
+                    }
+                }
+            }
+
+            impl Error {
+                #[allow(unused_unsafe, clippy::all)]
+                /// Returns a string that is suitable to assist humans in debugging
+                /// this error.
+                ///
+                /// WARNING: The returned string should not be consumed mechanically!
+                /// It may change across platforms, hosts, or other implementation
+                /// details. Parsing this string is a major platform-compatibility
+                /// hazard.
+                pub fn to_debug_string(&self) -> _rt::String {
+                    unsafe {
+                        #[repr(align(4))]
+                        struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                        let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+                        let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
+                        #[cfg(target_arch = "wasm32")]
+                        #[link(wasm_import_module = "wasi:io/error@0.2.0")]
+                        extern "C" {
+                            #[link_name = "[method]error.to-debug-string"]
+                            fn wit_import(_: i32, _: *mut u8);
+                        }
+
+                        #[cfg(not(target_arch = "wasm32"))]
+                        fn wit_import(_: i32, _: *mut u8) {
+                            unreachable!()
+                        }
+                        wit_import((self).handle() as i32, ptr0);
+                        let l1 = *ptr0.add(0).cast::<*mut u8>();
+                        let l2 = *ptr0.add(4).cast::<usize>();
+                        let len3 = l2;
+                        let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
+                        _rt::string_lift(bytes3)
+                    }
+                }
+            }
+        }
+
         #[allow(dead_code, clippy::all)]
         pub mod poll {
             #[used]
@@ -271,115 +733,6 @@ pub mod wasi {
                         _rt::alloc::dealloc(result0.cast(), layout0);
                     }
                     _rt::Vec::from_raw_parts(l2.cast(), len4, len4)
-                }
-            }
-        }
-
-        #[allow(dead_code, clippy::all)]
-        pub mod error {
-            #[used]
-            #[doc(hidden)]
-            #[cfg(target_arch = "wasm32")]
-            static __FORCE_SECTION_REF: fn() =
-                super::super::super::__link_custom_section_describing_imports;
-            use super::super::super::_rt;
-            /// A resource which represents some error information.
-            ///
-            /// The only method provided by this resource is `to-debug-string`,
-            /// which provides some human-readable information about the error.
-            ///
-            /// In the `wasi:io` package, this resource is returned through the
-            /// `wasi:io/streams/stream-error` type.
-            ///
-            /// To provide more specific error information, other interfaces may
-            /// provide functions to further "downcast" this error into more specific
-            /// error information. For example, `error`s returned in streams derived
-            /// from filesystem types to be described using the filesystem's own
-            /// error-code type, using the function
-            /// `wasi:filesystem/types/filesystem-error-code`, which takes a parameter
-            /// `borrow<error>` and returns
-            /// `option<wasi:filesystem/types/error-code>`.
-            ///
-            /// The set of functions which can "downcast" an `error` into a more
-            /// concrete type is open.
-
-            #[derive(Debug)]
-            #[repr(transparent)]
-            pub struct Error {
-                handle: _rt::Resource<Error>,
-            }
-
-            impl Error {
-                #[doc(hidden)]
-                pub unsafe fn from_handle(handle: u32) -> Self {
-                    Self {
-                        handle: _rt::Resource::from_handle(handle),
-                    }
-                }
-
-                #[doc(hidden)]
-                pub fn take_handle(&self) -> u32 {
-                    _rt::Resource::take_handle(&self.handle)
-                }
-
-                #[doc(hidden)]
-                pub fn handle(&self) -> u32 {
-                    _rt::Resource::handle(&self.handle)
-                }
-            }
-
-            unsafe impl _rt::WasmResource for Error {
-                #[inline]
-                unsafe fn drop(_handle: u32) {
-                    #[cfg(not(target_arch = "wasm32"))]
-                    unreachable!();
-
-                    #[cfg(target_arch = "wasm32")]
-                    {
-                        #[link(wasm_import_module = "wasi:io/error@0.2.0")]
-                        extern "C" {
-                            #[link_name = "[resource-drop]error"]
-                            fn drop(_: u32);
-                        }
-
-                        drop(_handle);
-                    }
-                }
-            }
-
-            impl Error {
-                #[allow(unused_unsafe, clippy::all)]
-                /// Returns a string that is suitable to assist humans in debugging
-                /// this error.
-                ///
-                /// WARNING: The returned string should not be consumed mechanically!
-                /// It may change across platforms, hosts, or other implementation
-                /// details. Parsing this string is a major platform-compatibility
-                /// hazard.
-                pub fn to_debug_string(&self) -> _rt::String {
-                    unsafe {
-                        #[repr(align(4))]
-                        struct RetArea([::core::mem::MaybeUninit<u8>; 8]);
-                        let mut ret_area = RetArea([::core::mem::MaybeUninit::uninit(); 8]);
-                        let ptr0 = ret_area.0.as_mut_ptr().cast::<u8>();
-                        #[cfg(target_arch = "wasm32")]
-                        #[link(wasm_import_module = "wasi:io/error@0.2.0")]
-                        extern "C" {
-                            #[link_name = "[method]error.to-debug-string"]
-                            fn wit_import(_: i32, _: *mut u8);
-                        }
-
-                        #[cfg(not(target_arch = "wasm32"))]
-                        fn wit_import(_: i32, _: *mut u8) {
-                            unreachable!()
-                        }
-                        wit_import((self).handle() as i32, ptr0);
-                        let l1 = *ptr0.add(0).cast::<*mut u8>();
-                        let l2 = *ptr0.add(4).cast::<usize>();
-                        let len3 = l2;
-                        let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
-                        _rt::string_lift(bytes3)
-                    }
                 }
             }
         }
@@ -4044,181 +4397,1077 @@ pub mod wasi {
 #[allow(dead_code)]
 pub mod exports {
     #[allow(dead_code)]
-    pub mod component {
+    pub mod wasi {
         #[allow(dead_code)]
-        pub mod nfs_rs {
+        pub mod cli {
             #[allow(dead_code, clippy::all)]
-            pub mod nfs {
+            pub mod environment {
                 #[used]
                 #[doc(hidden)]
                 #[cfg(target_arch = "wasm32")]
                 static __FORCE_SECTION_REF: fn() =
                     super::super::super::super::__link_custom_section_describing_imports;
                 use super::super::super::super::_rt;
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_get_environment_cabi<T: Guest>() -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_environment();
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let vec5 = result0;
+                    let len5 = vec5.len();
+                    let layout5 = _rt::alloc::Layout::from_size_align_unchecked(vec5.len() * 16, 4);
+                    let result5 = if layout5.size() != 0 {
+                        let ptr = _rt::alloc::alloc(layout5).cast::<u8>();
+                        if ptr.is_null() {
+                            _rt::alloc::handle_alloc_error(layout5);
+                        }
+                        ptr
+                    } else {
+                        {
+                            ::core::ptr::null_mut()
+                        }
+                    };
+                    for (i, e) in vec5.into_iter().enumerate() {
+                        let base = result5.add(i * 16);
+                        {
+                            let (t2_0, t2_1) = e;
+                            let vec3 = (t2_0.into_bytes()).into_boxed_slice();
+                            let ptr3 = vec3.as_ptr().cast::<u8>();
+                            let len3 = vec3.len();
+                            ::core::mem::forget(vec3);
+                            *base.add(4).cast::<usize>() = len3;
+                            *base.add(0).cast::<*mut u8>() = ptr3.cast_mut();
+                            let vec4 = (t2_1.into_bytes()).into_boxed_slice();
+                            let ptr4 = vec4.as_ptr().cast::<u8>();
+                            let len4 = vec4.len();
+                            ::core::mem::forget(vec4);
+                            *base.add(12).cast::<usize>() = len4;
+                            *base.add(8).cast::<*mut u8>() = ptr4.cast_mut();
+                        }
+                    }
+                    *ptr1.add(4).cast::<usize>() = len5;
+                    *ptr1.add(0).cast::<*mut u8>() = result5;
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_get_environment<T: Guest>(arg0: *mut u8) {
+                    let l4 = *arg0.add(0).cast::<*mut u8>();
+                    let l5 = *arg0.add(4).cast::<usize>();
+                    let base6 = l4;
+                    let len6 = l5;
+                    for i in 0..len6 {
+                        let base = base6.add(i * 16);
+                        {
+                            let l0 = *base.add(0).cast::<*mut u8>();
+                            let l1 = *base.add(4).cast::<usize>();
+                            _rt::cabi_dealloc(l0, l1, 1);
+                            let l2 = *base.add(8).cast::<*mut u8>();
+                            let l3 = *base.add(12).cast::<usize>();
+                            _rt::cabi_dealloc(l2, l3, 1);
+                        }
+                    }
+                    _rt::cabi_dealloc(base6, len6 * 16, 4);
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_get_arguments_cabi<T: Guest>() -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_arguments();
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let vec3 = result0;
+                    let len3 = vec3.len();
+                    let layout3 = _rt::alloc::Layout::from_size_align_unchecked(vec3.len() * 8, 4);
+                    let result3 = if layout3.size() != 0 {
+                        let ptr = _rt::alloc::alloc(layout3).cast::<u8>();
+                        if ptr.is_null() {
+                            _rt::alloc::handle_alloc_error(layout3);
+                        }
+                        ptr
+                    } else {
+                        {
+                            ::core::ptr::null_mut()
+                        }
+                    };
+                    for (i, e) in vec3.into_iter().enumerate() {
+                        let base = result3.add(i * 8);
+                        {
+                            let vec2 = (e.into_bytes()).into_boxed_slice();
+                            let ptr2 = vec2.as_ptr().cast::<u8>();
+                            let len2 = vec2.len();
+                            ::core::mem::forget(vec2);
+                            *base.add(4).cast::<usize>() = len2;
+                            *base.add(0).cast::<*mut u8>() = ptr2.cast_mut();
+                        }
+                    }
+                    *ptr1.add(4).cast::<usize>() = len3;
+                    *ptr1.add(0).cast::<*mut u8>() = result3;
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_get_arguments<T: Guest>(arg0: *mut u8) {
+                    let l2 = *arg0.add(0).cast::<*mut u8>();
+                    let l3 = *arg0.add(4).cast::<usize>();
+                    let base4 = l2;
+                    let len4 = l3;
+                    for i in 0..len4 {
+                        let base = base4.add(i * 8);
+                        {
+                            let l0 = *base.add(0).cast::<*mut u8>();
+                            let l1 = *base.add(4).cast::<usize>();
+                            _rt::cabi_dealloc(l0, l1, 1);
+                        }
+                    }
+                    _rt::cabi_dealloc(base4, len4 * 8, 4);
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_initial_cwd_cabi<T: Guest>() -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::initial_cwd();
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Some(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            let vec2 = (e.into_bytes()).into_boxed_slice();
+                            let ptr2 = vec2.as_ptr().cast::<u8>();
+                            let len2 = vec2.len();
+                            ::core::mem::forget(vec2);
+                            *ptr1.add(8).cast::<usize>() = len2;
+                            *ptr1.add(4).cast::<*mut u8>() = ptr2.cast_mut();
+                        }
+                        None => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_initial_cwd<T: Guest>(arg0: *mut u8) {
+                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
+                    match l0 {
+                        0 => (),
+                        _ => {
+                            let l1 = *arg0.add(4).cast::<*mut u8>();
+                            let l2 = *arg0.add(8).cast::<usize>();
+                            _rt::cabi_dealloc(l1, l2, 1);
+                        }
+                    }
+                }
+                pub trait Guest {
+                    /// Get the POSIX-style environment variables.
+                    ///
+                    /// Each environment variable is provided as a pair of string variable names
+                    /// and string value.
+                    ///
+                    /// Morally, these are a value import, but until value imports are available
+                    /// in the component model, this import function should return the same
+                    /// values each time it is called.
+                    fn get_environment() -> _rt::Vec<(_rt::String, _rt::String)>;
+                    /// Get the POSIX-style arguments to the program.
+                    fn get_arguments() -> _rt::Vec<_rt::String>;
+                    /// Return a path that programs should use as their initial current working
+                    /// directory, interpreting `.` as shorthand for this.
+                    fn initial_cwd() -> Option<_rt::String>;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_cli_environment_0_2_0_cabi{
+    ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+      #[export_name = "wasi:cli/environment@0.2.0#get-environment"]
+      unsafe extern "C" fn export_get_environment() -> *mut u8 {
+        $($path_to_types)*::_export_get_environment_cabi::<$ty>()
+      }
+      #[export_name = "cabi_post_wasi:cli/environment@0.2.0#get-environment"]
+      unsafe extern "C" fn _post_return_get_environment(arg0: *mut u8,) {
+        $($path_to_types)*::__post_return_get_environment::<$ty>(arg0)
+      }
+      #[export_name = "wasi:cli/environment@0.2.0#get-arguments"]
+      unsafe extern "C" fn export_get_arguments() -> *mut u8 {
+        $($path_to_types)*::_export_get_arguments_cabi::<$ty>()
+      }
+      #[export_name = "cabi_post_wasi:cli/environment@0.2.0#get-arguments"]
+      unsafe extern "C" fn _post_return_get_arguments(arg0: *mut u8,) {
+        $($path_to_types)*::__post_return_get_arguments::<$ty>(arg0)
+      }
+      #[export_name = "wasi:cli/environment@0.2.0#initial-cwd"]
+      unsafe extern "C" fn export_initial_cwd() -> *mut u8 {
+        $($path_to_types)*::_export_initial_cwd_cabi::<$ty>()
+      }
+      #[export_name = "cabi_post_wasi:cli/environment@0.2.0#initial-cwd"]
+      unsafe extern "C" fn _post_return_initial_cwd(arg0: *mut u8,) {
+        $($path_to_types)*::__post_return_initial_cwd::<$ty>(arg0)
+      }
+    };);
+  }
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_cli_environment_0_2_0_cabi;
+                #[repr(align(4))]
+                struct _RetArea([::core::mem::MaybeUninit<u8>; 12]);
+                static mut _RET_AREA: _RetArea = _RetArea([::core::mem::MaybeUninit::uninit(); 12]);
+            }
+
+            #[allow(dead_code, clippy::all)]
+            pub mod exit {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_exit_cabi<T: Guest>(arg0: i32) {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    T::exit(match arg0 {
+                        0 => {
+                            let e = ();
+                            Ok(e)
+                        }
+                        1 => {
+                            let e = ();
+                            Err(e)
+                        }
+                        _ => _rt::invalid_enum_discriminant(),
+                    });
+                }
+                pub trait Guest {
+                    /// Exit the current instance and any linked instances.
+                    fn exit(status: Result<(), ()>);
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_cli_exit_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:cli/exit@0.2.0#exit"]
+    unsafe extern "C" fn export_exit(arg0: i32,) {
+      $($path_to_types)*::_export_exit_cabi::<$ty>(arg0)
+    }
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_cli_exit_0_2_0_cabi;
+            }
+
+            #[allow(dead_code, clippy::all)]
+            pub mod stdin {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                pub type InputStream =
+                    super::super::super::super::exports::wasi::io::streams::InputStream;
+                pub type InputStreamBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::streams::InputStreamBorrow<'a>;
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_get_stdin_cabi<T: Guest>() -> i32 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_stdin();
+                    (result0).take_handle() as i32
+                }
+                pub trait Guest {
+                    fn get_stdin() -> InputStream;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_cli_stdin_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:cli/stdin@0.2.0#get-stdin"]
+    unsafe extern "C" fn export_get_stdin() -> i32 {
+      $($path_to_types)*::_export_get_stdin_cabi::<$ty>()
+    }
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_cli_stdin_0_2_0_cabi;
+            }
+
+            #[allow(dead_code, clippy::all)]
+            pub mod stdout {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                pub type OutputStream =
+                    super::super::super::super::exports::wasi::io::streams::OutputStream;
+                pub type OutputStreamBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::streams::OutputStreamBorrow<'a>;
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_get_stdout_cabi<T: Guest>() -> i32 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_stdout();
+                    (result0).take_handle() as i32
+                }
+                pub trait Guest {
+                    fn get_stdout() -> OutputStream;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_cli_stdout_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:cli/stdout@0.2.0#get-stdout"]
+    unsafe extern "C" fn export_get_stdout() -> i32 {
+      $($path_to_types)*::_export_get_stdout_cabi::<$ty>()
+    }
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_cli_stdout_0_2_0_cabi;
+            }
+
+            #[allow(dead_code, clippy::all)]
+            pub mod stderr {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                pub type OutputStream =
+                    super::super::super::super::exports::wasi::io::streams::OutputStream;
+                pub type OutputStreamBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::streams::OutputStreamBorrow<'a>;
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_get_stderr_cabi<T: Guest>() -> i32 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_stderr();
+                    (result0).take_handle() as i32
+                }
+                pub trait Guest {
+                    fn get_stderr() -> OutputStream;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_cli_stderr_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:cli/stderr@0.2.0#get-stderr"]
+    unsafe extern "C" fn export_get_stderr() -> i32 {
+      $($path_to_types)*::_export_get_stderr_cabi::<$ty>()
+    }
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_cli_stderr_0_2_0_cabi;
+            }
+        }
+        #[allow(dead_code)]
+        pub mod clocks {
+            #[allow(dead_code, clippy::all)]
+            pub mod wall_clock {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                /// A time and date in seconds plus nanoseconds.
                 #[repr(C)]
                 #[derive(Clone, Copy)]
-                pub struct Time {
-                    pub seconds: u32,
-                    pub nseconds: u32,
+                pub struct Datetime {
+                    pub seconds: u64,
+                    pub nanoseconds: u32,
                 }
-                impl ::core::fmt::Debug for Time {
+                impl ::core::fmt::Debug for Datetime {
                     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        f.debug_struct("Time")
+                        f.debug_struct("Datetime")
                             .field("seconds", &self.seconds)
-                            .field("nseconds", &self.nseconds)
+                            .field("nanoseconds", &self.nanoseconds)
                             .finish()
                     }
                 }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_now_cabi<T: Guest>() -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::now();
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let Datetime {
+                        seconds: seconds2,
+                        nanoseconds: nanoseconds2,
+                    } = result0;
+                    *ptr1.add(0).cast::<i64>() = _rt::as_i64(seconds2);
+                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(nanoseconds2);
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_resolution_cabi<T: Guest>() -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::resolution();
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let Datetime {
+                        seconds: seconds2,
+                        nanoseconds: nanoseconds2,
+                    } = result0;
+                    *ptr1.add(0).cast::<i64>() = _rt::as_i64(seconds2);
+                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(nanoseconds2);
+                    ptr1
+                }
+                pub trait Guest {
+                    /// Read the current value of the clock.
+                    ///
+                    /// This clock is not monotonic, therefore calling this function repeatedly
+                    /// will not necessarily produce a sequence of non-decreasing values.
+                    ///
+                    /// The returned timestamps represent the number of seconds since
+                    /// 1970-01-01T00:00:00Z, also known as [POSIX's Seconds Since the Epoch],
+                    /// also known as [Unix Time].
+                    ///
+                    /// The nanoseconds field of the output is always less than 1000000000.
+                    ///
+                    /// [POSIX's Seconds Since the Epoch]: https://pubs.opengroup.org/onlinepubs/9699919799/xrat/V4_xbd_chap04.html#tag_21_04_16
+                    /// [Unix Time]: https://en.wikipedia.org/wiki/Unix_time
+                    fn now() -> Datetime;
+                    /// Query the resolution of the clock.
+                    ///
+                    /// The nanoseconds field of the output is always less than 1000000000.
+                    fn resolution() -> Datetime;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_clocks_wall_clock_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:clocks/wall-clock@0.2.0#now"]
+    unsafe extern "C" fn export_now() -> *mut u8 {
+      $($path_to_types)*::_export_now_cabi::<$ty>()
+    }
+    #[export_name = "wasi:clocks/wall-clock@0.2.0#resolution"]
+    unsafe extern "C" fn export_resolution() -> *mut u8 {
+      $($path_to_types)*::_export_resolution_cabi::<$ty>()
+    }
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_clocks_wall_clock_0_2_0_cabi;
+                #[repr(align(8))]
+                struct _RetArea([::core::mem::MaybeUninit<u8>; 16]);
+                static mut _RET_AREA: _RetArea = _RetArea([::core::mem::MaybeUninit::uninit(); 16]);
+            }
+        }
+        #[allow(dead_code)]
+        pub mod filesystem {
+            #[allow(dead_code, clippy::all)]
+            pub mod types {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                pub type InputStream =
+                    super::super::super::super::exports::wasi::io::streams::InputStream;
+                pub type InputStreamBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::streams::InputStreamBorrow<'a>;
+                pub type OutputStream =
+                    super::super::super::super::exports::wasi::io::streams::OutputStream;
+                pub type OutputStreamBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::streams::OutputStreamBorrow<'a>;
+                pub type Error = super::super::super::super::exports::wasi::io::streams::Error;
+                pub type ErrorBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::streams::ErrorBorrow<'a>;
+                pub type Datetime =
+                    super::super::super::super::exports::wasi::clocks::wall_clock::Datetime;
+                /// File size or length of a region within a file.
+                pub type Filesize = u64;
+                /// The type of a filesystem object referenced by a descriptor.
+                ///
+                /// Note: This was called `filetype` in earlier versions of WASI.
+                #[repr(u8)]
+                #[derive(Clone, Copy, Eq, PartialEq)]
+                pub enum DescriptorType {
+                    /// The type of the descriptor or file is unknown or is different from
+                    /// any of the other types specified.
+                    Unknown,
+                    /// The descriptor refers to a block device inode.
+                    BlockDevice,
+                    /// The descriptor refers to a character device inode.
+                    CharacterDevice,
+                    /// The descriptor refers to a directory inode.
+                    Directory,
+                    /// The descriptor refers to a named pipe.
+                    Fifo,
+                    /// The file refers to a symbolic link inode.
+                    SymbolicLink,
+                    /// The descriptor refers to a regular file inode.
+                    RegularFile,
+                    /// The descriptor refers to a socket.
+                    Socket,
+                }
+                impl ::core::fmt::Debug for DescriptorType {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        match self {
+                            DescriptorType::Unknown => {
+                                f.debug_tuple("DescriptorType::Unknown").finish()
+                            }
+                            DescriptorType::BlockDevice => {
+                                f.debug_tuple("DescriptorType::BlockDevice").finish()
+                            }
+                            DescriptorType::CharacterDevice => {
+                                f.debug_tuple("DescriptorType::CharacterDevice").finish()
+                            }
+                            DescriptorType::Directory => {
+                                f.debug_tuple("DescriptorType::Directory").finish()
+                            }
+                            DescriptorType::Fifo => f.debug_tuple("DescriptorType::Fifo").finish(),
+                            DescriptorType::SymbolicLink => {
+                                f.debug_tuple("DescriptorType::SymbolicLink").finish()
+                            }
+                            DescriptorType::RegularFile => {
+                                f.debug_tuple("DescriptorType::RegularFile").finish()
+                            }
+                            DescriptorType::Socket => {
+                                f.debug_tuple("DescriptorType::Socket").finish()
+                            }
+                        }
+                    }
+                }
+
+                impl DescriptorType {
+                    pub(crate) unsafe fn _lift(val: u8) -> DescriptorType {
+                        if !cfg!(debug_assertions) {
+                            return ::core::mem::transmute(val);
+                        }
+
+                        match val {
+                            0 => DescriptorType::Unknown,
+                            1 => DescriptorType::BlockDevice,
+                            2 => DescriptorType::CharacterDevice,
+                            3 => DescriptorType::Directory,
+                            4 => DescriptorType::Fifo,
+                            5 => DescriptorType::SymbolicLink,
+                            6 => DescriptorType::RegularFile,
+                            7 => DescriptorType::Socket,
+
+                            _ => panic!("invalid enum discriminant"),
+                        }
+                    }
+                }
+
+                wit_bindgen_rt::bitflags::bitflags! {
+                  /// Descriptor flags.
+                  ///
+                  /// Note: This was called `fdflags` in earlier versions of WASI.
+                  #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
+                  pub struct DescriptorFlags: u8 {
+                    /// Read mode: Data can be read.
+                    const READ = 1 << 0;
+                    /// Write mode: Data can be written to.
+                    const WRITE = 1 << 1;
+                    /// Request that writes be performed according to synchronized I/O file
+                    /// integrity completion. The data stored in the file and the file's
+                    /// metadata are synchronized. This is similar to `O_SYNC` in POSIX.
+                    ///
+                    /// The precise semantics of this operation have not yet been defined for
+                    /// WASI. At this time, it should be interpreted as a request, and not a
+                    /// requirement.
+                    const FILE_INTEGRITY_SYNC = 1 << 2;
+                    /// Request that writes be performed according to synchronized I/O data
+                    /// integrity completion. Only the data stored in the file is
+                    /// synchronized. This is similar to `O_DSYNC` in POSIX.
+                    ///
+                    /// The precise semantics of this operation have not yet been defined for
+                    /// WASI. At this time, it should be interpreted as a request, and not a
+                    /// requirement.
+                    const DATA_INTEGRITY_SYNC = 1 << 3;
+                    /// Requests that reads be performed at the same level of integrety
+                    /// requested for writes. This is similar to `O_RSYNC` in POSIX.
+                    ///
+                    /// The precise semantics of this operation have not yet been defined for
+                    /// WASI. At this time, it should be interpreted as a request, and not a
+                    /// requirement.
+                    const REQUESTED_WRITE_SYNC = 1 << 4;
+                    /// Mutating directories mode: Directory contents may be mutated.
+                    ///
+                    /// When this flag is unset on a descriptor, operations using the
+                    /// descriptor which would create, rename, delete, modify the data or
+                    /// metadata of filesystem objects, or obtain another handle which
+                    /// would permit any of those, shall fail with `error-code::read-only` if
+                    /// they would otherwise succeed.
+                    ///
+                    /// This may only be set on directories.
+                    const MUTATE_DIRECTORY = 1 << 5;
+                  }
+                }
+                wit_bindgen_rt::bitflags::bitflags! {
+                  /// Flags determining the method of how paths are resolved.
+                  #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
+                  pub struct PathFlags: u8 {
+                    /// As long as the resolved path corresponds to a symbolic link, it is
+                    /// expanded.
+                    const SYMLINK_FOLLOW = 1 << 0;
+                  }
+                }
+                wit_bindgen_rt::bitflags::bitflags! {
+                  /// Open flags used by `open-at`.
+                  #[derive(PartialEq, Eq, PartialOrd, Ord, Hash, Debug, Clone, Copy)]
+                  pub struct OpenFlags: u8 {
+                    /// Create file if it does not exist, similar to `O_CREAT` in POSIX.
+                    const CREATE = 1 << 0;
+                    /// Fail if not a directory, similar to `O_DIRECTORY` in POSIX.
+                    const DIRECTORY = 1 << 1;
+                    /// Fail if file already exists, similar to `O_EXCL` in POSIX.
+                    const EXCLUSIVE = 1 << 2;
+                    /// Truncate file to size 0, similar to `O_TRUNC` in POSIX.
+                    const TRUNCATE = 1 << 3;
+                  }
+                }
+                /// Number of hard links to an inode.
+                pub type LinkCount = u64;
+                /// File attributes.
+                ///
+                /// Note: This was called `filestat` in earlier versions of WASI.
                 #[repr(C)]
                 #[derive(Clone, Copy)]
-                pub struct Attr {
-                    pub attr_type: u32,
-                    pub file_mode: u32,
-                    pub nlink: u32,
-                    pub uid: u32,
-                    pub gid: u32,
-                    pub filesize: u64,
-                    pub used: u64,
-                    pub spec_data: (u32, u32),
-                    pub fsid: u64,
-                    pub fileid: u64,
-                    pub atime: Time,
-                    pub mtime: Time,
-                    pub ctime: Time,
+                pub struct DescriptorStat {
+                    /// File type.
+                    pub type_: DescriptorType,
+                    /// Number of hard links to the file.
+                    pub link_count: LinkCount,
+                    /// For regular files, the file size in bytes. For symbolic links, the
+                    /// length in bytes of the pathname contained in the symbolic link.
+                    pub size: Filesize,
+                    /// Last data access timestamp.
+                    ///
+                    /// If the `option` is none, the platform doesn't maintain an access
+                    /// timestamp for this file.
+                    pub data_access_timestamp: Option<Datetime>,
+                    /// Last data modification timestamp.
+                    ///
+                    /// If the `option` is none, the platform doesn't maintain a
+                    /// modification timestamp for this file.
+                    pub data_modification_timestamp: Option<Datetime>,
+                    /// Last file status-change timestamp.
+                    ///
+                    /// If the `option` is none, the platform doesn't maintain a
+                    /// status-change timestamp for this file.
+                    pub status_change_timestamp: Option<Datetime>,
                 }
-                impl ::core::fmt::Debug for Attr {
+                impl ::core::fmt::Debug for DescriptorStat {
                     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        f.debug_struct("Attr")
-                            .field("attr-type", &self.attr_type)
-                            .field("file-mode", &self.file_mode)
-                            .field("nlink", &self.nlink)
-                            .field("uid", &self.uid)
-                            .field("gid", &self.gid)
-                            .field("filesize", &self.filesize)
-                            .field("used", &self.used)
-                            .field("spec-data", &self.spec_data)
-                            .field("fsid", &self.fsid)
-                            .field("fileid", &self.fileid)
-                            .field("atime", &self.atime)
-                            .field("mtime", &self.mtime)
-                            .field("ctime", &self.ctime)
+                        f.debug_struct("DescriptorStat")
+                            .field("type", &self.type_)
+                            .field("link-count", &self.link_count)
+                            .field("size", &self.size)
+                            .field("data-access-timestamp", &self.data_access_timestamp)
+                            .field(
+                                "data-modification-timestamp",
+                                &self.data_modification_timestamp,
+                            )
+                            .field("status-change-timestamp", &self.status_change_timestamp)
                             .finish()
                     }
                 }
+                /// When setting a timestamp, this gives the value to set it to.
+                #[derive(Clone, Copy)]
+                pub enum NewTimestamp {
+                    /// Leave the timestamp set to its previous value.
+                    NoChange,
+                    /// Set the timestamp to the current time of the system clock associated
+                    /// with the filesystem.
+                    Now,
+                    /// Set the timestamp to the given value.
+                    Timestamp(Datetime),
+                }
+                impl ::core::fmt::Debug for NewTimestamp {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        match self {
+                            NewTimestamp::NoChange => {
+                                f.debug_tuple("NewTimestamp::NoChange").finish()
+                            }
+                            NewTimestamp::Now => f.debug_tuple("NewTimestamp::Now").finish(),
+                            NewTimestamp::Timestamp(e) => {
+                                f.debug_tuple("NewTimestamp::Timestamp").field(e).finish()
+                            }
+                        }
+                    }
+                }
+                /// A directory entry.
+                #[derive(Clone)]
+                pub struct DirectoryEntry {
+                    /// The type of the file referred to by this directory entry.
+                    pub type_: DescriptorType,
+                    /// The name of the object.
+                    pub name: _rt::String,
+                }
+                impl ::core::fmt::Debug for DirectoryEntry {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        f.debug_struct("DirectoryEntry")
+                            .field("type", &self.type_)
+                            .field("name", &self.name)
+                            .finish()
+                    }
+                }
+                /// Error codes returned by functions, similar to `errno` in POSIX.
+                /// Not all of these error codes are returned by the functions provided by this
+                /// API; some are used in higher-level library layers, and others are provided
+                /// merely for alignment with POSIX.
+                #[repr(u8)]
+                #[derive(Clone, Copy, Eq, PartialEq)]
+                pub enum ErrorCode {
+                    /// Permission denied, similar to `EACCES` in POSIX.
+                    Access,
+                    /// Resource unavailable, or operation would block, similar to `EAGAIN` and `EWOULDBLOCK` in POSIX.
+                    WouldBlock,
+                    /// Connection already in progress, similar to `EALREADY` in POSIX.
+                    Already,
+                    /// Bad descriptor, similar to `EBADF` in POSIX.
+                    BadDescriptor,
+                    /// Device or resource busy, similar to `EBUSY` in POSIX.
+                    Busy,
+                    /// Resource deadlock would occur, similar to `EDEADLK` in POSIX.
+                    Deadlock,
+                    /// Storage quota exceeded, similar to `EDQUOT` in POSIX.
+                    Quota,
+                    /// File exists, similar to `EEXIST` in POSIX.
+                    Exist,
+                    /// File too large, similar to `EFBIG` in POSIX.
+                    FileTooLarge,
+                    /// Illegal byte sequence, similar to `EILSEQ` in POSIX.
+                    IllegalByteSequence,
+                    /// Operation in progress, similar to `EINPROGRESS` in POSIX.
+                    InProgress,
+                    /// Interrupted function, similar to `EINTR` in POSIX.
+                    Interrupted,
+                    /// Invalid argument, similar to `EINVAL` in POSIX.
+                    Invalid,
+                    /// I/O error, similar to `EIO` in POSIX.
+                    Io,
+                    /// Is a directory, similar to `EISDIR` in POSIX.
+                    IsDirectory,
+                    /// Too many levels of symbolic links, similar to `ELOOP` in POSIX.
+                    Loop,
+                    /// Too many links, similar to `EMLINK` in POSIX.
+                    TooManyLinks,
+                    /// Message too large, similar to `EMSGSIZE` in POSIX.
+                    MessageSize,
+                    /// Filename too long, similar to `ENAMETOOLONG` in POSIX.
+                    NameTooLong,
+                    /// No such device, similar to `ENODEV` in POSIX.
+                    NoDevice,
+                    /// No such file or directory, similar to `ENOENT` in POSIX.
+                    NoEntry,
+                    /// No locks available, similar to `ENOLCK` in POSIX.
+                    NoLock,
+                    /// Not enough space, similar to `ENOMEM` in POSIX.
+                    InsufficientMemory,
+                    /// No space left on device, similar to `ENOSPC` in POSIX.
+                    InsufficientSpace,
+                    /// Not a directory or a symbolic link to a directory, similar to `ENOTDIR` in POSIX.
+                    NotDirectory,
+                    /// Directory not empty, similar to `ENOTEMPTY` in POSIX.
+                    NotEmpty,
+                    /// State not recoverable, similar to `ENOTRECOVERABLE` in POSIX.
+                    NotRecoverable,
+                    /// Not supported, similar to `ENOTSUP` and `ENOSYS` in POSIX.
+                    Unsupported,
+                    /// Inappropriate I/O control operation, similar to `ENOTTY` in POSIX.
+                    NoTty,
+                    /// No such device or address, similar to `ENXIO` in POSIX.
+                    NoSuchDevice,
+                    /// Value too large to be stored in data type, similar to `EOVERFLOW` in POSIX.
+                    Overflow,
+                    /// Operation not permitted, similar to `EPERM` in POSIX.
+                    NotPermitted,
+                    /// Broken pipe, similar to `EPIPE` in POSIX.
+                    Pipe,
+                    /// Read-only file system, similar to `EROFS` in POSIX.
+                    ReadOnly,
+                    /// Invalid seek, similar to `ESPIPE` in POSIX.
+                    InvalidSeek,
+                    /// Text file busy, similar to `ETXTBSY` in POSIX.
+                    TextFileBusy,
+                    /// Cross-device link, similar to `EXDEV` in POSIX.
+                    CrossDevice,
+                }
+                impl ErrorCode {
+                    pub fn name(&self) -> &'static str {
+                        match self {
+                            ErrorCode::Access => "access",
+                            ErrorCode::WouldBlock => "would-block",
+                            ErrorCode::Already => "already",
+                            ErrorCode::BadDescriptor => "bad-descriptor",
+                            ErrorCode::Busy => "busy",
+                            ErrorCode::Deadlock => "deadlock",
+                            ErrorCode::Quota => "quota",
+                            ErrorCode::Exist => "exist",
+                            ErrorCode::FileTooLarge => "file-too-large",
+                            ErrorCode::IllegalByteSequence => "illegal-byte-sequence",
+                            ErrorCode::InProgress => "in-progress",
+                            ErrorCode::Interrupted => "interrupted",
+                            ErrorCode::Invalid => "invalid",
+                            ErrorCode::Io => "io",
+                            ErrorCode::IsDirectory => "is-directory",
+                            ErrorCode::Loop => "loop",
+                            ErrorCode::TooManyLinks => "too-many-links",
+                            ErrorCode::MessageSize => "message-size",
+                            ErrorCode::NameTooLong => "name-too-long",
+                            ErrorCode::NoDevice => "no-device",
+                            ErrorCode::NoEntry => "no-entry",
+                            ErrorCode::NoLock => "no-lock",
+                            ErrorCode::InsufficientMemory => "insufficient-memory",
+                            ErrorCode::InsufficientSpace => "insufficient-space",
+                            ErrorCode::NotDirectory => "not-directory",
+                            ErrorCode::NotEmpty => "not-empty",
+                            ErrorCode::NotRecoverable => "not-recoverable",
+                            ErrorCode::Unsupported => "unsupported",
+                            ErrorCode::NoTty => "no-tty",
+                            ErrorCode::NoSuchDevice => "no-such-device",
+                            ErrorCode::Overflow => "overflow",
+                            ErrorCode::NotPermitted => "not-permitted",
+                            ErrorCode::Pipe => "pipe",
+                            ErrorCode::ReadOnly => "read-only",
+                            ErrorCode::InvalidSeek => "invalid-seek",
+                            ErrorCode::TextFileBusy => "text-file-busy",
+                            ErrorCode::CrossDevice => "cross-device",
+                        }
+                    }
+                    pub fn message(&self) -> &'static str {
+                        match self {
+          ErrorCode::Access => "Permission denied, similar to `EACCES` in POSIX.",
+          ErrorCode::WouldBlock => "Resource unavailable, or operation would block, similar to `EAGAIN` and `EWOULDBLOCK` in POSIX.",
+          ErrorCode::Already => "Connection already in progress, similar to `EALREADY` in POSIX.",
+          ErrorCode::BadDescriptor => "Bad descriptor, similar to `EBADF` in POSIX.",
+          ErrorCode::Busy => "Device or resource busy, similar to `EBUSY` in POSIX.",
+          ErrorCode::Deadlock => "Resource deadlock would occur, similar to `EDEADLK` in POSIX.",
+          ErrorCode::Quota => "Storage quota exceeded, similar to `EDQUOT` in POSIX.",
+          ErrorCode::Exist => "File exists, similar to `EEXIST` in POSIX.",
+          ErrorCode::FileTooLarge => "File too large, similar to `EFBIG` in POSIX.",
+          ErrorCode::IllegalByteSequence => "Illegal byte sequence, similar to `EILSEQ` in POSIX.",
+          ErrorCode::InProgress => "Operation in progress, similar to `EINPROGRESS` in POSIX.",
+          ErrorCode::Interrupted => "Interrupted function, similar to `EINTR` in POSIX.",
+          ErrorCode::Invalid => "Invalid argument, similar to `EINVAL` in POSIX.",
+          ErrorCode::Io => "I/O error, similar to `EIO` in POSIX.",
+          ErrorCode::IsDirectory => "Is a directory, similar to `EISDIR` in POSIX.",
+          ErrorCode::Loop => "Too many levels of symbolic links, similar to `ELOOP` in POSIX.",
+          ErrorCode::TooManyLinks => "Too many links, similar to `EMLINK` in POSIX.",
+          ErrorCode::MessageSize => "Message too large, similar to `EMSGSIZE` in POSIX.",
+          ErrorCode::NameTooLong => "Filename too long, similar to `ENAMETOOLONG` in POSIX.",
+          ErrorCode::NoDevice => "No such device, similar to `ENODEV` in POSIX.",
+          ErrorCode::NoEntry => "No such file or directory, similar to `ENOENT` in POSIX.",
+          ErrorCode::NoLock => "No locks available, similar to `ENOLCK` in POSIX.",
+          ErrorCode::InsufficientMemory => "Not enough space, similar to `ENOMEM` in POSIX.",
+          ErrorCode::InsufficientSpace => "No space left on device, similar to `ENOSPC` in POSIX.",
+          ErrorCode::NotDirectory => "Not a directory or a symbolic link to a directory, similar to `ENOTDIR` in POSIX.",
+          ErrorCode::NotEmpty => "Directory not empty, similar to `ENOTEMPTY` in POSIX.",
+          ErrorCode::NotRecoverable => "State not recoverable, similar to `ENOTRECOVERABLE` in POSIX.",
+          ErrorCode::Unsupported => "Not supported, similar to `ENOTSUP` and `ENOSYS` in POSIX.",
+          ErrorCode::NoTty => "Inappropriate I/O control operation, similar to `ENOTTY` in POSIX.",
+          ErrorCode::NoSuchDevice => "No such device or address, similar to `ENXIO` in POSIX.",
+          ErrorCode::Overflow => "Value too large to be stored in data type, similar to `EOVERFLOW` in POSIX.",
+          ErrorCode::NotPermitted => "Operation not permitted, similar to `EPERM` in POSIX.",
+          ErrorCode::Pipe => "Broken pipe, similar to `EPIPE` in POSIX.",
+          ErrorCode::ReadOnly => "Read-only file system, similar to `EROFS` in POSIX.",
+          ErrorCode::InvalidSeek => "Invalid seek, similar to `ESPIPE` in POSIX.",
+          ErrorCode::TextFileBusy => "Text file busy, similar to `ETXTBSY` in POSIX.",
+          ErrorCode::CrossDevice => "Cross-device link, similar to `EXDEV` in POSIX.",
+        }
+                    }
+                }
+                impl ::core::fmt::Debug for ErrorCode {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        f.debug_struct("ErrorCode")
+                            .field("code", &(*self as i32))
+                            .field("name", &self.name())
+                            .field("message", &self.message())
+                            .finish()
+                    }
+                }
+                impl ::core::fmt::Display for ErrorCode {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        write!(f, "{} (error {})", self.name(), *self as i32)
+                    }
+                }
+
+                impl std::error::Error for ErrorCode {}
+
+                impl ErrorCode {
+                    pub(crate) unsafe fn _lift(val: u8) -> ErrorCode {
+                        if !cfg!(debug_assertions) {
+                            return ::core::mem::transmute(val);
+                        }
+
+                        match val {
+                            0 => ErrorCode::Access,
+                            1 => ErrorCode::WouldBlock,
+                            2 => ErrorCode::Already,
+                            3 => ErrorCode::BadDescriptor,
+                            4 => ErrorCode::Busy,
+                            5 => ErrorCode::Deadlock,
+                            6 => ErrorCode::Quota,
+                            7 => ErrorCode::Exist,
+                            8 => ErrorCode::FileTooLarge,
+                            9 => ErrorCode::IllegalByteSequence,
+                            10 => ErrorCode::InProgress,
+                            11 => ErrorCode::Interrupted,
+                            12 => ErrorCode::Invalid,
+                            13 => ErrorCode::Io,
+                            14 => ErrorCode::IsDirectory,
+                            15 => ErrorCode::Loop,
+                            16 => ErrorCode::TooManyLinks,
+                            17 => ErrorCode::MessageSize,
+                            18 => ErrorCode::NameTooLong,
+                            19 => ErrorCode::NoDevice,
+                            20 => ErrorCode::NoEntry,
+                            21 => ErrorCode::NoLock,
+                            22 => ErrorCode::InsufficientMemory,
+                            23 => ErrorCode::InsufficientSpace,
+                            24 => ErrorCode::NotDirectory,
+                            25 => ErrorCode::NotEmpty,
+                            26 => ErrorCode::NotRecoverable,
+                            27 => ErrorCode::Unsupported,
+                            28 => ErrorCode::NoTty,
+                            29 => ErrorCode::NoSuchDevice,
+                            30 => ErrorCode::Overflow,
+                            31 => ErrorCode::NotPermitted,
+                            32 => ErrorCode::Pipe,
+                            33 => ErrorCode::ReadOnly,
+                            34 => ErrorCode::InvalidSeek,
+                            35 => ErrorCode::TextFileBusy,
+                            36 => ErrorCode::CrossDevice,
+
+                            _ => panic!("invalid enum discriminant"),
+                        }
+                    }
+                }
+
+                /// File or memory access pattern advisory information.
+                #[repr(u8)]
+                #[derive(Clone, Copy, Eq, PartialEq)]
+                pub enum Advice {
+                    /// The application has no advice to give on its behavior with respect
+                    /// to the specified data.
+                    Normal,
+                    /// The application expects to access the specified data sequentially
+                    /// from lower offsets to higher offsets.
+                    Sequential,
+                    /// The application expects to access the specified data in a random
+                    /// order.
+                    Random,
+                    /// The application expects to access the specified data in the near
+                    /// future.
+                    WillNeed,
+                    /// The application expects that it will not access the specified data
+                    /// in the near future.
+                    DontNeed,
+                    /// The application expects to access the specified data once and then
+                    /// not reuse it thereafter.
+                    NoReuse,
+                }
+                impl ::core::fmt::Debug for Advice {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        match self {
+                            Advice::Normal => f.debug_tuple("Advice::Normal").finish(),
+                            Advice::Sequential => f.debug_tuple("Advice::Sequential").finish(),
+                            Advice::Random => f.debug_tuple("Advice::Random").finish(),
+                            Advice::WillNeed => f.debug_tuple("Advice::WillNeed").finish(),
+                            Advice::DontNeed => f.debug_tuple("Advice::DontNeed").finish(),
+                            Advice::NoReuse => f.debug_tuple("Advice::NoReuse").finish(),
+                        }
+                    }
+                }
+
+                impl Advice {
+                    pub(crate) unsafe fn _lift(val: u8) -> Advice {
+                        if !cfg!(debug_assertions) {
+                            return ::core::mem::transmute(val);
+                        }
+
+                        match val {
+                            0 => Advice::Normal,
+                            1 => Advice::Sequential,
+                            2 => Advice::Random,
+                            3 => Advice::WillNeed,
+                            4 => Advice::DontNeed,
+                            5 => Advice::NoReuse,
+
+                            _ => panic!("invalid enum discriminant"),
+                        }
+                    }
+                }
+
+                /// A 128-bit hash value, split into parts because wasm doesn't have a
+                /// 128-bit integer type.
                 #[repr(C)]
                 #[derive(Clone, Copy)]
-                pub struct PathConf {
-                    pub attr: Option<Attr>,
-                    pub linkmax: u32,
-                    pub name_max: u32,
-                    pub no_trunc: bool,
-                    pub chown_restricted: bool,
-                    pub case_insensitive: bool,
-                    pub case_preserving: bool,
+                pub struct MetadataHashValue {
+                    /// 64 bits of a 128-bit hash value.
+                    pub lower: u64,
+                    /// Another 64 bits of a 128-bit hash value.
+                    pub upper: u64,
                 }
-                impl ::core::fmt::Debug for PathConf {
+                impl ::core::fmt::Debug for MetadataHashValue {
                     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        f.debug_struct("PathConf")
-                            .field("attr", &self.attr)
-                            .field("linkmax", &self.linkmax)
-                            .field("name-max", &self.name_max)
-                            .field("no-trunc", &self.no_trunc)
-                            .field("chown-restricted", &self.chown_restricted)
-                            .field("case-insensitive", &self.case_insensitive)
-                            .field("case-preserving", &self.case_preserving)
+                        f.debug_struct("MetadataHashValue")
+                            .field("lower", &self.lower)
+                            .field("upper", &self.upper)
                             .finish()
                     }
                 }
-                #[derive(Clone)]
-                pub struct ReaddirEntry {
-                    pub fileid: u64,
-                    pub file_name: _rt::String,
-                    pub cookie: u64,
-                }
-                impl ::core::fmt::Debug for ReaddirEntry {
-                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        f.debug_struct("ReaddirEntry")
-                            .field("fileid", &self.fileid)
-                            .field("file-name", &self.file_name)
-                            .field("cookie", &self.cookie)
-                            .finish()
-                    }
-                }
-                #[derive(Clone)]
-                pub struct ReaddirplusEntry {
-                    pub fileid: u64,
-                    pub file_name: _rt::String,
-                    pub cookie: u64,
-                    pub attr: Option<Attr>,
-                    pub handle: _rt::Vec<u8>,
-                }
-                impl ::core::fmt::Debug for ReaddirplusEntry {
-                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        f.debug_struct("ReaddirplusEntry")
-                            .field("fileid", &self.fileid)
-                            .field("file-name", &self.file_name)
-                            .field("cookie", &self.cookie)
-                            .field("attr", &self.attr)
-                            .field("handle", &self.handle)
-                            .finish()
-                    }
-                }
-                #[derive(Clone)]
-                pub struct Error {
-                    pub nfs_error_code: Option<i32>,
-                    pub message: _rt::String,
-                }
-                impl ::core::fmt::Debug for Error {
-                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        f.debug_struct("Error")
-                            .field("nfs-error-code", &self.nfs_error_code)
-                            .field("message", &self.message)
-                            .finish()
-                    }
-                }
-                impl ::core::fmt::Display for Error {
-                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
-                        write!(f, "{:?}", self)
-                    }
-                }
-                impl std::error::Error for Error {}
+                /// A descriptor is a reference to a filesystem object, which may be a file,
+                /// directory, named pipe, special file, or other object on which filesystem
+                /// calls may be made.
 
                 #[derive(Debug)]
                 #[repr(transparent)]
-                pub struct NfsMount {
-                    handle: _rt::Resource<NfsMount>,
+                pub struct Descriptor {
+                    handle: _rt::Resource<Descriptor>,
                 }
 
-                type _NfsMountRep<T> = Option<T>;
+                type _DescriptorRep<T> = Option<T>;
 
-                impl NfsMount {
+                impl Descriptor {
                     /// Creates a new resource from the specified representation.
                     ///
                     /// This function will create a new resource handle by moving `val` onto
                     /// the heap and then passing that heap pointer to the component model to
-                    /// create a handle. The owned handle is then returned as `NfsMount`.
-                    pub fn new<T: GuestNfsMount>(val: T) -> Self {
+                    /// create a handle. The owned handle is then returned as `Descriptor`.
+                    pub fn new<T: GuestDescriptor>(val: T) -> Self {
                         Self::type_guard::<T>();
-                        let val: _NfsMountRep<T> = Some(val);
-                        let ptr: *mut _NfsMountRep<T> = _rt::Box::into_raw(_rt::Box::new(val));
+                        let val: _DescriptorRep<T> = Some(val);
+                        let ptr: *mut _DescriptorRep<T> = _rt::Box::into_raw(_rt::Box::new(val));
                         unsafe { Self::from_handle(T::_resource_new(ptr.cast())) }
                     }
 
                     /// Gets access to the underlying `T` which represents this resource.
-                    pub fn get<T: GuestNfsMount>(&self) -> &T {
+                    pub fn get<T: GuestDescriptor>(&self) -> &T {
                         let ptr = unsafe { &*self.as_ptr::<T>() };
                         ptr.as_ref().unwrap()
                     }
 
                     /// Gets mutable access to the underlying `T` which represents this
                     /// resource.
-                    pub fn get_mut<T: GuestNfsMount>(&mut self) -> &mut T {
+                    pub fn get_mut<T: GuestDescriptor>(&mut self) -> &mut T {
                         let ptr = unsafe { &mut *self.as_ptr::<T>() };
                         ptr.as_mut().unwrap()
                     }
 
                     /// Consumes this resource and returns the underlying `T`.
-                    pub fn into_inner<T: GuestNfsMount>(self) -> T {
+                    pub fn into_inner<T: GuestDescriptor>(self) -> T {
                         let ptr = unsafe { &mut *self.as_ptr::<T>() };
                         ptr.take().unwrap()
                     }
@@ -4240,7 +5489,7 @@ pub mod exports {
                         _rt::Resource::handle(&self.handle)
                     }
 
-                    // It's theoretically possible to implement the `GuestNfsMount` trait twice
+                    // It's theoretically possible to implement the `GuestDescriptor` trait twice
                     // so guard against using it with two different types here.
                     #[doc(hidden)]
                     fn type_guard<T: 'static>() {
@@ -4262,25 +5511,25 @@ pub mod exports {
                     #[doc(hidden)]
                     pub unsafe fn dtor<T: 'static>(handle: *mut u8) {
                         Self::type_guard::<T>();
-                        let _ = _rt::Box::from_raw(handle as *mut _NfsMountRep<T>);
+                        let _ = _rt::Box::from_raw(handle as *mut _DescriptorRep<T>);
                     }
 
-                    fn as_ptr<T: GuestNfsMount>(&self) -> *mut _NfsMountRep<T> {
-                        NfsMount::type_guard::<T>();
+                    fn as_ptr<T: GuestDescriptor>(&self) -> *mut _DescriptorRep<T> {
+                        Descriptor::type_guard::<T>();
                         T::_resource_rep(self.handle()).cast()
                     }
                 }
 
-                /// A borrowed version of [`NfsMount`] which represents a borrowed value
+                /// A borrowed version of [`Descriptor`] which represents a borrowed value
                 /// with the lifetime `'a`.
                 #[derive(Debug)]
                 #[repr(transparent)]
-                pub struct NfsMountBorrow<'a> {
+                pub struct DescriptorBorrow<'a> {
                     rep: *mut u8,
-                    _marker: core::marker::PhantomData<&'a NfsMount>,
+                    _marker: core::marker::PhantomData<&'a Descriptor>,
                 }
 
-                impl<'a> NfsMountBorrow<'a> {
+                impl<'a> DescriptorBorrow<'a> {
                     #[doc(hidden)]
                     pub unsafe fn lift(rep: usize) -> Self {
                         Self {
@@ -4290,7 +5539,7 @@ pub mod exports {
                     }
 
                     /// Gets access to the underlying `T` in this resource.
-                    pub fn get<T: GuestNfsMount>(&self) -> &T {
+                    pub fn get<T: GuestDescriptor>(&self) -> &T {
                         let ptr = unsafe { &mut *self.as_ptr::<T>() };
                         ptr.as_ref().unwrap()
                     }
@@ -4298,13 +5547,13 @@ pub mod exports {
                     // NB: mutable access is not allowed due to the component model allowing
                     // multiple borrows of the same resource.
 
-                    fn as_ptr<T: 'static>(&self) -> *mut _NfsMountRep<T> {
-                        NfsMount::type_guard::<T>();
+                    fn as_ptr<T: 'static>(&self) -> *mut _DescriptorRep<T> {
+                        Descriptor::type_guard::<T>();
                         self.rep.cast()
                     }
                 }
 
-                unsafe impl _rt::WasmResource for NfsMount {
+                unsafe impl _rt::WasmResource for Descriptor {
                     #[inline]
                     unsafe fn drop(_handle: u32) {
                         #[cfg(not(target_arch = "wasm32"))]
@@ -4312,9 +5561,154 @@ pub mod exports {
 
                         #[cfg(target_arch = "wasm32")]
                         {
-                            #[link(wasm_import_module = "[export]component:nfs-rs/nfs")]
+                            #[link(wasm_import_module = "[export]wasi:filesystem/types@0.2.0")]
                             extern "C" {
-                                #[link_name = "[resource-drop]nfs-mount"]
+                                #[link_name = "[resource-drop]descriptor"]
+                                fn drop(_: u32);
+                            }
+
+                            drop(_handle);
+                        }
+                    }
+                }
+
+                /// A stream of directory entries.
+
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct DirectoryEntryStream {
+                    handle: _rt::Resource<DirectoryEntryStream>,
+                }
+
+                type _DirectoryEntryStreamRep<T> = Option<T>;
+
+                impl DirectoryEntryStream {
+                    /// Creates a new resource from the specified representation.
+                    ///
+                    /// This function will create a new resource handle by moving `val` onto
+                    /// the heap and then passing that heap pointer to the component model to
+                    /// create a handle. The owned handle is then returned as `DirectoryEntryStream`.
+                    pub fn new<T: GuestDirectoryEntryStream>(val: T) -> Self {
+                        Self::type_guard::<T>();
+                        let val: _DirectoryEntryStreamRep<T> = Some(val);
+                        let ptr: *mut _DirectoryEntryStreamRep<T> =
+                            _rt::Box::into_raw(_rt::Box::new(val));
+                        unsafe { Self::from_handle(T::_resource_new(ptr.cast())) }
+                    }
+
+                    /// Gets access to the underlying `T` which represents this resource.
+                    pub fn get<T: GuestDirectoryEntryStream>(&self) -> &T {
+                        let ptr = unsafe { &*self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    /// Gets mutable access to the underlying `T` which represents this
+                    /// resource.
+                    pub fn get_mut<T: GuestDirectoryEntryStream>(&mut self) -> &mut T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_mut().unwrap()
+                    }
+
+                    /// Consumes this resource and returns the underlying `T`.
+                    pub fn into_inner<T: GuestDirectoryEntryStream>(self) -> T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.take().unwrap()
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn from_handle(handle: u32) -> Self {
+                        Self {
+                            handle: _rt::Resource::from_handle(handle),
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub fn take_handle(&self) -> u32 {
+                        _rt::Resource::take_handle(&self.handle)
+                    }
+
+                    #[doc(hidden)]
+                    pub fn handle(&self) -> u32 {
+                        _rt::Resource::handle(&self.handle)
+                    }
+
+                    // It's theoretically possible to implement the `GuestDirectoryEntryStream` trait twice
+                    // so guard against using it with two different types here.
+                    #[doc(hidden)]
+                    fn type_guard<T: 'static>() {
+                        use core::any::TypeId;
+                        static mut LAST_TYPE: Option<TypeId> = None;
+                        unsafe {
+                            assert!(!cfg!(target_feature = "threads"));
+                            let id = TypeId::of::<T>();
+                            match LAST_TYPE {
+                                Some(ty) => assert!(
+                                    ty == id,
+                                    "cannot use two types with this resource type"
+                                ),
+                                None => LAST_TYPE = Some(id),
+                            }
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn dtor<T: 'static>(handle: *mut u8) {
+                        Self::type_guard::<T>();
+                        let _ = _rt::Box::from_raw(handle as *mut _DirectoryEntryStreamRep<T>);
+                    }
+
+                    fn as_ptr<T: GuestDirectoryEntryStream>(
+                        &self,
+                    ) -> *mut _DirectoryEntryStreamRep<T> {
+                        DirectoryEntryStream::type_guard::<T>();
+                        T::_resource_rep(self.handle()).cast()
+                    }
+                }
+
+                /// A borrowed version of [`DirectoryEntryStream`] which represents a borrowed value
+                /// with the lifetime `'a`.
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct DirectoryEntryStreamBorrow<'a> {
+                    rep: *mut u8,
+                    _marker: core::marker::PhantomData<&'a DirectoryEntryStream>,
+                }
+
+                impl<'a> DirectoryEntryStreamBorrow<'a> {
+                    #[doc(hidden)]
+                    pub unsafe fn lift(rep: usize) -> Self {
+                        Self {
+                            rep: rep as *mut u8,
+                            _marker: core::marker::PhantomData,
+                        }
+                    }
+
+                    /// Gets access to the underlying `T` in this resource.
+                    pub fn get<T: GuestDirectoryEntryStream>(&self) -> &T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    // NB: mutable access is not allowed due to the component model allowing
+                    // multiple borrows of the same resource.
+
+                    fn as_ptr<T: 'static>(&self) -> *mut _DirectoryEntryStreamRep<T> {
+                        DirectoryEntryStream::type_guard::<T>();
+                        self.rep.cast()
+                    }
+                }
+
+                unsafe impl _rt::WasmResource for DirectoryEntryStream {
+                    #[inline]
+                    unsafe fn drop(_handle: u32) {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        unreachable!();
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:filesystem/types@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-drop]directory-entry-stream"]
                                 fn drop(_: u32);
                             }
 
@@ -4325,15 +5719,656 @@ pub mod exports {
 
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn _export_parse_url_and_mount_cabi<T: Guest>(
+                pub unsafe fn _export_method_descriptor_read_via_stream_cabi<T: GuestDescriptor>(
                     arg0: *mut u8,
-                    arg1: usize,
+                    arg1: i64,
                 ) -> *mut u8 {
                     #[cfg(target_arch = "wasm32")]
                     _rt::run_ctors_once();
-                    let len0 = arg1;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg0.cast(), len0, len0);
-                    let result1 = T::parse_url_and_mount(_rt::string_lift(bytes0));
+                    let result0 = T::read_via_stream(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(4).cast::<i32>() = (e).take_handle() as i32;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(4).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_write_via_stream_cabi<
+                    T: GuestDescriptor,
+                >(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::write_via_stream(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(4).cast::<i32>() = (e).take_handle() as i32;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(4).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_append_via_stream_cabi<
+                    T: GuestDescriptor,
+                >(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 =
+                        T::append_via_stream(DescriptorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(4).cast::<i32>() = (e).take_handle() as i32;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(4).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_advise_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i64,
+                    arg2: i64,
+                    arg3: i32,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::advise(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                        arg2 as u64,
+                        Advice::_lift(arg3 as u8),
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_sync_data_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::sync_data(DescriptorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_get_flags_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_flags(DescriptorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            let flags2 = e;
+                            *ptr1.add(1).cast::<u8>() = ((flags2.bits() >> 0) as i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_get_type_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_type(DescriptorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_set_size_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::set_size(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_set_times_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i32,
+                    arg2: i64,
+                    arg3: i32,
+                    arg4: i32,
+                    arg5: i64,
+                    arg6: i32,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let v0 = match arg1 {
+                        0 => NewTimestamp::NoChange,
+                        1 => NewTimestamp::Now,
+                        n => {
+                            debug_assert_eq!(n, 2, "invalid enum discriminant");
+                            let e0 = super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{
+      seconds: arg2 as u64,
+      nanoseconds: arg3 as u32,
+    };
+                            NewTimestamp::Timestamp(e0)
+                        }
+                    };
+                    let v1 = match arg4 {
+                        0 => NewTimestamp::NoChange,
+                        1 => NewTimestamp::Now,
+                        n => {
+                            debug_assert_eq!(n, 2, "invalid enum discriminant");
+                            let e1 = super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{
+      seconds: arg5 as u64,
+      nanoseconds: arg6 as u32,
+    };
+                            NewTimestamp::Timestamp(e1)
+                        }
+                    };
+                    let result2 =
+                        T::set_times(DescriptorBorrow::lift(arg0 as u32 as usize).get(), v0, v1);
+                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result2 {
+                        Ok(_) => {
+                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr3.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr3
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_read_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i64,
+                    arg2: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::read(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                        arg2 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            let (t2_0, t2_1) = e;
+                            let vec3 = (t2_0).into_boxed_slice();
+                            let ptr3 = vec3.as_ptr().cast::<u8>();
+                            let len3 = vec3.len();
+                            ::core::mem::forget(vec3);
+                            *ptr1.add(8).cast::<usize>() = len3;
+                            *ptr1.add(4).cast::<*mut u8>() = ptr3.cast_mut();
+                            *ptr1.add(12).cast::<u8>() = (match t2_1 {
+                                true => 1,
+                                false => 0,
+                            }) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(4).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_method_descriptor_read<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                ) {
+                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
+                    match l0 {
+                        0 => {
+                            let l1 = *arg0.add(4).cast::<*mut u8>();
+                            let l2 = *arg0.add(8).cast::<usize>();
+                            let base3 = l1;
+                            let len3 = l2;
+                            _rt::cabi_dealloc(base3, len3 * 1, 1);
+                        }
+                        _ => (),
+                    }
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_write_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                    arg3: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let result1 = T::write(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
+                        arg3 as u64,
+                    );
+                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result1 {
+                        Ok(e) => {
+                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr2.add(8).cast::<i64>() = _rt::as_i64(e);
+                        }
+                        Err(e) => {
+                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr2.add(8).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr2
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_read_directory_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 =
+                        T::read_directory(DescriptorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(4).cast::<i32>() = (e).take_handle() as i32;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(4).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_sync_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::sync(DescriptorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_create_directory_at_cabi<
+                    T: GuestDescriptor,
+                >(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
+                    let result1 = T::create_directory_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::string_lift(bytes0),
+                    );
+                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result1 {
+                        Ok(_) => {
+                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr2.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr2
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_stat_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::stat(DescriptorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            let DescriptorStat {
+                                type_: type_2,
+                                link_count: link_count2,
+                                size: size2,
+                                data_access_timestamp: data_access_timestamp2,
+                                data_modification_timestamp: data_modification_timestamp2,
+                                status_change_timestamp: status_change_timestamp2,
+                            } = e;
+                            *ptr1.add(8).cast::<u8>() = (type_2.clone() as i32) as u8;
+                            *ptr1.add(16).cast::<i64>() = _rt::as_i64(link_count2);
+                            *ptr1.add(24).cast::<i64>() = _rt::as_i64(size2);
+                            match data_access_timestamp2 {
+                                Some(e) => {
+                                    *ptr1.add(32).cast::<u8>() = (1i32) as u8;
+                                    let super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{ seconds:seconds3, nanoseconds:nanoseconds3, } = e;
+                                    *ptr1.add(40).cast::<i64>() = _rt::as_i64(seconds3);
+                                    *ptr1.add(48).cast::<i32>() = _rt::as_i32(nanoseconds3);
+                                }
+                                None => {
+                                    *ptr1.add(32).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
+                            match data_modification_timestamp2 {
+                                Some(e) => {
+                                    *ptr1.add(56).cast::<u8>() = (1i32) as u8;
+                                    let super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{ seconds:seconds4, nanoseconds:nanoseconds4, } = e;
+                                    *ptr1.add(64).cast::<i64>() = _rt::as_i64(seconds4);
+                                    *ptr1.add(72).cast::<i32>() = _rt::as_i32(nanoseconds4);
+                                }
+                                None => {
+                                    *ptr1.add(56).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
+                            match status_change_timestamp2 {
+                                Some(e) => {
+                                    *ptr1.add(80).cast::<u8>() = (1i32) as u8;
+                                    let super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{ seconds:seconds5, nanoseconds:nanoseconds5, } = e;
+                                    *ptr1.add(88).cast::<i64>() = _rt::as_i64(seconds5);
+                                    *ptr1.add(96).cast::<i32>() = _rt::as_i32(nanoseconds5);
+                                }
+                                None => {
+                                    *ptr1.add(80).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(8).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_stat_at_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i32,
+                    arg2: *mut u8,
+                    arg3: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg3;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg2.cast(), len0, len0);
+                    let result1 = T::stat_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        PathFlags::empty() | PathFlags::from_bits_retain(((arg1 as u8) << 0) as _),
+                        _rt::string_lift(bytes0),
+                    );
+                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result1 {
+                        Ok(e) => {
+                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+                            let DescriptorStat {
+                                type_: type_3,
+                                link_count: link_count3,
+                                size: size3,
+                                data_access_timestamp: data_access_timestamp3,
+                                data_modification_timestamp: data_modification_timestamp3,
+                                status_change_timestamp: status_change_timestamp3,
+                            } = e;
+                            *ptr2.add(8).cast::<u8>() = (type_3.clone() as i32) as u8;
+                            *ptr2.add(16).cast::<i64>() = _rt::as_i64(link_count3);
+                            *ptr2.add(24).cast::<i64>() = _rt::as_i64(size3);
+                            match data_access_timestamp3 {
+                                Some(e) => {
+                                    *ptr2.add(32).cast::<u8>() = (1i32) as u8;
+                                    let super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{ seconds:seconds4, nanoseconds:nanoseconds4, } = e;
+                                    *ptr2.add(40).cast::<i64>() = _rt::as_i64(seconds4);
+                                    *ptr2.add(48).cast::<i32>() = _rt::as_i32(nanoseconds4);
+                                }
+                                None => {
+                                    *ptr2.add(32).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
+                            match data_modification_timestamp3 {
+                                Some(e) => {
+                                    *ptr2.add(56).cast::<u8>() = (1i32) as u8;
+                                    let super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{ seconds:seconds5, nanoseconds:nanoseconds5, } = e;
+                                    *ptr2.add(64).cast::<i64>() = _rt::as_i64(seconds5);
+                                    *ptr2.add(72).cast::<i32>() = _rt::as_i32(nanoseconds5);
+                                }
+                                None => {
+                                    *ptr2.add(56).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
+                            match status_change_timestamp3 {
+                                Some(e) => {
+                                    *ptr2.add(80).cast::<u8>() = (1i32) as u8;
+                                    let super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{ seconds:seconds6, nanoseconds:nanoseconds6, } = e;
+                                    *ptr2.add(88).cast::<i64>() = _rt::as_i64(seconds6);
+                                    *ptr2.add(96).cast::<i32>() = _rt::as_i32(nanoseconds6);
+                                }
+                                None => {
+                                    *ptr2.add(80).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
+                        }
+                        Err(e) => {
+                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr2.add(8).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr2
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_set_times_at_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i32,
+                    arg2: *mut u8,
+                    arg3: usize,
+                    arg4: i32,
+                    arg5: i64,
+                    arg6: i32,
+                    arg7: i32,
+                    arg8: i64,
+                    arg9: i32,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg3;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg2.cast(), len0, len0);
+                    let v1 = match arg4 {
+                        0 => NewTimestamp::NoChange,
+                        1 => NewTimestamp::Now,
+                        n => {
+                            debug_assert_eq!(n, 2, "invalid enum discriminant");
+                            let e1 = super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{
+      seconds: arg5 as u64,
+      nanoseconds: arg6 as u32,
+    };
+                            NewTimestamp::Timestamp(e1)
+                        }
+                    };
+                    let v2 = match arg7 {
+                        0 => NewTimestamp::NoChange,
+                        1 => NewTimestamp::Now,
+                        n => {
+                            debug_assert_eq!(n, 2, "invalid enum discriminant");
+                            let e2 = super::super::super::super::exports::wasi::clocks::wall_clock::Datetime{
+      seconds: arg8 as u64,
+      nanoseconds: arg9 as u32,
+    };
+                            NewTimestamp::Timestamp(e2)
+                        }
+                    };
+                    let result3 = T::set_times_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        PathFlags::empty() | PathFlags::from_bits_retain(((arg1 as u8) << 0) as _),
+                        _rt::string_lift(bytes0),
+                        v1,
+                        v2,
+                    );
+                    let ptr4 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result3 {
+                        Ok(_) => {
+                            *ptr4.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr4.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr4.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr4
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_link_at_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i32,
+                    arg2: *mut u8,
+                    arg3: usize,
+                    arg4: i32,
+                    arg5: *mut u8,
+                    arg6: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg3;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg2.cast(), len0, len0);
+                    let len1 = arg6;
+                    let bytes1 = _rt::Vec::from_raw_parts(arg5.cast(), len1, len1);
+                    let result2 = T::link_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        PathFlags::empty() | PathFlags::from_bits_retain(((arg1 as u8) << 0) as _),
+                        _rt::string_lift(bytes0),
+                        DescriptorBorrow::lift(arg4 as u32 as usize),
+                        _rt::string_lift(bytes1),
+                    );
+                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result2 {
+                        Ok(_) => {
+                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr3.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr3
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_open_at_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: i32,
+                    arg2: *mut u8,
+                    arg3: usize,
+                    arg4: i32,
+                    arg5: i32,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg3;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg2.cast(), len0, len0);
+                    let result1 = T::open_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        PathFlags::empty() | PathFlags::from_bits_retain(((arg1 as u8) << 0) as _),
+                        _rt::string_lift(bytes0),
+                        OpenFlags::empty() | OpenFlags::from_bits_retain(((arg4 as u8) << 0) as _),
+                        DescriptorFlags::empty()
+                            | DescriptorFlags::from_bits_retain(((arg5 as u8) << 0) as _),
+                    );
                     let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
                     match result1 {
                         Ok(e) => {
@@ -4342,3637 +6377,362 @@ pub mod exports {
                         }
                         Err(e) => {
                             *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code3,
-                                message: message3,
-                            } = e;
-                            match nfs_error_code3 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec4 = (message3.into_bytes()).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr2.add(16).cast::<usize>() = len4;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr4.cast_mut();
+                            *ptr2.add(4).cast::<u8>() = (e.clone() as i32) as u8;
                         }
                     };
                     ptr2
                 }
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn __post_return_parse_url_and_mount<T: Guest>(arg0: *mut u8) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_null_op_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let result0 = T::null_op(NfsMountBorrow::lift(arg0 as u32 as usize).get());
-                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result0 {
-                        Ok(_) => {
-                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code2,
-                                message: message2,
-                            } = e;
-                            match nfs_error_code2 {
-                                Some(e) => {
-                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec3 = (message2.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr1.add(16).cast::<usize>() = len3;
-                            *ptr1.add(12).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                    };
-                    ptr1
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_null_op<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_access_cabi<T: GuestNfsMount>(
+                pub unsafe fn _export_method_descriptor_readlink_at_cabi<T: GuestDescriptor>(
                     arg0: *mut u8,
                     arg1: *mut u8,
                     arg2: usize,
-                    arg3: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::access(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        arg3 as u32,
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            *ptr2.add(4).cast::<i32>() = _rt::as_i32(e);
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code3,
-                                message: message3,
-                            } = e;
-                            match nfs_error_code3 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec4 = (message3.into_bytes()).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr2.add(16).cast::<usize>() = len4;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_access<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_access_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i32,
                 ) -> *mut u8 {
                     #[cfg(target_arch = "wasm32")]
                     _rt::run_ctors_once();
                     let len0 = arg2;
                     let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::access_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
+                    let result1 = T::readlink_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
                         _rt::string_lift(bytes0),
-                        arg3 as u32,
                     );
                     let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
                     match result1 {
                         Ok(e) => {
                             *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            *ptr2.add(4).cast::<i32>() = _rt::as_i32(e);
+                            let vec3 = (e.into_bytes()).into_boxed_slice();
+                            let ptr3 = vec3.as_ptr().cast::<u8>();
+                            let len3 = vec3.len();
+                            ::core::mem::forget(vec3);
+                            *ptr2.add(8).cast::<usize>() = len3;
+                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
                         }
                         Err(e) => {
                             *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code3,
-                                message: message3,
-                            } = e;
-                            match nfs_error_code3 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec4 = (message3.into_bytes()).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr2.add(16).cast::<usize>() = len4;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr4.cast_mut();
+                            *ptr2.add(4).cast::<u8>() = (e.clone() as i32) as u8;
                         }
                     };
                     ptr2
                 }
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_access_path<T: GuestNfsMount>(
+                pub unsafe fn __post_return_method_descriptor_readlink_at<T: GuestDescriptor>(
                     arg0: *mut u8,
                 ) {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
+                        0 => {
+                            let l1 = *arg0.add(4).cast::<*mut u8>();
+                            let l2 = *arg0.add(8).cast::<usize>();
                             _rt::cabi_dealloc(l1, l2, 1);
                         }
+                        _ => (),
                     }
                 }
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_close_cabi<T: GuestNfsMount>(
+                pub unsafe fn _export_method_descriptor_remove_directory_at_cabi<
+                    T: GuestDescriptor,
+                >(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
+                    let result1 = T::remove_directory_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::string_lift(bytes0),
+                    );
+                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result1 {
+                        Ok(_) => {
+                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr2.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr2
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_rename_at_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                    arg3: i32,
+                    arg4: *mut u8,
+                    arg5: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
+                    let len1 = arg5;
+                    let bytes1 = _rt::Vec::from_raw_parts(arg4.cast(), len1, len1);
+                    let result2 = T::rename_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::string_lift(bytes0),
+                        DescriptorBorrow::lift(arg3 as u32 as usize),
+                        _rt::string_lift(bytes1),
+                    );
+                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result2 {
+                        Ok(_) => {
+                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr3.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr3
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_symlink_at_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                    arg3: *mut u8,
+                    arg4: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
+                    let len1 = arg4;
+                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
+                    let result2 = T::symlink_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::string_lift(bytes0),
+                        _rt::string_lift(bytes1),
+                    );
+                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result2 {
+                        Ok(_) => {
+                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr3.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr3
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_unlink_file_at_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
+                    let result1 = T::unlink_file_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::string_lift(bytes0),
+                    );
+                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result1 {
+                        Ok(_) => {
+                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr2.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                    };
+                    ptr2
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_is_same_object_cabi<T: GuestDescriptor>(
                     arg0: *mut u8,
                     arg1: i32,
-                    arg2: i64,
+                ) -> i32 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::is_same_object(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        DescriptorBorrow::lift(arg1 as u32 as usize),
+                    );
+                    match result0 {
+                        true => 1,
+                        false => 0,
+                    }
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_descriptor_metadata_hash_cabi<T: GuestDescriptor>(
+                    arg0: *mut u8,
                 ) -> *mut u8 {
                     #[cfg(target_arch = "wasm32")]
                     _rt::run_ctors_once();
-                    let result0 = T::close(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        arg1 as u32,
-                        arg2 as u64,
-                    );
+                    let result0 =
+                        T::metadata_hash(DescriptorBorrow::lift(arg0 as u32 as usize).get());
                     let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
                     match result0 {
-                        Ok(_) => {
+                        Ok(e) => {
                             *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            let MetadataHashValue {
+                                lower: lower2,
+                                upper: upper2,
+                            } = e;
+                            *ptr1.add(8).cast::<i64>() = _rt::as_i64(lower2);
+                            *ptr1.add(16).cast::<i64>() = _rt::as_i64(upper2);
                         }
                         Err(e) => {
                             *ptr1.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code2,
-                                message: message2,
-                            } = e;
-                            match nfs_error_code2 {
-                                Some(e) => {
-                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec3 = (message2.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr1.add(16).cast::<usize>() = len3;
-                            *ptr1.add(12).cast::<*mut u8>() = ptr3.cast_mut();
+                            *ptr1.add(8).cast::<u8>() = (e.clone() as i32) as u8;
                         }
                     };
                     ptr1
                 }
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_close<T: GuestNfsMount>(
+                pub unsafe fn _export_method_descriptor_metadata_hash_at_cabi<
+                    T: GuestDescriptor,
+                >(
                     arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_commit_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i64,
-                    arg4: i32,
+                    arg1: i32,
+                    arg2: *mut u8,
+                    arg3: usize,
                 ) -> *mut u8 {
                     #[cfg(target_arch = "wasm32")]
                     _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::commit(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        arg3 as u64,
-                        arg4 as u32,
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(_) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code3,
-                                message: message3,
-                            } = e;
-                            match nfs_error_code3 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec4 = (message3.into_bytes()).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr2.add(16).cast::<usize>() = len4;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_commit<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_commit_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i64,
-                    arg4: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::commit_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
+                    let len0 = arg3;
+                    let bytes0 = _rt::Vec::from_raw_parts(arg2.cast(), len0, len0);
+                    let result1 = T::metadata_hash_at(
+                        DescriptorBorrow::lift(arg0 as u32 as usize).get(),
+                        PathFlags::empty() | PathFlags::from_bits_retain(((arg1 as u8) << 0) as _),
                         _rt::string_lift(bytes0),
-                        arg3 as u64,
-                        arg4 as u32,
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(_) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code3,
-                                message: message3,
-                            } = e;
-                            match nfs_error_code3 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec4 = (message3.into_bytes()).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr2.add(16).cast::<usize>() = len4;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_commit_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_create_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                    arg5: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::create(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        _rt::string_lift(bytes1),
-                        arg5 as u32,
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(e) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
-                            } = e;
-                            match nfs_error_code5 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_create<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_create_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::create_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        arg3 as u32,
                     );
                     let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
                     match result1 {
                         Ok(e) => {
                             *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
+                            let MetadataHashValue {
+                                lower: lower3,
+                                upper: upper3,
+                            } = e;
+                            *ptr2.add(8).cast::<i64>() = _rt::as_i64(lower3);
+                            *ptr2.add(16).cast::<i64>() = _rt::as_i64(upper3);
                         }
                         Err(e) => {
                             *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
+                            *ptr2.add(8).cast::<u8>() = (e.clone() as i32) as u8;
                         }
                     };
                     ptr2
                 }
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_create_path<T: GuestNfsMount>(
+                pub unsafe fn _export_method_directory_entry_stream_read_directory_entry_cabi<
+                    T: GuestDirectoryEntryStream,
+                >(
                     arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_delegpurge_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: i64,
                 ) -> *mut u8 {
                     #[cfg(target_arch = "wasm32")]
                     _rt::run_ctors_once();
-                    let result0 = T::delegpurge(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        arg1 as u64,
+                    let result0 = T::read_directory_entry(
+                        DirectoryEntryStreamBorrow::lift(arg0 as u32 as usize).get(),
                     );
                     let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
                     match result0 {
-                        Ok(_) => {
+                        Ok(e) => {
                             *ptr1.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code2,
-                                message: message2,
-                            } = e;
-                            match nfs_error_code2 {
+                            match e {
                                 Some(e) => {
                                     *ptr1.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    let DirectoryEntry {
+                                        type_: type_2,
+                                        name: name2,
+                                    } = e;
+                                    *ptr1.add(8).cast::<u8>() = (type_2.clone() as i32) as u8;
+                                    let vec3 = (name2.into_bytes()).into_boxed_slice();
+                                    let ptr3 = vec3.as_ptr().cast::<u8>();
+                                    let len3 = vec3.len();
+                                    ::core::mem::forget(vec3);
+                                    *ptr1.add(16).cast::<usize>() = len3;
+                                    *ptr1.add(12).cast::<*mut u8>() = ptr3.cast_mut();
                                 }
                                 None => {
                                     *ptr1.add(4).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec3 = (message2.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr1.add(16).cast::<usize>() = len3;
-                            *ptr1.add(12).cast::<*mut u8>() = ptr3.cast_mut();
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            *ptr1.add(4).cast::<u8>() = (e.clone() as i32) as u8;
                         }
                     };
                     ptr1
                 }
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_delegpurge<T: GuestNfsMount>(
+                pub unsafe fn __post_return_method_directory_entry_stream_read_directory_entry<
+                    T: GuestDirectoryEntryStream,
+                >(
                     arg0: *mut u8,
                 ) {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
+                        0 => {
+                            let l1 = i32::from(*arg0.add(4).cast::<u8>());
+                            match l1 {
+                                0 => (),
+                                _ => {
+                                    let l2 = *arg0.add(12).cast::<*mut u8>();
+                                    let l3 = *arg0.add(16).cast::<usize>();
+                                    _rt::cabi_dealloc(l2, l3, 1);
+                                }
+                            }
                         }
+                        _ => (),
                     }
                 }
                 #[doc(hidden)]
                 #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_delegreturn_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: i64,
-                ) -> *mut u8 {
+                pub unsafe fn _export_filesystem_error_code_cabi<T: Guest>(arg0: i32) -> *mut u8 {
                     #[cfg(target_arch = "wasm32")]
                     _rt::run_ctors_once();
-                    let result0 = T::delegreturn(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        arg1 as u64,
-                    );
+                    let result0 = T::filesystem_error_code(ErrorBorrow::lift(arg0 as u32 as usize));
                     let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
                     match result0 {
-                        Ok(_) => {
-                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
+                        Some(e) => {
                             *ptr1.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code2,
-                                message: message2,
-                            } = e;
-                            match nfs_error_code2 {
-                                Some(e) => {
-                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec3 = (message2.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr1.add(16).cast::<usize>() = len3;
-                            *ptr1.add(12).cast::<*mut u8>() = ptr3.cast_mut();
+                            *ptr1.add(1).cast::<u8>() = (e.clone() as i32) as u8;
+                        }
+                        None => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
                         }
                     };
                     ptr1
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_delegreturn<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_getattr_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::getattr(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let Attr {
-                                attr_type: attr_type3,
-                                file_mode: file_mode3,
-                                nlink: nlink3,
-                                uid: uid3,
-                                gid: gid3,
-                                filesize: filesize3,
-                                used: used3,
-                                spec_data: spec_data3,
-                                fsid: fsid3,
-                                fileid: fileid3,
-                                atime: atime3,
-                                mtime: mtime3,
-                                ctime: ctime3,
-                            } = e;
-                            *ptr2.add(8).cast::<i32>() = _rt::as_i32(attr_type3);
-                            *ptr2.add(12).cast::<i32>() = _rt::as_i32(file_mode3);
-                            *ptr2.add(16).cast::<i32>() = _rt::as_i32(nlink3);
-                            *ptr2.add(20).cast::<i32>() = _rt::as_i32(uid3);
-                            *ptr2.add(24).cast::<i32>() = _rt::as_i32(gid3);
-                            *ptr2.add(32).cast::<i64>() = _rt::as_i64(filesize3);
-                            *ptr2.add(40).cast::<i64>() = _rt::as_i64(used3);
-                            let (t4_0, t4_1) = spec_data3;
-                            *ptr2.add(48).cast::<i32>() = _rt::as_i32(t4_0);
-                            *ptr2.add(52).cast::<i32>() = _rt::as_i32(t4_1);
-                            *ptr2.add(56).cast::<i64>() = _rt::as_i64(fsid3);
-                            *ptr2.add(64).cast::<i64>() = _rt::as_i64(fileid3);
-                            let Time {
-                                seconds: seconds5,
-                                nseconds: nseconds5,
-                            } = atime3;
-                            *ptr2.add(72).cast::<i32>() = _rt::as_i32(seconds5);
-                            *ptr2.add(76).cast::<i32>() = _rt::as_i32(nseconds5);
-                            let Time {
-                                seconds: seconds6,
-                                nseconds: nseconds6,
-                            } = mtime3;
-                            *ptr2.add(80).cast::<i32>() = _rt::as_i32(seconds6);
-                            *ptr2.add(84).cast::<i32>() = _rt::as_i32(nseconds6);
-                            let Time {
-                                seconds: seconds7,
-                                nseconds: nseconds7,
-                            } = ctime3;
-                            *ptr2.add(88).cast::<i32>() = _rt::as_i32(seconds7);
-                            *ptr2.add(92).cast::<i32>() = _rt::as_i32(nseconds7);
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code8,
-                                message: message8,
-                            } = e;
-                            match nfs_error_code8 {
-                                Some(e) => {
-                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(12).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec9 = (message8.into_bytes()).into_boxed_slice();
-                            let ptr9 = vec9.as_ptr().cast::<u8>();
-                            let len9 = vec9.len();
-                            ::core::mem::forget(vec9);
-                            *ptr2.add(20).cast::<usize>() = len9;
-                            *ptr2.add(16).cast::<*mut u8>() = ptr9.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_getattr<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(16).cast::<*mut u8>();
-                            let l2 = *arg0.add(20).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_getattr_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::getattr_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let Attr {
-                                attr_type: attr_type3,
-                                file_mode: file_mode3,
-                                nlink: nlink3,
-                                uid: uid3,
-                                gid: gid3,
-                                filesize: filesize3,
-                                used: used3,
-                                spec_data: spec_data3,
-                                fsid: fsid3,
-                                fileid: fileid3,
-                                atime: atime3,
-                                mtime: mtime3,
-                                ctime: ctime3,
-                            } = e;
-                            *ptr2.add(8).cast::<i32>() = _rt::as_i32(attr_type3);
-                            *ptr2.add(12).cast::<i32>() = _rt::as_i32(file_mode3);
-                            *ptr2.add(16).cast::<i32>() = _rt::as_i32(nlink3);
-                            *ptr2.add(20).cast::<i32>() = _rt::as_i32(uid3);
-                            *ptr2.add(24).cast::<i32>() = _rt::as_i32(gid3);
-                            *ptr2.add(32).cast::<i64>() = _rt::as_i64(filesize3);
-                            *ptr2.add(40).cast::<i64>() = _rt::as_i64(used3);
-                            let (t4_0, t4_1) = spec_data3;
-                            *ptr2.add(48).cast::<i32>() = _rt::as_i32(t4_0);
-                            *ptr2.add(52).cast::<i32>() = _rt::as_i32(t4_1);
-                            *ptr2.add(56).cast::<i64>() = _rt::as_i64(fsid3);
-                            *ptr2.add(64).cast::<i64>() = _rt::as_i64(fileid3);
-                            let Time {
-                                seconds: seconds5,
-                                nseconds: nseconds5,
-                            } = atime3;
-                            *ptr2.add(72).cast::<i32>() = _rt::as_i32(seconds5);
-                            *ptr2.add(76).cast::<i32>() = _rt::as_i32(nseconds5);
-                            let Time {
-                                seconds: seconds6,
-                                nseconds: nseconds6,
-                            } = mtime3;
-                            *ptr2.add(80).cast::<i32>() = _rt::as_i32(seconds6);
-                            *ptr2.add(84).cast::<i32>() = _rt::as_i32(nseconds6);
-                            let Time {
-                                seconds: seconds7,
-                                nseconds: nseconds7,
-                            } = ctime3;
-                            *ptr2.add(88).cast::<i32>() = _rt::as_i32(seconds7);
-                            *ptr2.add(92).cast::<i32>() = _rt::as_i32(nseconds7);
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code8,
-                                message: message8,
-                            } = e;
-                            match nfs_error_code8 {
-                                Some(e) => {
-                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(12).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec9 = (message8.into_bytes()).into_boxed_slice();
-                            let ptr9 = vec9.as_ptr().cast::<u8>();
-                            let len9 = vec9.len();
-                            ::core::mem::forget(vec9);
-                            *ptr2.add(20).cast::<usize>() = len9;
-                            *ptr2.add(16).cast::<*mut u8>() = ptr9.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_getattr_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(16).cast::<*mut u8>();
-                            let l2 = *arg0.add(20).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_setattr_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let l0 = *arg0.add(0).cast::<i32>();
-                    let l1 = *arg0.add(4).cast::<*mut u8>();
-                    let l2 = *arg0.add(8).cast::<usize>();
-                    let len3 = l2;
-                    let l4 = i32::from(*arg0.add(12).cast::<u8>());
-                    let l7 = i32::from(*arg0.add(24).cast::<u8>());
-                    let l9 = i32::from(*arg0.add(32).cast::<u8>());
-                    let l11 = i32::from(*arg0.add(40).cast::<u8>());
-                    let l13 = i32::from(*arg0.add(48).cast::<u8>());
-                    let l15 = i32::from(*arg0.add(64).cast::<u8>());
-                    let l18 = i32::from(*arg0.add(76).cast::<u8>());
-                    let result21 = T::setattr(
-                        NfsMountBorrow::lift(l0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(l1.cast(), len3, len3),
-                        match l4 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l5 = *arg0.add(16).cast::<i32>();
-                                    let l6 = *arg0.add(20).cast::<i32>();
-
-                                    Time {
-                                        seconds: l5 as u32,
-                                        nseconds: l6 as u32,
-                                    }
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l7 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l8 = *arg0.add(28).cast::<i32>();
-
-                                    l8 as u32
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l9 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l10 = *arg0.add(36).cast::<i32>();
-
-                                    l10 as u32
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l11 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l12 = *arg0.add(44).cast::<i32>();
-
-                                    l12 as u32
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l13 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l14 = *arg0.add(56).cast::<i64>();
-
-                                    l14 as u64
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l15 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l16 = *arg0.add(68).cast::<i32>();
-                                    let l17 = *arg0.add(72).cast::<i32>();
-
-                                    Time {
-                                        seconds: l16 as u32,
-                                        nseconds: l17 as u32,
-                                    }
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l18 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l19 = *arg0.add(80).cast::<i32>();
-                                    let l20 = *arg0.add(84).cast::<i32>();
-
-                                    Time {
-                                        seconds: l19 as u32,
-                                        nseconds: l20 as u32,
-                                    }
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                    );
-                    _rt::cabi_dealloc(arg0, 88, 8);
-                    let ptr22 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result21 {
-                        Ok(_) => {
-                            *ptr22.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr22.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code23,
-                                message: message23,
-                            } = e;
-                            match nfs_error_code23 {
-                                Some(e) => {
-                                    *ptr22.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr22.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr22.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec24 = (message23.into_bytes()).into_boxed_slice();
-                            let ptr24 = vec24.as_ptr().cast::<u8>();
-                            let len24 = vec24.len();
-                            ::core::mem::forget(vec24);
-                            *ptr22.add(16).cast::<usize>() = len24;
-                            *ptr22.add(12).cast::<*mut u8>() = ptr24.cast_mut();
-                        }
-                    };
-                    ptr22
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_setattr<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_setattr_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let l0 = *arg0.add(0).cast::<i32>();
-                    let l1 = *arg0.add(4).cast::<*mut u8>();
-                    let l2 = *arg0.add(8).cast::<usize>();
-                    let len3 = l2;
-                    let bytes3 = _rt::Vec::from_raw_parts(l1.cast(), len3, len3);
-                    let l4 = i32::from(*arg0.add(12).cast::<u8>());
-                    let l5 = i32::from(*arg0.add(16).cast::<u8>());
-                    let l7 = i32::from(*arg0.add(24).cast::<u8>());
-                    let l9 = i32::from(*arg0.add(32).cast::<u8>());
-                    let l11 = i32::from(*arg0.add(40).cast::<u8>());
-                    let l13 = i32::from(*arg0.add(56).cast::<u8>());
-                    let l16 = i32::from(*arg0.add(68).cast::<u8>());
-                    let result19 = T::setattr_path(
-                        NfsMountBorrow::lift(l0 as u32 as usize).get(),
-                        _rt::string_lift(bytes3),
-                        _rt::bool_lift(l4 as u8),
-                        match l5 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l6 = *arg0.add(20).cast::<i32>();
-
-                                    l6 as u32
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l7 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l8 = *arg0.add(28).cast::<i32>();
-
-                                    l8 as u32
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l9 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l10 = *arg0.add(36).cast::<i32>();
-
-                                    l10 as u32
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l11 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l12 = *arg0.add(48).cast::<i64>();
-
-                                    l12 as u64
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l13 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l14 = *arg0.add(60).cast::<i32>();
-                                    let l15 = *arg0.add(64).cast::<i32>();
-
-                                    Time {
-                                        seconds: l14 as u32,
-                                        nseconds: l15 as u32,
-                                    }
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                        match l16 {
-                            0 => None,
-                            1 => {
-                                let e = {
-                                    let l17 = *arg0.add(72).cast::<i32>();
-                                    let l18 = *arg0.add(76).cast::<i32>();
-
-                                    Time {
-                                        seconds: l17 as u32,
-                                        nseconds: l18 as u32,
-                                    }
-                                };
-                                Some(e)
-                            }
-                            _ => _rt::invalid_enum_discriminant(),
-                        },
-                    );
-                    _rt::cabi_dealloc(arg0, 80, 8);
-                    let ptr20 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result19 {
-                        Ok(_) => {
-                            *ptr20.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr20.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code21,
-                                message: message21,
-                            } = e;
-                            match nfs_error_code21 {
-                                Some(e) => {
-                                    *ptr20.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr20.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr20.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec22 = (message21.into_bytes()).into_boxed_slice();
-                            let ptr22 = vec22.as_ptr().cast::<u8>();
-                            let len22 = vec22.len();
-                            ::core::mem::forget(vec22);
-                            *ptr20.add(16).cast::<usize>() = len22;
-                            *ptr20.add(12).cast::<*mut u8>() = ptr22.cast_mut();
-                        }
-                    };
-                    ptr20
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_setattr_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_getfh_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let result0 = T::getfh(NfsMountBorrow::lift(arg0 as u32 as usize).get());
-                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result0 {
-                        Ok(_) => {
-                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code2,
-                                message: message2,
-                            } = e;
-                            match nfs_error_code2 {
-                                Some(e) => {
-                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec3 = (message2.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr1.add(16).cast::<usize>() = len3;
-                            *ptr1.add(12).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                    };
-                    ptr1
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_getfh<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_link_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                    arg5: *mut u8,
-                    arg6: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg4;
-                    let len2 = arg6;
-                    let bytes2 = _rt::Vec::from_raw_parts(arg5.cast(), len2, len2);
-                    let result3 = T::link(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        _rt::Vec::from_raw_parts(arg3.cast(), len1, len1),
-                        _rt::string_lift(bytes2),
-                    );
-                    let ptr4 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result3 {
-                        Ok(e) => {
-                            *ptr4.add(0).cast::<u8>() = (0i32) as u8;
-                            let Attr {
-                                attr_type: attr_type5,
-                                file_mode: file_mode5,
-                                nlink: nlink5,
-                                uid: uid5,
-                                gid: gid5,
-                                filesize: filesize5,
-                                used: used5,
-                                spec_data: spec_data5,
-                                fsid: fsid5,
-                                fileid: fileid5,
-                                atime: atime5,
-                                mtime: mtime5,
-                                ctime: ctime5,
-                            } = e;
-                            *ptr4.add(8).cast::<i32>() = _rt::as_i32(attr_type5);
-                            *ptr4.add(12).cast::<i32>() = _rt::as_i32(file_mode5);
-                            *ptr4.add(16).cast::<i32>() = _rt::as_i32(nlink5);
-                            *ptr4.add(20).cast::<i32>() = _rt::as_i32(uid5);
-                            *ptr4.add(24).cast::<i32>() = _rt::as_i32(gid5);
-                            *ptr4.add(32).cast::<i64>() = _rt::as_i64(filesize5);
-                            *ptr4.add(40).cast::<i64>() = _rt::as_i64(used5);
-                            let (t6_0, t6_1) = spec_data5;
-                            *ptr4.add(48).cast::<i32>() = _rt::as_i32(t6_0);
-                            *ptr4.add(52).cast::<i32>() = _rt::as_i32(t6_1);
-                            *ptr4.add(56).cast::<i64>() = _rt::as_i64(fsid5);
-                            *ptr4.add(64).cast::<i64>() = _rt::as_i64(fileid5);
-                            let Time {
-                                seconds: seconds7,
-                                nseconds: nseconds7,
-                            } = atime5;
-                            *ptr4.add(72).cast::<i32>() = _rt::as_i32(seconds7);
-                            *ptr4.add(76).cast::<i32>() = _rt::as_i32(nseconds7);
-                            let Time {
-                                seconds: seconds8,
-                                nseconds: nseconds8,
-                            } = mtime5;
-                            *ptr4.add(80).cast::<i32>() = _rt::as_i32(seconds8);
-                            *ptr4.add(84).cast::<i32>() = _rt::as_i32(nseconds8);
-                            let Time {
-                                seconds: seconds9,
-                                nseconds: nseconds9,
-                            } = ctime5;
-                            *ptr4.add(88).cast::<i32>() = _rt::as_i32(seconds9);
-                            *ptr4.add(92).cast::<i32>() = _rt::as_i32(nseconds9);
-                        }
-                        Err(e) => {
-                            *ptr4.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code10,
-                                message: message10,
-                            } = e;
-                            match nfs_error_code10 {
-                                Some(e) => {
-                                    *ptr4.add(8).cast::<u8>() = (1i32) as u8;
-                                    *ptr4.add(12).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr4.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec11 = (message10.into_bytes()).into_boxed_slice();
-                            let ptr11 = vec11.as_ptr().cast::<u8>();
-                            let len11 = vec11.len();
-                            ::core::mem::forget(vec11);
-                            *ptr4.add(20).cast::<usize>() = len11;
-                            *ptr4.add(16).cast::<*mut u8>() = ptr11.cast_mut();
-                        }
-                    };
-                    ptr4
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_link<T: GuestNfsMount>(arg0: *mut u8) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(16).cast::<*mut u8>();
-                            let l2 = *arg0.add(20).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_link_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::link_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        _rt::string_lift(bytes1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(e) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let Attr {
-                                attr_type: attr_type4,
-                                file_mode: file_mode4,
-                                nlink: nlink4,
-                                uid: uid4,
-                                gid: gid4,
-                                filesize: filesize4,
-                                used: used4,
-                                spec_data: spec_data4,
-                                fsid: fsid4,
-                                fileid: fileid4,
-                                atime: atime4,
-                                mtime: mtime4,
-                                ctime: ctime4,
-                            } = e;
-                            *ptr3.add(8).cast::<i32>() = _rt::as_i32(attr_type4);
-                            *ptr3.add(12).cast::<i32>() = _rt::as_i32(file_mode4);
-                            *ptr3.add(16).cast::<i32>() = _rt::as_i32(nlink4);
-                            *ptr3.add(20).cast::<i32>() = _rt::as_i32(uid4);
-                            *ptr3.add(24).cast::<i32>() = _rt::as_i32(gid4);
-                            *ptr3.add(32).cast::<i64>() = _rt::as_i64(filesize4);
-                            *ptr3.add(40).cast::<i64>() = _rt::as_i64(used4);
-                            let (t5_0, t5_1) = spec_data4;
-                            *ptr3.add(48).cast::<i32>() = _rt::as_i32(t5_0);
-                            *ptr3.add(52).cast::<i32>() = _rt::as_i32(t5_1);
-                            *ptr3.add(56).cast::<i64>() = _rt::as_i64(fsid4);
-                            *ptr3.add(64).cast::<i64>() = _rt::as_i64(fileid4);
-                            let Time {
-                                seconds: seconds6,
-                                nseconds: nseconds6,
-                            } = atime4;
-                            *ptr3.add(72).cast::<i32>() = _rt::as_i32(seconds6);
-                            *ptr3.add(76).cast::<i32>() = _rt::as_i32(nseconds6);
-                            let Time {
-                                seconds: seconds7,
-                                nseconds: nseconds7,
-                            } = mtime4;
-                            *ptr3.add(80).cast::<i32>() = _rt::as_i32(seconds7);
-                            *ptr3.add(84).cast::<i32>() = _rt::as_i32(nseconds7);
-                            let Time {
-                                seconds: seconds8,
-                                nseconds: nseconds8,
-                            } = ctime4;
-                            *ptr3.add(88).cast::<i32>() = _rt::as_i32(seconds8);
-                            *ptr3.add(92).cast::<i32>() = _rt::as_i32(nseconds8);
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code9,
-                                message: message9,
-                            } = e;
-                            match nfs_error_code9 {
-                                Some(e) => {
-                                    *ptr3.add(8).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(12).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec10 = (message9.into_bytes()).into_boxed_slice();
-                            let ptr10 = vec10.as_ptr().cast::<u8>();
-                            let len10 = vec10.len();
-                            ::core::mem::forget(vec10);
-                            *ptr3.add(20).cast::<usize>() = len10;
-                            *ptr3.add(16).cast::<*mut u8>() = ptr10.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_link_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(16).cast::<*mut u8>();
-                            let l2 = *arg0.add(20).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_symlink_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                    arg5: *mut u8,
-                    arg6: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let len1 = arg4;
-                    let len2 = arg6;
-                    let bytes2 = _rt::Vec::from_raw_parts(arg5.cast(), len2, len2);
-                    let result3 = T::symlink(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        _rt::Vec::from_raw_parts(arg3.cast(), len1, len1),
-                        _rt::string_lift(bytes2),
-                    );
-                    let ptr4 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result3 {
-                        Ok(e) => {
-                            *ptr4.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec5 = (e).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr4.add(8).cast::<usize>() = len5;
-                            *ptr4.add(4).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr4.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code6,
-                                message: message6,
-                            } = e;
-                            match nfs_error_code6 {
-                                Some(e) => {
-                                    *ptr4.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr4.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr4.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec7 = (message6.into_bytes()).into_boxed_slice();
-                            let ptr7 = vec7.as_ptr().cast::<u8>();
-                            let len7 = vec7.len();
-                            ::core::mem::forget(vec7);
-                            *ptr4.add(16).cast::<usize>() = len7;
-                            *ptr4.add(12).cast::<*mut u8>() = ptr7.cast_mut();
-                        }
-                    };
-                    ptr4
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_symlink<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_symlink_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::symlink_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        _rt::string_lift(bytes1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(e) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
-                            } = e;
-                            match nfs_error_code5 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_symlink_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_readlink_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::readlink(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_readlink<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                        _ => {
-                            let l3 = *arg0.add(12).cast::<*mut u8>();
-                            let l4 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l3, l4, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_readlink_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::readlink_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_readlink_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                        _ => {
-                            let l3 = *arg0.add(12).cast::<*mut u8>();
-                            let l4 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l3, l4, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_lookup_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::lookup(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        _rt::string_lift(bytes1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(e) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
-                            } = e;
-                            match nfs_error_code5 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_lookup<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_lookup_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::lookup_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_lookup_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_pathconf_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::pathconf(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let PathConf {
-                                attr: attr3,
-                                linkmax: linkmax3,
-                                name_max: name_max3,
-                                no_trunc: no_trunc3,
-                                chown_restricted: chown_restricted3,
-                                case_insensitive: case_insensitive3,
-                                case_preserving: case_preserving3,
-                            } = e;
-                            match attr3 {
-                                Some(e) => {
-                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
-                                    let Attr {
-                                        attr_type: attr_type4,
-                                        file_mode: file_mode4,
-                                        nlink: nlink4,
-                                        uid: uid4,
-                                        gid: gid4,
-                                        filesize: filesize4,
-                                        used: used4,
-                                        spec_data: spec_data4,
-                                        fsid: fsid4,
-                                        fileid: fileid4,
-                                        atime: atime4,
-                                        mtime: mtime4,
-                                        ctime: ctime4,
-                                    } = e;
-                                    *ptr2.add(16).cast::<i32>() = _rt::as_i32(attr_type4);
-                                    *ptr2.add(20).cast::<i32>() = _rt::as_i32(file_mode4);
-                                    *ptr2.add(24).cast::<i32>() = _rt::as_i32(nlink4);
-                                    *ptr2.add(28).cast::<i32>() = _rt::as_i32(uid4);
-                                    *ptr2.add(32).cast::<i32>() = _rt::as_i32(gid4);
-                                    *ptr2.add(40).cast::<i64>() = _rt::as_i64(filesize4);
-                                    *ptr2.add(48).cast::<i64>() = _rt::as_i64(used4);
-                                    let (t5_0, t5_1) = spec_data4;
-                                    *ptr2.add(56).cast::<i32>() = _rt::as_i32(t5_0);
-                                    *ptr2.add(60).cast::<i32>() = _rt::as_i32(t5_1);
-                                    *ptr2.add(64).cast::<i64>() = _rt::as_i64(fsid4);
-                                    *ptr2.add(72).cast::<i64>() = _rt::as_i64(fileid4);
-                                    let Time {
-                                        seconds: seconds6,
-                                        nseconds: nseconds6,
-                                    } = atime4;
-                                    *ptr2.add(80).cast::<i32>() = _rt::as_i32(seconds6);
-                                    *ptr2.add(84).cast::<i32>() = _rt::as_i32(nseconds6);
-                                    let Time {
-                                        seconds: seconds7,
-                                        nseconds: nseconds7,
-                                    } = mtime4;
-                                    *ptr2.add(88).cast::<i32>() = _rt::as_i32(seconds7);
-                                    *ptr2.add(92).cast::<i32>() = _rt::as_i32(nseconds7);
-                                    let Time {
-                                        seconds: seconds8,
-                                        nseconds: nseconds8,
-                                    } = ctime4;
-                                    *ptr2.add(96).cast::<i32>() = _rt::as_i32(seconds8);
-                                    *ptr2.add(100).cast::<i32>() = _rt::as_i32(nseconds8);
-                                }
-                                None => {
-                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            *ptr2.add(104).cast::<i32>() = _rt::as_i32(linkmax3);
-                            *ptr2.add(108).cast::<i32>() = _rt::as_i32(name_max3);
-                            *ptr2.add(112).cast::<u8>() = (match no_trunc3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                            *ptr2.add(113).cast::<u8>() = (match chown_restricted3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                            *ptr2.add(114).cast::<u8>() = (match case_insensitive3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                            *ptr2.add(115).cast::<u8>() = (match case_preserving3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code9,
-                                message: message9,
-                            } = e;
-                            match nfs_error_code9 {
-                                Some(e) => {
-                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(12).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec10 = (message9.into_bytes()).into_boxed_slice();
-                            let ptr10 = vec10.as_ptr().cast::<u8>();
-                            let len10 = vec10.len();
-                            ::core::mem::forget(vec10);
-                            *ptr2.add(20).cast::<usize>() = len10;
-                            *ptr2.add(16).cast::<*mut u8>() = ptr10.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_pathconf<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(16).cast::<*mut u8>();
-                            let l2 = *arg0.add(20).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_pathconf_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::pathconf_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let PathConf {
-                                attr: attr3,
-                                linkmax: linkmax3,
-                                name_max: name_max3,
-                                no_trunc: no_trunc3,
-                                chown_restricted: chown_restricted3,
-                                case_insensitive: case_insensitive3,
-                                case_preserving: case_preserving3,
-                            } = e;
-                            match attr3 {
-                                Some(e) => {
-                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
-                                    let Attr {
-                                        attr_type: attr_type4,
-                                        file_mode: file_mode4,
-                                        nlink: nlink4,
-                                        uid: uid4,
-                                        gid: gid4,
-                                        filesize: filesize4,
-                                        used: used4,
-                                        spec_data: spec_data4,
-                                        fsid: fsid4,
-                                        fileid: fileid4,
-                                        atime: atime4,
-                                        mtime: mtime4,
-                                        ctime: ctime4,
-                                    } = e;
-                                    *ptr2.add(16).cast::<i32>() = _rt::as_i32(attr_type4);
-                                    *ptr2.add(20).cast::<i32>() = _rt::as_i32(file_mode4);
-                                    *ptr2.add(24).cast::<i32>() = _rt::as_i32(nlink4);
-                                    *ptr2.add(28).cast::<i32>() = _rt::as_i32(uid4);
-                                    *ptr2.add(32).cast::<i32>() = _rt::as_i32(gid4);
-                                    *ptr2.add(40).cast::<i64>() = _rt::as_i64(filesize4);
-                                    *ptr2.add(48).cast::<i64>() = _rt::as_i64(used4);
-                                    let (t5_0, t5_1) = spec_data4;
-                                    *ptr2.add(56).cast::<i32>() = _rt::as_i32(t5_0);
-                                    *ptr2.add(60).cast::<i32>() = _rt::as_i32(t5_1);
-                                    *ptr2.add(64).cast::<i64>() = _rt::as_i64(fsid4);
-                                    *ptr2.add(72).cast::<i64>() = _rt::as_i64(fileid4);
-                                    let Time {
-                                        seconds: seconds6,
-                                        nseconds: nseconds6,
-                                    } = atime4;
-                                    *ptr2.add(80).cast::<i32>() = _rt::as_i32(seconds6);
-                                    *ptr2.add(84).cast::<i32>() = _rt::as_i32(nseconds6);
-                                    let Time {
-                                        seconds: seconds7,
-                                        nseconds: nseconds7,
-                                    } = mtime4;
-                                    *ptr2.add(88).cast::<i32>() = _rt::as_i32(seconds7);
-                                    *ptr2.add(92).cast::<i32>() = _rt::as_i32(nseconds7);
-                                    let Time {
-                                        seconds: seconds8,
-                                        nseconds: nseconds8,
-                                    } = ctime4;
-                                    *ptr2.add(96).cast::<i32>() = _rt::as_i32(seconds8);
-                                    *ptr2.add(100).cast::<i32>() = _rt::as_i32(nseconds8);
-                                }
-                                None => {
-                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            *ptr2.add(104).cast::<i32>() = _rt::as_i32(linkmax3);
-                            *ptr2.add(108).cast::<i32>() = _rt::as_i32(name_max3);
-                            *ptr2.add(112).cast::<u8>() = (match no_trunc3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                            *ptr2.add(113).cast::<u8>() = (match chown_restricted3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                            *ptr2.add(114).cast::<u8>() = (match case_insensitive3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                            *ptr2.add(115).cast::<u8>() = (match case_preserving3 {
-                                true => 1,
-                                false => 0,
-                            }) as u8;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code9,
-                                message: message9,
-                            } = e;
-                            match nfs_error_code9 {
-                                Some(e) => {
-                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(12).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec10 = (message9.into_bytes()).into_boxed_slice();
-                            let ptr10 = vec10.as_ptr().cast::<u8>();
-                            let len10 = vec10.len();
-                            ::core::mem::forget(vec10);
-                            *ptr2.add(20).cast::<usize>() = len10;
-                            *ptr2.add(16).cast::<*mut u8>() = ptr10.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_pathconf_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(16).cast::<*mut u8>();
-                            let l2 = *arg0.add(20).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_read_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i64,
-                    arg4: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::read(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        arg3 as u64,
-                        arg4 as u32,
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_read<T: GuestNfsMount>(arg0: *mut u8) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_read_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i64,
-                    arg4: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::read_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        arg3 as u64,
-                        arg4 as u32,
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_read_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_write_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i64,
-                    arg4: *mut u8,
-                    arg5: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg5;
-                    let result2 = T::write(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        arg3 as u64,
-                        _rt::Vec::from_raw_parts(arg4.cast(), len1, len1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(e) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            *ptr3.add(4).cast::<i32>() = _rt::as_i32(e);
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr3.add(16).cast::<usize>() = len5;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_write<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_write_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i64,
-                    arg4: *mut u8,
-                    arg5: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let len1 = arg5;
-                    let result2 = T::write_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        arg3 as u64,
-                        _rt::Vec::from_raw_parts(arg4.cast(), len1, len1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(e) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            *ptr3.add(4).cast::<i32>() = _rt::as_i32(e);
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr3.add(16).cast::<usize>() = len5;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_write_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_readdir_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::readdir(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec5 = e;
-                            let len5 = vec5.len();
-                            let layout5 =
-                                _rt::alloc::Layout::from_size_align_unchecked(vec5.len() * 24, 8);
-                            let result5 = if layout5.size() != 0 {
-                                let ptr = _rt::alloc::alloc(layout5).cast::<u8>();
-                                if ptr.is_null() {
-                                    _rt::alloc::handle_alloc_error(layout5);
-                                }
-                                ptr
-                            } else {
-                                {
-                                    ::core::ptr::null_mut()
-                                }
-                            };
-                            for (i, e) in vec5.into_iter().enumerate() {
-                                let base = result5.add(i * 24);
-                                {
-                                    let ReaddirEntry {
-                                        fileid: fileid3,
-                                        file_name: file_name3,
-                                        cookie: cookie3,
-                                    } = e;
-                                    *base.add(0).cast::<i64>() = _rt::as_i64(fileid3);
-                                    let vec4 = (file_name3.into_bytes()).into_boxed_slice();
-                                    let ptr4 = vec4.as_ptr().cast::<u8>();
-                                    let len4 = vec4.len();
-                                    ::core::mem::forget(vec4);
-                                    *base.add(12).cast::<usize>() = len4;
-                                    *base.add(8).cast::<*mut u8>() = ptr4.cast_mut();
-                                    *base.add(16).cast::<i64>() = _rt::as_i64(cookie3);
-                                }
-                            }
-                            *ptr2.add(8).cast::<usize>() = len5;
-                            *ptr2.add(4).cast::<*mut u8>() = result5;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code6,
-                                message: message6,
-                            } = e;
-                            match nfs_error_code6 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec7 = (message6.into_bytes()).into_boxed_slice();
-                            let ptr7 = vec7.as_ptr().cast::<u8>();
-                            let len7 = vec7.len();
-                            ::core::mem::forget(vec7);
-                            *ptr2.add(16).cast::<usize>() = len7;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr7.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_readdir<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l3 = *arg0.add(4).cast::<*mut u8>();
-                            let l4 = *arg0.add(8).cast::<usize>();
-                            let base5 = l3;
-                            let len5 = l4;
-                            for i in 0..len5 {
-                                let base = base5.add(i * 24);
-                                {
-                                    let l1 = *base.add(8).cast::<*mut u8>();
-                                    let l2 = *base.add(12).cast::<usize>();
-                                    _rt::cabi_dealloc(l1, l2, 1);
-                                }
-                            }
-                            _rt::cabi_dealloc(base5, len5 * 24, 8);
-                        }
-                        _ => {
-                            let l6 = *arg0.add(12).cast::<*mut u8>();
-                            let l7 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l6, l7, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_readdir_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::readdir_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec5 = e;
-                            let len5 = vec5.len();
-                            let layout5 =
-                                _rt::alloc::Layout::from_size_align_unchecked(vec5.len() * 24, 8);
-                            let result5 = if layout5.size() != 0 {
-                                let ptr = _rt::alloc::alloc(layout5).cast::<u8>();
-                                if ptr.is_null() {
-                                    _rt::alloc::handle_alloc_error(layout5);
-                                }
-                                ptr
-                            } else {
-                                {
-                                    ::core::ptr::null_mut()
-                                }
-                            };
-                            for (i, e) in vec5.into_iter().enumerate() {
-                                let base = result5.add(i * 24);
-                                {
-                                    let ReaddirEntry {
-                                        fileid: fileid3,
-                                        file_name: file_name3,
-                                        cookie: cookie3,
-                                    } = e;
-                                    *base.add(0).cast::<i64>() = _rt::as_i64(fileid3);
-                                    let vec4 = (file_name3.into_bytes()).into_boxed_slice();
-                                    let ptr4 = vec4.as_ptr().cast::<u8>();
-                                    let len4 = vec4.len();
-                                    ::core::mem::forget(vec4);
-                                    *base.add(12).cast::<usize>() = len4;
-                                    *base.add(8).cast::<*mut u8>() = ptr4.cast_mut();
-                                    *base.add(16).cast::<i64>() = _rt::as_i64(cookie3);
-                                }
-                            }
-                            *ptr2.add(8).cast::<usize>() = len5;
-                            *ptr2.add(4).cast::<*mut u8>() = result5;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code6,
-                                message: message6,
-                            } = e;
-                            match nfs_error_code6 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec7 = (message6.into_bytes()).into_boxed_slice();
-                            let ptr7 = vec7.as_ptr().cast::<u8>();
-                            let len7 = vec7.len();
-                            ::core::mem::forget(vec7);
-                            *ptr2.add(16).cast::<usize>() = len7;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr7.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_readdir_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l3 = *arg0.add(4).cast::<*mut u8>();
-                            let l4 = *arg0.add(8).cast::<usize>();
-                            let base5 = l3;
-                            let len5 = l4;
-                            for i in 0..len5 {
-                                let base = base5.add(i * 24);
-                                {
-                                    let l1 = *base.add(8).cast::<*mut u8>();
-                                    let l2 = *base.add(12).cast::<usize>();
-                                    _rt::cabi_dealloc(l1, l2, 1);
-                                }
-                            }
-                            _rt::cabi_dealloc(base5, len5 * 24, 8);
-                        }
-                        _ => {
-                            let l6 = *arg0.add(12).cast::<*mut u8>();
-                            let l7 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l6, l7, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_readdirplus_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let result1 = T::readdirplus(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec11 = e;
-                            let len11 = vec11.len();
-                            let layout11 =
-                                _rt::alloc::Layout::from_size_align_unchecked(vec11.len() * 128, 8);
-                            let result11 = if layout11.size() != 0 {
-                                let ptr = _rt::alloc::alloc(layout11).cast::<u8>();
-                                if ptr.is_null() {
-                                    _rt::alloc::handle_alloc_error(layout11);
-                                }
-                                ptr
-                            } else {
-                                {
-                                    ::core::ptr::null_mut()
-                                }
-                            };
-                            for (i, e) in vec11.into_iter().enumerate() {
-                                let base = result11.add(i * 128);
-                                {
-                                    let ReaddirplusEntry {
-                                        fileid: fileid3,
-                                        file_name: file_name3,
-                                        cookie: cookie3,
-                                        attr: attr3,
-                                        handle: handle3,
-                                    } = e;
-                                    *base.add(0).cast::<i64>() = _rt::as_i64(fileid3);
-                                    let vec4 = (file_name3.into_bytes()).into_boxed_slice();
-                                    let ptr4 = vec4.as_ptr().cast::<u8>();
-                                    let len4 = vec4.len();
-                                    ::core::mem::forget(vec4);
-                                    *base.add(12).cast::<usize>() = len4;
-                                    *base.add(8).cast::<*mut u8>() = ptr4.cast_mut();
-                                    *base.add(16).cast::<i64>() = _rt::as_i64(cookie3);
-                                    match attr3 {
-                                        Some(e) => {
-                                            *base.add(24).cast::<u8>() = (1i32) as u8;
-                                            let Attr {
-                                                attr_type: attr_type5,
-                                                file_mode: file_mode5,
-                                                nlink: nlink5,
-                                                uid: uid5,
-                                                gid: gid5,
-                                                filesize: filesize5,
-                                                used: used5,
-                                                spec_data: spec_data5,
-                                                fsid: fsid5,
-                                                fileid: fileid5,
-                                                atime: atime5,
-                                                mtime: mtime5,
-                                                ctime: ctime5,
-                                            } = e;
-                                            *base.add(32).cast::<i32>() = _rt::as_i32(attr_type5);
-                                            *base.add(36).cast::<i32>() = _rt::as_i32(file_mode5);
-                                            *base.add(40).cast::<i32>() = _rt::as_i32(nlink5);
-                                            *base.add(44).cast::<i32>() = _rt::as_i32(uid5);
-                                            *base.add(48).cast::<i32>() = _rt::as_i32(gid5);
-                                            *base.add(56).cast::<i64>() = _rt::as_i64(filesize5);
-                                            *base.add(64).cast::<i64>() = _rt::as_i64(used5);
-                                            let (t6_0, t6_1) = spec_data5;
-                                            *base.add(72).cast::<i32>() = _rt::as_i32(t6_0);
-                                            *base.add(76).cast::<i32>() = _rt::as_i32(t6_1);
-                                            *base.add(80).cast::<i64>() = _rt::as_i64(fsid5);
-                                            *base.add(88).cast::<i64>() = _rt::as_i64(fileid5);
-                                            let Time {
-                                                seconds: seconds7,
-                                                nseconds: nseconds7,
-                                            } = atime5;
-                                            *base.add(96).cast::<i32>() = _rt::as_i32(seconds7);
-                                            *base.add(100).cast::<i32>() = _rt::as_i32(nseconds7);
-                                            let Time {
-                                                seconds: seconds8,
-                                                nseconds: nseconds8,
-                                            } = mtime5;
-                                            *base.add(104).cast::<i32>() = _rt::as_i32(seconds8);
-                                            *base.add(108).cast::<i32>() = _rt::as_i32(nseconds8);
-                                            let Time {
-                                                seconds: seconds9,
-                                                nseconds: nseconds9,
-                                            } = ctime5;
-                                            *base.add(112).cast::<i32>() = _rt::as_i32(seconds9);
-                                            *base.add(116).cast::<i32>() = _rt::as_i32(nseconds9);
-                                        }
-                                        None => {
-                                            *base.add(24).cast::<u8>() = (0i32) as u8;
-                                        }
-                                    };
-                                    let vec10 = (handle3).into_boxed_slice();
-                                    let ptr10 = vec10.as_ptr().cast::<u8>();
-                                    let len10 = vec10.len();
-                                    ::core::mem::forget(vec10);
-                                    *base.add(124).cast::<usize>() = len10;
-                                    *base.add(120).cast::<*mut u8>() = ptr10.cast_mut();
-                                }
-                            }
-                            *ptr2.add(8).cast::<usize>() = len11;
-                            *ptr2.add(4).cast::<*mut u8>() = result11;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code12,
-                                message: message12,
-                            } = e;
-                            match nfs_error_code12 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec13 = (message12.into_bytes()).into_boxed_slice();
-                            let ptr13 = vec13.as_ptr().cast::<u8>();
-                            let len13 = vec13.len();
-                            ::core::mem::forget(vec13);
-                            *ptr2.add(16).cast::<usize>() = len13;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr13.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_readdirplus<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l6 = *arg0.add(4).cast::<*mut u8>();
-                            let l7 = *arg0.add(8).cast::<usize>();
-                            let base8 = l6;
-                            let len8 = l7;
-                            for i in 0..len8 {
-                                let base = base8.add(i * 128);
-                                {
-                                    let l1 = *base.add(8).cast::<*mut u8>();
-                                    let l2 = *base.add(12).cast::<usize>();
-                                    _rt::cabi_dealloc(l1, l2, 1);
-                                    let l3 = *base.add(120).cast::<*mut u8>();
-                                    let l4 = *base.add(124).cast::<usize>();
-                                    let base5 = l3;
-                                    let len5 = l4;
-                                    _rt::cabi_dealloc(base5, len5 * 1, 1);
-                                }
-                            }
-                            _rt::cabi_dealloc(base8, len8 * 128, 8);
-                        }
-                        _ => {
-                            let l9 = *arg0.add(12).cast::<*mut u8>();
-                            let l10 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l9, l10, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_readdirplus_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::readdirplus_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec11 = e;
-                            let len11 = vec11.len();
-                            let layout11 =
-                                _rt::alloc::Layout::from_size_align_unchecked(vec11.len() * 128, 8);
-                            let result11 = if layout11.size() != 0 {
-                                let ptr = _rt::alloc::alloc(layout11).cast::<u8>();
-                                if ptr.is_null() {
-                                    _rt::alloc::handle_alloc_error(layout11);
-                                }
-                                ptr
-                            } else {
-                                {
-                                    ::core::ptr::null_mut()
-                                }
-                            };
-                            for (i, e) in vec11.into_iter().enumerate() {
-                                let base = result11.add(i * 128);
-                                {
-                                    let ReaddirplusEntry {
-                                        fileid: fileid3,
-                                        file_name: file_name3,
-                                        cookie: cookie3,
-                                        attr: attr3,
-                                        handle: handle3,
-                                    } = e;
-                                    *base.add(0).cast::<i64>() = _rt::as_i64(fileid3);
-                                    let vec4 = (file_name3.into_bytes()).into_boxed_slice();
-                                    let ptr4 = vec4.as_ptr().cast::<u8>();
-                                    let len4 = vec4.len();
-                                    ::core::mem::forget(vec4);
-                                    *base.add(12).cast::<usize>() = len4;
-                                    *base.add(8).cast::<*mut u8>() = ptr4.cast_mut();
-                                    *base.add(16).cast::<i64>() = _rt::as_i64(cookie3);
-                                    match attr3 {
-                                        Some(e) => {
-                                            *base.add(24).cast::<u8>() = (1i32) as u8;
-                                            let Attr {
-                                                attr_type: attr_type5,
-                                                file_mode: file_mode5,
-                                                nlink: nlink5,
-                                                uid: uid5,
-                                                gid: gid5,
-                                                filesize: filesize5,
-                                                used: used5,
-                                                spec_data: spec_data5,
-                                                fsid: fsid5,
-                                                fileid: fileid5,
-                                                atime: atime5,
-                                                mtime: mtime5,
-                                                ctime: ctime5,
-                                            } = e;
-                                            *base.add(32).cast::<i32>() = _rt::as_i32(attr_type5);
-                                            *base.add(36).cast::<i32>() = _rt::as_i32(file_mode5);
-                                            *base.add(40).cast::<i32>() = _rt::as_i32(nlink5);
-                                            *base.add(44).cast::<i32>() = _rt::as_i32(uid5);
-                                            *base.add(48).cast::<i32>() = _rt::as_i32(gid5);
-                                            *base.add(56).cast::<i64>() = _rt::as_i64(filesize5);
-                                            *base.add(64).cast::<i64>() = _rt::as_i64(used5);
-                                            let (t6_0, t6_1) = spec_data5;
-                                            *base.add(72).cast::<i32>() = _rt::as_i32(t6_0);
-                                            *base.add(76).cast::<i32>() = _rt::as_i32(t6_1);
-                                            *base.add(80).cast::<i64>() = _rt::as_i64(fsid5);
-                                            *base.add(88).cast::<i64>() = _rt::as_i64(fileid5);
-                                            let Time {
-                                                seconds: seconds7,
-                                                nseconds: nseconds7,
-                                            } = atime5;
-                                            *base.add(96).cast::<i32>() = _rt::as_i32(seconds7);
-                                            *base.add(100).cast::<i32>() = _rt::as_i32(nseconds7);
-                                            let Time {
-                                                seconds: seconds8,
-                                                nseconds: nseconds8,
-                                            } = mtime5;
-                                            *base.add(104).cast::<i32>() = _rt::as_i32(seconds8);
-                                            *base.add(108).cast::<i32>() = _rt::as_i32(nseconds8);
-                                            let Time {
-                                                seconds: seconds9,
-                                                nseconds: nseconds9,
-                                            } = ctime5;
-                                            *base.add(112).cast::<i32>() = _rt::as_i32(seconds9);
-                                            *base.add(116).cast::<i32>() = _rt::as_i32(nseconds9);
-                                        }
-                                        None => {
-                                            *base.add(24).cast::<u8>() = (0i32) as u8;
-                                        }
-                                    };
-                                    let vec10 = (handle3).into_boxed_slice();
-                                    let ptr10 = vec10.as_ptr().cast::<u8>();
-                                    let len10 = vec10.len();
-                                    ::core::mem::forget(vec10);
-                                    *base.add(124).cast::<usize>() = len10;
-                                    *base.add(120).cast::<*mut u8>() = ptr10.cast_mut();
-                                }
-                            }
-                            *ptr2.add(8).cast::<usize>() = len11;
-                            *ptr2.add(4).cast::<*mut u8>() = result11;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code12,
-                                message: message12,
-                            } = e;
-                            match nfs_error_code12 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec13 = (message12.into_bytes()).into_boxed_slice();
-                            let ptr13 = vec13.as_ptr().cast::<u8>();
-                            let len13 = vec13.len();
-                            ::core::mem::forget(vec13);
-                            *ptr2.add(16).cast::<usize>() = len13;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr13.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_readdirplus_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l6 = *arg0.add(4).cast::<*mut u8>();
-                            let l7 = *arg0.add(8).cast::<usize>();
-                            let base8 = l6;
-                            let len8 = l7;
-                            for i in 0..len8 {
-                                let base = base8.add(i * 128);
-                                {
-                                    let l1 = *base.add(8).cast::<*mut u8>();
-                                    let l2 = *base.add(12).cast::<usize>();
-                                    _rt::cabi_dealloc(l1, l2, 1);
-                                    let l3 = *base.add(120).cast::<*mut u8>();
-                                    let l4 = *base.add(124).cast::<usize>();
-                                    let base5 = l3;
-                                    let len5 = l4;
-                                    _rt::cabi_dealloc(base5, len5 * 1, 1);
-                                }
-                            }
-                            _rt::cabi_dealloc(base8, len8 * 128, 8);
-                        }
-                        _ => {
-                            let l9 = *arg0.add(12).cast::<*mut u8>();
-                            let l10 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l9, l10, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_mkdir_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                    arg5: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::mkdir(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        _rt::string_lift(bytes1),
-                        arg5 as u32,
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(e) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
-                            } = e;
-                            match nfs_error_code5 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_mkdir<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_mkdir_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: i32,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::mkdir_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        arg3 as u32,
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(e) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_mkdir_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
-                            let base3 = l1;
-                            let len3 = l2;
-                            _rt::cabi_dealloc(base3, len3 * 1, 1);
-                        }
-                        _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l4, l5, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_remove_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::remove(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        _rt::string_lift(bytes1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(_) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr3.add(16).cast::<usize>() = len5;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_remove<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_remove_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::remove_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(_) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code3,
-                                message: message3,
-                            } = e;
-                            match nfs_error_code3 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec4 = (message3.into_bytes()).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr2.add(16).cast::<usize>() = len4;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_remove_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_rmdir_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::rmdir(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        _rt::string_lift(bytes1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(_) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr3.add(16).cast::<usize>() = len5;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_rmdir<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_rmdir_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let result1 = T::rmdir_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                    );
-                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result1 {
-                        Ok(_) => {
-                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code3,
-                                message: message3,
-                            } = e;
-                            match nfs_error_code3 {
-                                Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec4 = (message3.into_bytes()).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr2.add(16).cast::<usize>() = len4;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr4.cast_mut();
-                        }
-                    };
-                    ptr2
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_rmdir_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_rename_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                    arg5: *mut u8,
-                    arg6: usize,
-                    arg7: *mut u8,
-                    arg8: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let len2 = arg6;
-                    let len3 = arg8;
-                    let bytes3 = _rt::Vec::from_raw_parts(arg7.cast(), len3, len3);
-                    let result4 = T::rename(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
-                        _rt::string_lift(bytes1),
-                        _rt::Vec::from_raw_parts(arg5.cast(), len2, len2),
-                        _rt::string_lift(bytes3),
-                    );
-                    let ptr5 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result4 {
-                        Ok(_) => {
-                            *ptr5.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr5.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code6,
-                                message: message6,
-                            } = e;
-                            match nfs_error_code6 {
-                                Some(e) => {
-                                    *ptr5.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr5.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr5.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec7 = (message6.into_bytes()).into_boxed_slice();
-                            let ptr7 = vec7.as_ptr().cast::<u8>();
-                            let len7 = vec7.len();
-                            ::core::mem::forget(vec7);
-                            *ptr5.add(16).cast::<usize>() = len7;
-                            *ptr5.add(12).cast::<*mut u8>() = ptr7.cast_mut();
-                        }
-                    };
-                    ptr5
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_rename<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_rename_path_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                    arg1: *mut u8,
-                    arg2: usize,
-                    arg3: *mut u8,
-                    arg4: usize,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let len0 = arg2;
-                    let bytes0 = _rt::Vec::from_raw_parts(arg1.cast(), len0, len0);
-                    let len1 = arg4;
-                    let bytes1 = _rt::Vec::from_raw_parts(arg3.cast(), len1, len1);
-                    let result2 = T::rename_path(
-                        NfsMountBorrow::lift(arg0 as u32 as usize).get(),
-                        _rt::string_lift(bytes0),
-                        _rt::string_lift(bytes1),
-                    );
-                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result2 {
-                        Ok(_) => {
-                            *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr3.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
-                            } = e;
-                            match nfs_error_code4 {
-                                Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr3.add(16).cast::<usize>() = len5;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr5.cast_mut();
-                        }
-                    };
-                    ptr3
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_rename_path<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn _export_method_nfs_mount_umount_cabi<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) -> *mut u8 {
-                    #[cfg(target_arch = "wasm32")]
-                    _rt::run_ctors_once();
-                    let result0 = T::umount(NfsMountBorrow::lift(arg0 as u32 as usize).get());
-                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
-                    match result0 {
-                        Ok(_) => {
-                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
-                        }
-                        Err(e) => {
-                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
-                            let Error {
-                                nfs_error_code: nfs_error_code2,
-                                message: message2,
-                            } = e;
-                            match nfs_error_code2 {
-                                Some(e) => {
-                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr1.add(8).cast::<i32>() = _rt::as_i32(e);
-                                }
-                                None => {
-                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
-                                }
-                            };
-                            let vec3 = (message2.into_bytes()).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr1.add(16).cast::<usize>() = len3;
-                            *ptr1.add(12).cast::<*mut u8>() = ptr3.cast_mut();
-                        }
-                    };
-                    ptr1
-                }
-                #[doc(hidden)]
-                #[allow(non_snake_case)]
-                pub unsafe fn __post_return_method_nfs_mount_umount<T: GuestNfsMount>(
-                    arg0: *mut u8,
-                ) {
-                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
-                    match l0 {
-                        0 => (),
-                        _ => {
-                            let l1 = *arg0.add(12).cast::<*mut u8>();
-                            let l2 = *arg0.add(16).cast::<usize>();
-                            _rt::cabi_dealloc(l1, l2, 1);
-                        }
-                    }
                 }
                 pub trait Guest {
-                    type NfsMount: GuestNfsMount;
-                    fn parse_url_and_mount(url: _rt::String) -> Result<NfsMount, Error>;
+                    type Descriptor: GuestDescriptor;
+                    type DirectoryEntryStream: GuestDirectoryEntryStream;
+                    /// Attempts to extract a filesystem-related `error-code` from the stream
+                    /// `error` provided.
+                    ///
+                    /// Stream operations which return `stream-error::last-operation-failed`
+                    /// have a payload with more information about the operation that failed.
+                    /// This payload can be passed through to this function to see if there's
+                    /// filesystem-related information about the error to return.
+                    ///
+                    /// Note that this function is fallible because not all stream-related
+                    /// errors are filesystem-related errors.
+                    fn filesystem_error_code(err: ErrorBorrow<'_>) -> Option<ErrorCode>;
                 }
-                pub trait GuestNfsMount: 'static {
+                pub trait GuestDescriptor: 'static {
                     #[doc(hidden)]
                     unsafe fn _resource_new(val: *mut u8) -> u32
                     where
@@ -7986,9 +6746,9 @@ pub mod exports {
 
                         #[cfg(target_arch = "wasm32")]
                         {
-                            #[link(wasm_import_module = "[export]component:nfs-rs/nfs")]
+                            #[link(wasm_import_module = "[export]wasi:filesystem/types@0.2.0")]
                             extern "C" {
-                                #[link_name = "[resource-new]nfs-mount"]
+                                #[link_name = "[resource-new]descriptor"]
                                 fn new(_: *mut u8) -> u32;
                             }
                             new(val)
@@ -8008,535 +6768,485 @@ pub mod exports {
 
                         #[cfg(target_arch = "wasm32")]
                         {
-                            #[link(wasm_import_module = "[export]component:nfs-rs/nfs")]
+                            #[link(wasm_import_module = "[export]wasi:filesystem/types@0.2.0")]
                             extern "C" {
-                                #[link_name = "[resource-rep]nfs-mount"]
+                                #[link_name = "[resource-rep]descriptor"]
                                 fn rep(_: u32) -> *mut u8;
                             }
                             unsafe { rep(handle) }
                         }
                     }
 
-                    fn null_op(&self) -> Result<(), Error>;
-                    fn access(&self, fh: _rt::Vec<u8>, mode: u32) -> Result<u32, Error>;
-                    fn access_path(&self, path: _rt::String, mode: u32) -> Result<u32, Error>;
-                    fn close(&self, seqid: u32, stateid: u64) -> Result<(), Error>;
-                    fn commit(
+                    /// Return a stream for reading from a file, if available.
+                    ///
+                    /// May fail with an error-code describing why the file cannot be read.
+                    ///
+                    /// Multiple read, write, and append streams may be active on the same open
+                    /// file and they do not interfere with each other.
+                    ///
+                    /// Note: This allows using `read-stream`, which is similar to `read` in POSIX.
+                    fn read_via_stream(&self, offset: Filesize) -> Result<InputStream, ErrorCode>;
+                    /// Return a stream for writing to a file, if available.
+                    ///
+                    /// May fail with an error-code describing why the file cannot be written.
+                    ///
+                    /// Note: This allows using `write-stream`, which is similar to `write` in
+                    /// POSIX.
+                    fn write_via_stream(&self, offset: Filesize)
+                        -> Result<OutputStream, ErrorCode>;
+                    /// Return a stream for appending to a file, if available.
+                    ///
+                    /// May fail with an error-code describing why the file cannot be appended.
+                    ///
+                    /// Note: This allows using `write-stream`, which is similar to `write` with
+                    /// `O_APPEND` in in POSIX.
+                    fn append_via_stream(&self) -> Result<OutputStream, ErrorCode>;
+                    /// Provide file advisory information on a descriptor.
+                    ///
+                    /// This is similar to `posix_fadvise` in POSIX.
+                    fn advise(
                         &self,
-                        fh: _rt::Vec<u8>,
-                        offset: u64,
-                        count: u32,
-                    ) -> Result<(), Error>;
-                    fn commit_path(
+                        offset: Filesize,
+                        length: Filesize,
+                        advice: Advice,
+                    ) -> Result<(), ErrorCode>;
+                    /// Synchronize the data of a file to disk.
+                    ///
+                    /// This function succeeds with no effect if the file descriptor is not
+                    /// opened for writing.
+                    ///
+                    /// Note: This is similar to `fdatasync` in POSIX.
+                    fn sync_data(&self) -> Result<(), ErrorCode>;
+                    /// Get flags associated with a descriptor.
+                    ///
+                    /// Note: This returns similar flags to `fcntl(fd, F_GETFL)` in POSIX.
+                    ///
+                    /// Note: This returns the value that was the `fs_flags` value returned
+                    /// from `fdstat_get` in earlier versions of WASI.
+                    fn get_flags(&self) -> Result<DescriptorFlags, ErrorCode>;
+                    /// Get the dynamic type of a descriptor.
+                    ///
+                    /// Note: This returns the same value as the `type` field of the `fd-stat`
+                    /// returned by `stat`, `stat-at` and similar.
+                    ///
+                    /// Note: This returns similar flags to the `st_mode & S_IFMT` value provided
+                    /// by `fstat` in POSIX.
+                    ///
+                    /// Note: This returns the value that was the `fs_filetype` value returned
+                    /// from `fdstat_get` in earlier versions of WASI.
+                    fn get_type(&self) -> Result<DescriptorType, ErrorCode>;
+                    /// Adjust the size of an open file. If this increases the file's size, the
+                    /// extra bytes are filled with zeros.
+                    ///
+                    /// Note: This was called `fd_filestat_set_size` in earlier versions of WASI.
+                    fn set_size(&self, size: Filesize) -> Result<(), ErrorCode>;
+                    /// Adjust the timestamps of an open file or directory.
+                    ///
+                    /// Note: This is similar to `futimens` in POSIX.
+                    ///
+                    /// Note: This was called `fd_filestat_set_times` in earlier versions of WASI.
+                    fn set_times(
                         &self,
-                        path: _rt::String,
-                        offset: u64,
-                        count: u32,
-                    ) -> Result<(), Error>;
-                    fn create(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                        filename: _rt::String,
-                        mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn create_path(
-                        &self,
-                        path: _rt::String,
-                        mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn delegpurge(&self, clientid: u64) -> Result<(), Error>;
-                    fn delegreturn(&self, stateid: u64) -> Result<(), Error>;
-                    fn getattr(&self, fh: _rt::Vec<u8>) -> Result<Attr, Error>;
-                    fn getattr_path(&self, path: _rt::String) -> Result<Attr, Error>;
-                    fn setattr(
-                        &self,
-                        fh: _rt::Vec<u8>,
-                        guard_ctime: Option<Time>,
-                        mode: Option<u32>,
-                        uid: Option<u32>,
-                        gid: Option<u32>,
-                        size: Option<u64>,
-                        atime: Option<Time>,
-                        mtime: Option<Time>,
-                    ) -> Result<(), Error>;
-                    fn setattr_path(
-                        &self,
-                        path: _rt::String,
-                        specify_guard: bool,
-                        mode: Option<u32>,
-                        uid: Option<u32>,
-                        gid: Option<u32>,
-                        size: Option<u64>,
-                        atime: Option<Time>,
-                        mtime: Option<Time>,
-                    ) -> Result<(), Error>;
-                    fn getfh(&self) -> Result<(), Error>;
-                    fn link(
-                        &self,
-                        src_fh: _rt::Vec<u8>,
-                        dst_dir_fh: _rt::Vec<u8>,
-                        dst_filename: _rt::String,
-                    ) -> Result<Attr, Error>;
-                    fn link_path(
-                        &self,
-                        src_path: _rt::String,
-                        dst_path: _rt::String,
-                    ) -> Result<Attr, Error>;
-                    fn symlink(
-                        &self,
-                        src_path: _rt::String,
-                        dst_dir_fh: _rt::Vec<u8>,
-                        dst_filename: _rt::String,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn symlink_path(
-                        &self,
-                        src_path: _rt::String,
-                        dst_path: _rt::String,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn readlink(&self, fh: _rt::Vec<u8>) -> Result<_rt::String, Error>;
-                    fn readlink_path(&self, path: _rt::String) -> Result<_rt::String, Error>;
-                    fn lookup(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                        filename: _rt::String,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn lookup_path(&self, path: _rt::String) -> Result<_rt::Vec<u8>, Error>;
-                    fn pathconf(&self, fh: _rt::Vec<u8>) -> Result<PathConf, Error>;
-                    fn pathconf_path(&self, path: _rt::String) -> Result<PathConf, Error>;
+                        data_access_timestamp: NewTimestamp,
+                        data_modification_timestamp: NewTimestamp,
+                    ) -> Result<(), ErrorCode>;
+                    /// Read from a descriptor, without using and updating the descriptor's offset.
+                    ///
+                    /// This function returns a list of bytes containing the data that was
+                    /// read, along with a bool which, when true, indicates that the end of the
+                    /// file was reached. The returned list will contain up to `length` bytes; it
+                    /// may return fewer than requested, if the end of the file is reached or
+                    /// if the I/O operation is interrupted.
+                    ///
+                    /// In the future, this may change to return a `stream<u8, error-code>`.
+                    ///
+                    /// Note: This is similar to `pread` in POSIX.
                     fn read(
                         &self,
-                        fh: _rt::Vec<u8>,
-                        offset: u64,
-                        count: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn read_path(
-                        &self,
-                        path: _rt::String,
-                        offset: u64,
-                        count: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
+                        length: Filesize,
+                        offset: Filesize,
+                    ) -> Result<(_rt::Vec<u8>, bool), ErrorCode>;
+                    /// Write to a descriptor, without using and updating the descriptor's offset.
+                    ///
+                    /// It is valid to write past the end of a file; the file is extended to the
+                    /// extent of the write, with bytes between the previous end and the start of
+                    /// the write set to zero.
+                    ///
+                    /// In the future, this may change to take a `stream<u8, error-code>`.
+                    ///
+                    /// Note: This is similar to `pwrite` in POSIX.
                     fn write(
                         &self,
-                        fh: _rt::Vec<u8>,
-                        offset: u64,
-                        data: _rt::Vec<u8>,
-                    ) -> Result<u32, Error>;
-                    fn write_path(
+                        buffer: _rt::Vec<u8>,
+                        offset: Filesize,
+                    ) -> Result<Filesize, ErrorCode>;
+                    /// Read directory entries from a directory.
+                    ///
+                    /// On filesystems where directories contain entries referring to themselves
+                    /// and their parents, often named `.` and `..` respectively, these entries
+                    /// are omitted.
+                    ///
+                    /// This always returns a new stream which starts at the beginning of the
+                    /// directory. Multiple streams may be active on the same directory, and they
+                    /// do not interfere with each other.
+                    fn read_directory(&self) -> Result<DirectoryEntryStream, ErrorCode>;
+                    /// Synchronize the data and metadata of a file to disk.
+                    ///
+                    /// This function succeeds with no effect if the file descriptor is not
+                    /// opened for writing.
+                    ///
+                    /// Note: This is similar to `fsync` in POSIX.
+                    fn sync(&self) -> Result<(), ErrorCode>;
+                    /// Create a directory.
+                    ///
+                    /// Note: This is similar to `mkdirat` in POSIX.
+                    fn create_directory_at(&self, path: _rt::String) -> Result<(), ErrorCode>;
+                    /// Return the attributes of an open file or directory.
+                    ///
+                    /// Note: This is similar to `fstat` in POSIX, except that it does not return
+                    /// device and inode information. For testing whether two descriptors refer to
+                    /// the same underlying filesystem object, use `is-same-object`. To obtain
+                    /// additional data that can be used do determine whether a file has been
+                    /// modified, use `metadata-hash`.
+                    ///
+                    /// Note: This was called `fd_filestat_get` in earlier versions of WASI.
+                    fn stat(&self) -> Result<DescriptorStat, ErrorCode>;
+                    /// Return the attributes of a file or directory.
+                    ///
+                    /// Note: This is similar to `fstatat` in POSIX, except that it does not
+                    /// return device and inode information. See the `stat` description for a
+                    /// discussion of alternatives.
+                    ///
+                    /// Note: This was called `path_filestat_get` in earlier versions of WASI.
+                    fn stat_at(
                         &self,
+                        path_flags: PathFlags,
                         path: _rt::String,
-                        offset: u64,
-                        data: _rt::Vec<u8>,
-                    ) -> Result<u32, Error>;
-                    fn readdir(
+                    ) -> Result<DescriptorStat, ErrorCode>;
+                    /// Adjust the timestamps of a file or directory.
+                    ///
+                    /// Note: This is similar to `utimensat` in POSIX.
+                    ///
+                    /// Note: This was called `path_filestat_set_times` in earlier versions of
+                    /// WASI.
+                    fn set_times_at(
                         &self,
-                        dir_fh: _rt::Vec<u8>,
-                    ) -> Result<_rt::Vec<ReaddirEntry>, Error>;
-                    fn readdir_path(
-                        &self,
-                        dir_path: _rt::String,
-                    ) -> Result<_rt::Vec<ReaddirEntry>, Error>;
-                    fn readdirplus(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                    ) -> Result<_rt::Vec<ReaddirplusEntry>, Error>;
-                    fn readdirplus_path(
-                        &self,
-                        dir_path: _rt::String,
-                    ) -> Result<_rt::Vec<ReaddirplusEntry>, Error>;
-                    fn mkdir(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                        dirname: _rt::String,
-                        mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn mkdir_path(
-                        &self,
+                        path_flags: PathFlags,
                         path: _rt::String,
-                        mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn remove(
+                        data_access_timestamp: NewTimestamp,
+                        data_modification_timestamp: NewTimestamp,
+                    ) -> Result<(), ErrorCode>;
+                    /// Create a hard link.
+                    ///
+                    /// Note: This is similar to `linkat` in POSIX.
+                    fn link_at(
                         &self,
-                        dir_fh: _rt::Vec<u8>,
-                        filename: _rt::String,
-                    ) -> Result<(), Error>;
-                    fn remove_path(&self, path: _rt::String) -> Result<(), Error>;
-                    fn rmdir(
+                        old_path_flags: PathFlags,
+                        old_path: _rt::String,
+                        new_descriptor: DescriptorBorrow<'_>,
+                        new_path: _rt::String,
+                    ) -> Result<(), ErrorCode>;
+                    /// Open a file or directory.
+                    ///
+                    /// The returned descriptor is not guaranteed to be the lowest-numbered
+                    /// descriptor not currently open/ it is randomized to prevent applications
+                    /// from depending on making assumptions about indexes, since this is
+                    /// error-prone in multi-threaded contexts. The returned descriptor is
+                    /// guaranteed to be less than 2**31.
+                    ///
+                    /// If `flags` contains `descriptor-flags::mutate-directory`, and the base
+                    /// descriptor doesn't have `descriptor-flags::mutate-directory` set,
+                    /// `open-at` fails with `error-code::read-only`.
+                    ///
+                    /// If `flags` contains `write` or `mutate-directory`, or `open-flags`
+                    /// contains `truncate` or `create`, and the base descriptor doesn't have
+                    /// `descriptor-flags::mutate-directory` set, `open-at` fails with
+                    /// `error-code::read-only`.
+                    ///
+                    /// Note: This is similar to `openat` in POSIX.
+                    fn open_at(
                         &self,
-                        dir_fh: _rt::Vec<u8>,
-                        dirname: _rt::String,
-                    ) -> Result<(), Error>;
-                    fn rmdir_path(&self, path: _rt::String) -> Result<(), Error>;
-                    fn rename(
+                        path_flags: PathFlags,
+                        path: _rt::String,
+                        open_flags: OpenFlags,
+                        flags: DescriptorFlags,
+                    ) -> Result<Descriptor, ErrorCode>;
+                    /// Read the contents of a symbolic link.
+                    ///
+                    /// If the contents contain an absolute or rooted path in the underlying
+                    /// filesystem, this function fails with `error-code::not-permitted`.
+                    ///
+                    /// Note: This is similar to `readlinkat` in POSIX.
+                    fn readlink_at(&self, path: _rt::String) -> Result<_rt::String, ErrorCode>;
+                    /// Remove a directory.
+                    ///
+                    /// Return `error-code::not-empty` if the directory is not empty.
+                    ///
+                    /// Note: This is similar to `unlinkat(fd, path, AT_REMOVEDIR)` in POSIX.
+                    fn remove_directory_at(&self, path: _rt::String) -> Result<(), ErrorCode>;
+                    /// Rename a filesystem object.
+                    ///
+                    /// Note: This is similar to `renameat` in POSIX.
+                    fn rename_at(
                         &self,
-                        from_dir_fh: _rt::Vec<u8>,
-                        from_filename: _rt::String,
-                        to_dir_fh: _rt::Vec<u8>,
-                        to_filename: _rt::String,
-                    ) -> Result<(), Error>;
-                    fn rename_path(
+                        old_path: _rt::String,
+                        new_descriptor: DescriptorBorrow<'_>,
+                        new_path: _rt::String,
+                    ) -> Result<(), ErrorCode>;
+                    /// Create a symbolic link (also known as a "symlink").
+                    ///
+                    /// If `old-path` starts with `/`, the function fails with
+                    /// `error-code::not-permitted`.
+                    ///
+                    /// Note: This is similar to `symlinkat` in POSIX.
+                    fn symlink_at(
                         &self,
-                        from_path: _rt::String,
-                        to_path: _rt::String,
-                    ) -> Result<(), Error>;
-                    fn umount(&self) -> Result<(), Error>;
+                        old_path: _rt::String,
+                        new_path: _rt::String,
+                    ) -> Result<(), ErrorCode>;
+                    /// Unlink a filesystem object that is not a directory.
+                    ///
+                    /// Return `error-code::is-directory` if the path refers to a directory.
+                    /// Note: This is similar to `unlinkat(fd, path, 0)` in POSIX.
+                    fn unlink_file_at(&self, path: _rt::String) -> Result<(), ErrorCode>;
+                    /// Test whether two descriptors refer to the same filesystem object.
+                    ///
+                    /// In POSIX, this corresponds to testing whether the two descriptors have the
+                    /// same device (`st_dev`) and inode (`st_ino` or `d_ino`) numbers.
+                    /// wasi-filesystem does not expose device and inode numbers, so this function
+                    /// may be used instead.
+                    fn is_same_object(&self, other: DescriptorBorrow<'_>) -> bool;
+                    /// Return a hash of the metadata associated with a filesystem object referred
+                    /// to by a descriptor.
+                    ///
+                    /// This returns a hash of the last-modification timestamp and file size, and
+                    /// may also include the inode number, device number, birth timestamp, and
+                    /// other metadata fields that may change when the file is modified or
+                    /// replaced. It may also include a secret value chosen by the
+                    /// implementation and not otherwise exposed.
+                    ///
+                    /// Implementations are encourated to provide the following properties:
+                    ///
+                    /// - If the file is not modified or replaced, the computed hash value should
+                    /// usually not change.
+                    /// - If the object is modified or replaced, the computed hash value should
+                    /// usually change.
+                    /// - The inputs to the hash should not be easily computable from the
+                    /// computed hash.
+                    ///
+                    /// However, none of these is required.
+                    fn metadata_hash(&self) -> Result<MetadataHashValue, ErrorCode>;
+                    /// Return a hash of the metadata associated with a filesystem object referred
+                    /// to by a directory descriptor and a relative path.
+                    ///
+                    /// This performs the same hash computation as `metadata-hash`.
+                    fn metadata_hash_at(
+                        &self,
+                        path_flags: PathFlags,
+                        path: _rt::String,
+                    ) -> Result<MetadataHashValue, ErrorCode>;
+                }
+                pub trait GuestDirectoryEntryStream: 'static {
+                    #[doc(hidden)]
+                    unsafe fn _resource_new(val: *mut u8) -> u32
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = val;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:filesystem/types@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-new]directory-entry-stream"]
+                                fn new(_: *mut u8) -> u32;
+                            }
+                            new(val)
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    fn _resource_rep(handle: u32) -> *mut u8
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = handle;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:filesystem/types@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-rep]directory-entry-stream"]
+                                fn rep(_: u32) -> *mut u8;
+                            }
+                            unsafe { rep(handle) }
+                        }
+                    }
+
+                    /// Read a single directory entry from a `directory-entry-stream`.
+                    fn read_directory_entry(&self) -> Result<Option<DirectoryEntry>, ErrorCode>;
                 }
                 #[doc(hidden)]
 
-                macro_rules! __export_component_nfs_rs_nfs_cabi{
+                macro_rules! __export_wasi_filesystem_types_0_2_0_cabi{
   ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
 
-    #[export_name = "component:nfs-rs/nfs#parse-url-and-mount"]
-    unsafe extern "C" fn export_parse_url_and_mount(arg0: *mut u8,arg1: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_parse_url_and_mount_cabi::<$ty>(arg0, arg1)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#parse-url-and-mount"]
-    unsafe extern "C" fn _post_return_parse_url_and_mount(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_parse_url_and_mount::<$ty>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.null-op"]
-    unsafe extern "C" fn export_method_nfs_mount_null_op(arg0: *mut u8,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_null_op_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.null-op"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_null_op(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_null_op::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.access"]
-    unsafe extern "C" fn export_method_nfs_mount_access(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_access_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.access"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_access(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_access::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.access-path"]
-    unsafe extern "C" fn export_method_nfs_mount_access_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_access_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.access-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_access_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_access_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.close"]
-    unsafe extern "C" fn export_method_nfs_mount_close(arg0: *mut u8,arg1: i32,arg2: i64,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_close_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.close"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_close(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_close::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.commit"]
-    unsafe extern "C" fn export_method_nfs_mount_commit(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i64,arg4: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_commit_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.commit"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_commit(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_commit::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.commit-path"]
-    unsafe extern "C" fn export_method_nfs_mount_commit_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i64,arg4: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_commit_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.commit-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_commit_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_commit_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.create"]
-    unsafe extern "C" fn export_method_nfs_mount_create(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,arg5: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_create_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4, arg5)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.create"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_create(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_create::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.create-path"]
-    unsafe extern "C" fn export_method_nfs_mount_create_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_create_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.create-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_create_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_create_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.delegpurge"]
-    unsafe extern "C" fn export_method_nfs_mount_delegpurge(arg0: *mut u8,arg1: i64,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_delegpurge_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.delegpurge"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_delegpurge(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_delegpurge::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.delegreturn"]
-    unsafe extern "C" fn export_method_nfs_mount_delegreturn(arg0: *mut u8,arg1: i64,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_delegreturn_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.delegreturn"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_delegreturn(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_delegreturn::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.getattr"]
-    unsafe extern "C" fn export_method_nfs_mount_getattr(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_getattr_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.getattr"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_getattr(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_getattr::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.getattr-path"]
-    unsafe extern "C" fn export_method_nfs_mount_getattr_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_getattr_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.getattr-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_getattr_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_getattr_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.setattr"]
-    unsafe extern "C" fn export_method_nfs_mount_setattr(arg0: *mut u8,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_setattr_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.setattr"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_setattr(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_setattr::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.setattr-path"]
-    unsafe extern "C" fn export_method_nfs_mount_setattr_path(arg0: *mut u8,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_setattr_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.setattr-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_setattr_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_setattr_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.getfh"]
-    unsafe extern "C" fn export_method_nfs_mount_getfh(arg0: *mut u8,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_getfh_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.getfh"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_getfh(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_getfh::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.link"]
-    unsafe extern "C" fn export_method_nfs_mount_link(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,arg5: *mut u8,arg6: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_link_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4, arg5, arg6)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.link"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_link(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_link::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.link-path"]
-    unsafe extern "C" fn export_method_nfs_mount_link_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_link_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.link-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_link_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_link_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.symlink"]
-    unsafe extern "C" fn export_method_nfs_mount_symlink(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,arg5: *mut u8,arg6: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_symlink_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4, arg5, arg6)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.symlink"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_symlink(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_symlink::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.symlink-path"]
-    unsafe extern "C" fn export_method_nfs_mount_symlink_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_symlink_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.symlink-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_symlink_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_symlink_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.readlink"]
-    unsafe extern "C" fn export_method_nfs_mount_readlink(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_readlink_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.readlink"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_readlink(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_readlink::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.readlink-path"]
-    unsafe extern "C" fn export_method_nfs_mount_readlink_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_readlink_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.readlink-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_readlink_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_readlink_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.lookup"]
-    unsafe extern "C" fn export_method_nfs_mount_lookup(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_lookup_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.lookup"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_lookup(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_lookup::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.lookup-path"]
-    unsafe extern "C" fn export_method_nfs_mount_lookup_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_lookup_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.lookup-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_lookup_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_lookup_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.pathconf"]
-    unsafe extern "C" fn export_method_nfs_mount_pathconf(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_pathconf_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.pathconf"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_pathconf(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_pathconf::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.pathconf-path"]
-    unsafe extern "C" fn export_method_nfs_mount_pathconf_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_pathconf_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.pathconf-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_pathconf_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_pathconf_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.read"]
-    unsafe extern "C" fn export_method_nfs_mount_read(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i64,arg4: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_read_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.read"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_read(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_read::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.read-path"]
-    unsafe extern "C" fn export_method_nfs_mount_read_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i64,arg4: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_read_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.read-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_read_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_read_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.write"]
-    unsafe extern "C" fn export_method_nfs_mount_write(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i64,arg4: *mut u8,arg5: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_write_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4, arg5)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.write"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_write(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_write::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.write-path"]
-    unsafe extern "C" fn export_method_nfs_mount_write_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i64,arg4: *mut u8,arg5: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_write_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4, arg5)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.write-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_write_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_write_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.readdir"]
-    unsafe extern "C" fn export_method_nfs_mount_readdir(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_readdir_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.readdir"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_readdir(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_readdir::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.readdir-path"]
-    unsafe extern "C" fn export_method_nfs_mount_readdir_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_readdir_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.readdir-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_readdir_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_readdir_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.readdirplus"]
-    unsafe extern "C" fn export_method_nfs_mount_readdirplus(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_readdirplus_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.readdirplus"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_readdirplus(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_readdirplus::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.readdirplus-path"]
-    unsafe extern "C" fn export_method_nfs_mount_readdirplus_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_readdirplus_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.readdirplus-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_readdirplus_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_readdirplus_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.mkdir"]
-    unsafe extern "C" fn export_method_nfs_mount_mkdir(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,arg5: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_mkdir_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4, arg5)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.mkdir"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_mkdir(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_mkdir::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.mkdir-path"]
-    unsafe extern "C" fn export_method_nfs_mount_mkdir_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i32,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_mkdir_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.mkdir-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_mkdir_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_mkdir_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.remove"]
-    unsafe extern "C" fn export_method_nfs_mount_remove(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_remove_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.remove"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_remove(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_remove::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.remove-path"]
-    unsafe extern "C" fn export_method_nfs_mount_remove_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_remove_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.remove-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_remove_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_remove_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.rmdir"]
-    unsafe extern "C" fn export_method_nfs_mount_rmdir(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_rmdir_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.rmdir"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_rmdir(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_rmdir::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.rmdir-path"]
-    unsafe extern "C" fn export_method_nfs_mount_rmdir_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_rmdir_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.rmdir-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_rmdir_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_rmdir_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.rename"]
-    unsafe extern "C" fn export_method_nfs_mount_rename(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,arg5: *mut u8,arg6: usize,arg7: *mut u8,arg8: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_rename_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.rename"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_rename(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_rename::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.rename-path"]
-    unsafe extern "C" fn export_method_nfs_mount_rename_path(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_rename_path_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0, arg1, arg2, arg3, arg4)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.rename-path"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_rename_path(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_rename_path::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "component:nfs-rs/nfs#[method]nfs-mount.umount"]
-    unsafe extern "C" fn export_method_nfs_mount_umount(arg0: *mut u8,) -> *mut u8 {
-      $($path_to_types)*::_export_method_nfs_mount_umount_cabi::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
-    }
-    #[export_name = "cabi_post_component:nfs-rs/nfs#[method]nfs-mount.umount"]
-    unsafe extern "C" fn _post_return_method_nfs_mount_umount(arg0: *mut u8,) {
-      $($path_to_types)*::__post_return_method_nfs_mount_umount::<<$ty as $($path_to_types)*::Guest>::NfsMount>(arg0)
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.read-via-stream"]
+    unsafe extern "C" fn export_method_descriptor_read_via_stream(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_read_via_stream_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.write-via-stream"]
+    unsafe extern "C" fn export_method_descriptor_write_via_stream(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_write_via_stream_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.append-via-stream"]
+    unsafe extern "C" fn export_method_descriptor_append_via_stream(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_append_via_stream_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.advise"]
+    unsafe extern "C" fn export_method_descriptor_advise(arg0: *mut u8,arg1: i64,arg2: i64,arg3: i32,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_advise_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.sync-data"]
+    unsafe extern "C" fn export_method_descriptor_sync_data(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_sync_data_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.get-flags"]
+    unsafe extern "C" fn export_method_descriptor_get_flags(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_get_flags_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.get-type"]
+    unsafe extern "C" fn export_method_descriptor_get_type(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_get_type_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.set-size"]
+    unsafe extern "C" fn export_method_descriptor_set_size(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_set_size_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.set-times"]
+    unsafe extern "C" fn export_method_descriptor_set_times(arg0: *mut u8,arg1: i32,arg2: i64,arg3: i32,arg4: i32,arg5: i64,arg6: i32,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_set_times_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.read"]
+    unsafe extern "C" fn export_method_descriptor_read(arg0: *mut u8,arg1: i64,arg2: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_read_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2)
+    }
+    #[export_name = "cabi_post_wasi:filesystem/types@0.2.0#[method]descriptor.read"]
+    unsafe extern "C" fn _post_return_method_descriptor_read(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_method_descriptor_read::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.write"]
+    unsafe extern "C" fn export_method_descriptor_write(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_write_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.read-directory"]
+    unsafe extern "C" fn export_method_descriptor_read_directory(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_read_directory_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.sync"]
+    unsafe extern "C" fn export_method_descriptor_sync(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_sync_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.create-directory-at"]
+    unsafe extern "C" fn export_method_descriptor_create_directory_at(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_create_directory_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.stat"]
+    unsafe extern "C" fn export_method_descriptor_stat(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_stat_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.stat-at"]
+    unsafe extern "C" fn export_method_descriptor_stat_at(arg0: *mut u8,arg1: i32,arg2: *mut u8,arg3: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_stat_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.set-times-at"]
+    unsafe extern "C" fn export_method_descriptor_set_times_at(arg0: *mut u8,arg1: i32,arg2: *mut u8,arg3: usize,arg4: i32,arg5: i64,arg6: i32,arg7: i32,arg8: i64,arg9: i32,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_set_times_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, arg9)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.link-at"]
+    unsafe extern "C" fn export_method_descriptor_link_at(arg0: *mut u8,arg1: i32,arg2: *mut u8,arg3: usize,arg4: i32,arg5: *mut u8,arg6: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_link_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3, arg4, arg5, arg6)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.open-at"]
+    unsafe extern "C" fn export_method_descriptor_open_at(arg0: *mut u8,arg1: i32,arg2: *mut u8,arg3: usize,arg4: i32,arg5: i32,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_open_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3, arg4, arg5)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.readlink-at"]
+    unsafe extern "C" fn export_method_descriptor_readlink_at(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_readlink_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2)
+    }
+    #[export_name = "cabi_post_wasi:filesystem/types@0.2.0#[method]descriptor.readlink-at"]
+    unsafe extern "C" fn _post_return_method_descriptor_readlink_at(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_method_descriptor_readlink_at::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.remove-directory-at"]
+    unsafe extern "C" fn export_method_descriptor_remove_directory_at(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_remove_directory_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.rename-at"]
+    unsafe extern "C" fn export_method_descriptor_rename_at(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: i32,arg4: *mut u8,arg5: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_rename_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3, arg4, arg5)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.symlink-at"]
+    unsafe extern "C" fn export_method_descriptor_symlink_at(arg0: *mut u8,arg1: *mut u8,arg2: usize,arg3: *mut u8,arg4: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_symlink_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3, arg4)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.unlink-file-at"]
+    unsafe extern "C" fn export_method_descriptor_unlink_file_at(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_unlink_file_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.is-same-object"]
+    unsafe extern "C" fn export_method_descriptor_is_same_object(arg0: *mut u8,arg1: i32,) -> i32 {
+      $($path_to_types)*::_export_method_descriptor_is_same_object_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.metadata-hash"]
+    unsafe extern "C" fn export_method_descriptor_metadata_hash(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_metadata_hash_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]descriptor.metadata-hash-at"]
+    unsafe extern "C" fn export_method_descriptor_metadata_hash_at(arg0: *mut u8,arg1: i32,arg2: *mut u8,arg3: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_descriptor_metadata_hash_at_cabi::<<$ty as $($path_to_types)*::Guest>::Descriptor>(arg0, arg1, arg2, arg3)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#[method]directory-entry-stream.read-directory-entry"]
+    unsafe extern "C" fn export_method_directory_entry_stream_read_directory_entry(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_directory_entry_stream_read_directory_entry_cabi::<<$ty as $($path_to_types)*::Guest>::DirectoryEntryStream>(arg0)
+    }
+    #[export_name = "cabi_post_wasi:filesystem/types@0.2.0#[method]directory-entry-stream.read-directory-entry"]
+    unsafe extern "C" fn _post_return_method_directory_entry_stream_read_directory_entry(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_method_directory_entry_stream_read_directory_entry::<<$ty as $($path_to_types)*::Guest>::DirectoryEntryStream>(arg0)
+    }
+    #[export_name = "wasi:filesystem/types@0.2.0#filesystem-error-code"]
+    unsafe extern "C" fn export_filesystem_error_code(arg0: i32,) -> *mut u8 {
+      $($path_to_types)*::_export_filesystem_error_code_cabi::<$ty>(arg0)
     }
 
     const _: () = {
       #[doc(hidden)]
-      #[export_name = "component:nfs-rs/nfs#[dtor]nfs-mount"]
+      #[export_name = "wasi:filesystem/types@0.2.0#[dtor]descriptor"]
       #[allow(non_snake_case)]
       unsafe extern "C" fn dtor(rep: *mut u8) {
-        $($path_to_types)*::NfsMount::dtor::<
-        <$ty as $($path_to_types)*::Guest>::NfsMount
+        $($path_to_types)*::Descriptor::dtor::<
+        <$ty as $($path_to_types)*::Guest>::Descriptor
+        >(rep)
+      }
+    };
+
+
+    const _: () = {
+      #[doc(hidden)]
+      #[export_name = "wasi:filesystem/types@0.2.0#[dtor]directory-entry-stream"]
+      #[allow(non_snake_case)]
+      unsafe extern "C" fn dtor(rep: *mut u8) {
+        $($path_to_types)*::DirectoryEntryStream::dtor::<
+        <$ty as $($path_to_types)*::Guest>::DirectoryEntryStream
         >(rep)
       }
     };
@@ -8544,16 +7254,1977 @@ pub mod exports {
   };);
 }
                 #[doc(hidden)]
-                pub(crate) use __export_component_nfs_rs_nfs_cabi;
+                pub(crate) use __export_wasi_filesystem_types_0_2_0_cabi;
                 #[repr(align(8))]
-                struct _RetArea([::core::mem::MaybeUninit<u8>; 120]);
+                struct _RetArea([::core::mem::MaybeUninit<u8>; 104]);
                 static mut _RET_AREA: _RetArea =
-                    _RetArea([::core::mem::MaybeUninit::uninit(); 120]);
+                    _RetArea([::core::mem::MaybeUninit::uninit(); 104]);
+            }
+
+            #[allow(dead_code, clippy::all)]
+            pub mod preopens {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                pub type Descriptor =
+                    super::super::super::super::exports::wasi::filesystem::types::Descriptor;
+                pub type DescriptorBorrow<'a> =
+                    super::super::super::super::exports::wasi::filesystem::types::DescriptorBorrow<
+                        'a,
+                    >;
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_get_directories_cabi<T: Guest>() -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::get_directories();
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let vec4 = result0;
+                    let len4 = vec4.len();
+                    let layout4 = _rt::alloc::Layout::from_size_align_unchecked(vec4.len() * 12, 4);
+                    let result4 = if layout4.size() != 0 {
+                        let ptr = _rt::alloc::alloc(layout4).cast::<u8>();
+                        if ptr.is_null() {
+                            _rt::alloc::handle_alloc_error(layout4);
+                        }
+                        ptr
+                    } else {
+                        {
+                            ::core::ptr::null_mut()
+                        }
+                    };
+                    for (i, e) in vec4.into_iter().enumerate() {
+                        let base = result4.add(i * 12);
+                        {
+                            let (t2_0, t2_1) = e;
+                            *base.add(0).cast::<i32>() = (t2_0).take_handle() as i32;
+                            let vec3 = (t2_1.into_bytes()).into_boxed_slice();
+                            let ptr3 = vec3.as_ptr().cast::<u8>();
+                            let len3 = vec3.len();
+                            ::core::mem::forget(vec3);
+                            *base.add(8).cast::<usize>() = len3;
+                            *base.add(4).cast::<*mut u8>() = ptr3.cast_mut();
+                        }
+                    }
+                    *ptr1.add(4).cast::<usize>() = len4;
+                    *ptr1.add(0).cast::<*mut u8>() = result4;
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_get_directories<T: Guest>(arg0: *mut u8) {
+                    let l2 = *arg0.add(0).cast::<*mut u8>();
+                    let l3 = *arg0.add(4).cast::<usize>();
+                    let base4 = l2;
+                    let len4 = l3;
+                    for i in 0..len4 {
+                        let base = base4.add(i * 12);
+                        {
+                            let l0 = *base.add(4).cast::<*mut u8>();
+                            let l1 = *base.add(8).cast::<usize>();
+                            _rt::cabi_dealloc(l0, l1, 1);
+                        }
+                    }
+                    _rt::cabi_dealloc(base4, len4 * 12, 4);
+                }
+                pub trait Guest {
+                    /// Return the set of preopened directories, and their path.
+                    fn get_directories() -> _rt::Vec<(Descriptor, _rt::String)>;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_filesystem_preopens_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:filesystem/preopens@0.2.0#get-directories"]
+    unsafe extern "C" fn export_get_directories() -> *mut u8 {
+      $($path_to_types)*::_export_get_directories_cabi::<$ty>()
+    }
+    #[export_name = "cabi_post_wasi:filesystem/preopens@0.2.0#get-directories"]
+    unsafe extern "C" fn _post_return_get_directories(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_get_directories::<$ty>(arg0)
+    }
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_filesystem_preopens_0_2_0_cabi;
+                #[repr(align(4))]
+                struct _RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                static mut _RET_AREA: _RetArea = _RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+            }
+        }
+        #[allow(dead_code)]
+        pub mod io {
+            #[allow(dead_code, clippy::all)]
+            pub mod error {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                /// A resource which represents some error information.
+                ///
+                /// The only method provided by this resource is `to-debug-string`,
+                /// which provides some human-readable information about the error.
+                ///
+                /// In the `wasi:io` package, this resource is returned through the
+                /// `wasi:io/streams/stream-error` type.
+                ///
+                /// To provide more specific error information, other interfaces may
+                /// provide functions to further "downcast" this error into more specific
+                /// error information. For example, `error`s returned in streams derived
+                /// from filesystem types to be described using the filesystem's own
+                /// error-code type, using the function
+                /// `wasi:filesystem/types/filesystem-error-code`, which takes a parameter
+                /// `borrow<error>` and returns
+                /// `option<wasi:filesystem/types/error-code>`.
+                ///
+                /// The set of functions which can "downcast" an `error` into a more
+                /// concrete type is open.
+
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct Error {
+                    handle: _rt::Resource<Error>,
+                }
+
+                type _ErrorRep<T> = Option<T>;
+
+                impl Error {
+                    /// Creates a new resource from the specified representation.
+                    ///
+                    /// This function will create a new resource handle by moving `val` onto
+                    /// the heap and then passing that heap pointer to the component model to
+                    /// create a handle. The owned handle is then returned as `Error`.
+                    pub fn new<T: GuestError>(val: T) -> Self {
+                        Self::type_guard::<T>();
+                        let val: _ErrorRep<T> = Some(val);
+                        let ptr: *mut _ErrorRep<T> = _rt::Box::into_raw(_rt::Box::new(val));
+                        unsafe { Self::from_handle(T::_resource_new(ptr.cast())) }
+                    }
+
+                    /// Gets access to the underlying `T` which represents this resource.
+                    pub fn get<T: GuestError>(&self) -> &T {
+                        let ptr = unsafe { &*self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    /// Gets mutable access to the underlying `T` which represents this
+                    /// resource.
+                    pub fn get_mut<T: GuestError>(&mut self) -> &mut T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_mut().unwrap()
+                    }
+
+                    /// Consumes this resource and returns the underlying `T`.
+                    pub fn into_inner<T: GuestError>(self) -> T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.take().unwrap()
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn from_handle(handle: u32) -> Self {
+                        Self {
+                            handle: _rt::Resource::from_handle(handle),
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub fn take_handle(&self) -> u32 {
+                        _rt::Resource::take_handle(&self.handle)
+                    }
+
+                    #[doc(hidden)]
+                    pub fn handle(&self) -> u32 {
+                        _rt::Resource::handle(&self.handle)
+                    }
+
+                    // It's theoretically possible to implement the `GuestError` trait twice
+                    // so guard against using it with two different types here.
+                    #[doc(hidden)]
+                    fn type_guard<T: 'static>() {
+                        use core::any::TypeId;
+                        static mut LAST_TYPE: Option<TypeId> = None;
+                        unsafe {
+                            assert!(!cfg!(target_feature = "threads"));
+                            let id = TypeId::of::<T>();
+                            match LAST_TYPE {
+                                Some(ty) => assert!(
+                                    ty == id,
+                                    "cannot use two types with this resource type"
+                                ),
+                                None => LAST_TYPE = Some(id),
+                            }
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn dtor<T: 'static>(handle: *mut u8) {
+                        Self::type_guard::<T>();
+                        let _ = _rt::Box::from_raw(handle as *mut _ErrorRep<T>);
+                    }
+
+                    fn as_ptr<T: GuestError>(&self) -> *mut _ErrorRep<T> {
+                        Error::type_guard::<T>();
+                        T::_resource_rep(self.handle()).cast()
+                    }
+                }
+
+                /// A borrowed version of [`Error`] which represents a borrowed value
+                /// with the lifetime `'a`.
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct ErrorBorrow<'a> {
+                    rep: *mut u8,
+                    _marker: core::marker::PhantomData<&'a Error>,
+                }
+
+                impl<'a> ErrorBorrow<'a> {
+                    #[doc(hidden)]
+                    pub unsafe fn lift(rep: usize) -> Self {
+                        Self {
+                            rep: rep as *mut u8,
+                            _marker: core::marker::PhantomData,
+                        }
+                    }
+
+                    /// Gets access to the underlying `T` in this resource.
+                    pub fn get<T: GuestError>(&self) -> &T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    // NB: mutable access is not allowed due to the component model allowing
+                    // multiple borrows of the same resource.
+
+                    fn as_ptr<T: 'static>(&self) -> *mut _ErrorRep<T> {
+                        Error::type_guard::<T>();
+                        self.rep.cast()
+                    }
+                }
+
+                unsafe impl _rt::WasmResource for Error {
+                    #[inline]
+                    unsafe fn drop(_handle: u32) {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        unreachable!();
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/error@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-drop]error"]
+                                fn drop(_: u32);
+                            }
+
+                            drop(_handle);
+                        }
+                    }
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_error_to_debug_string_cabi<T: GuestError>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::to_debug_string(ErrorBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let vec2 = (result0.into_bytes()).into_boxed_slice();
+                    let ptr2 = vec2.as_ptr().cast::<u8>();
+                    let len2 = vec2.len();
+                    ::core::mem::forget(vec2);
+                    *ptr1.add(4).cast::<usize>() = len2;
+                    *ptr1.add(0).cast::<*mut u8>() = ptr2.cast_mut();
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_method_error_to_debug_string<T: GuestError>(
+                    arg0: *mut u8,
+                ) {
+                    let l0 = *arg0.add(0).cast::<*mut u8>();
+                    let l1 = *arg0.add(4).cast::<usize>();
+                    _rt::cabi_dealloc(l0, l1, 1);
+                }
+                pub trait Guest {
+                    type Error: GuestError;
+                }
+                pub trait GuestError: 'static {
+                    #[doc(hidden)]
+                    unsafe fn _resource_new(val: *mut u8) -> u32
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = val;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/error@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-new]error"]
+                                fn new(_: *mut u8) -> u32;
+                            }
+                            new(val)
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    fn _resource_rep(handle: u32) -> *mut u8
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = handle;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/error@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-rep]error"]
+                                fn rep(_: u32) -> *mut u8;
+                            }
+                            unsafe { rep(handle) }
+                        }
+                    }
+
+                    /// Returns a string that is suitable to assist humans in debugging
+                    /// this error.
+                    ///
+                    /// WARNING: The returned string should not be consumed mechanically!
+                    /// It may change across platforms, hosts, or other implementation
+                    /// details. Parsing this string is a major platform-compatibility
+                    /// hazard.
+                    fn to_debug_string(&self) -> _rt::String;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_io_error_0_2_0_cabi{
+    ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+      #[export_name = "wasi:io/error@0.2.0#[method]error.to-debug-string"]
+      unsafe extern "C" fn export_method_error_to_debug_string(arg0: *mut u8,) -> *mut u8 {
+        $($path_to_types)*::_export_method_error_to_debug_string_cabi::<<$ty as $($path_to_types)*::Guest>::Error>(arg0)
+      }
+      #[export_name = "cabi_post_wasi:io/error@0.2.0#[method]error.to-debug-string"]
+      unsafe extern "C" fn _post_return_method_error_to_debug_string(arg0: *mut u8,) {
+        $($path_to_types)*::__post_return_method_error_to_debug_string::<<$ty as $($path_to_types)*::Guest>::Error>(arg0)
+      }
+
+      const _: () = {
+        #[doc(hidden)]
+        #[export_name = "wasi:io/error@0.2.0#[dtor]error"]
+        #[allow(non_snake_case)]
+        unsafe extern "C" fn dtor(rep: *mut u8) {
+          $($path_to_types)*::Error::dtor::<
+          <$ty as $($path_to_types)*::Guest>::Error
+          >(rep)
+        }
+      };
+
+    };);
+  }
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_io_error_0_2_0_cabi;
+                #[repr(align(4))]
+                struct _RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                static mut _RET_AREA: _RetArea = _RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+            }
+
+            #[allow(dead_code, clippy::all)]
+            pub mod poll {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                /// `pollable` represents a single I/O event which may be ready, or not.
+
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct Pollable {
+                    handle: _rt::Resource<Pollable>,
+                }
+
+                type _PollableRep<T> = Option<T>;
+
+                impl Pollable {
+                    /// Creates a new resource from the specified representation.
+                    ///
+                    /// This function will create a new resource handle by moving `val` onto
+                    /// the heap and then passing that heap pointer to the component model to
+                    /// create a handle. The owned handle is then returned as `Pollable`.
+                    pub fn new<T: GuestPollable>(val: T) -> Self {
+                        Self::type_guard::<T>();
+                        let val: _PollableRep<T> = Some(val);
+                        let ptr: *mut _PollableRep<T> = _rt::Box::into_raw(_rt::Box::new(val));
+                        unsafe { Self::from_handle(T::_resource_new(ptr.cast())) }
+                    }
+
+                    /// Gets access to the underlying `T` which represents this resource.
+                    pub fn get<T: GuestPollable>(&self) -> &T {
+                        let ptr = unsafe { &*self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    /// Gets mutable access to the underlying `T` which represents this
+                    /// resource.
+                    pub fn get_mut<T: GuestPollable>(&mut self) -> &mut T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_mut().unwrap()
+                    }
+
+                    /// Consumes this resource and returns the underlying `T`.
+                    pub fn into_inner<T: GuestPollable>(self) -> T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.take().unwrap()
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn from_handle(handle: u32) -> Self {
+                        Self {
+                            handle: _rt::Resource::from_handle(handle),
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub fn take_handle(&self) -> u32 {
+                        _rt::Resource::take_handle(&self.handle)
+                    }
+
+                    #[doc(hidden)]
+                    pub fn handle(&self) -> u32 {
+                        _rt::Resource::handle(&self.handle)
+                    }
+
+                    // It's theoretically possible to implement the `GuestPollable` trait twice
+                    // so guard against using it with two different types here.
+                    #[doc(hidden)]
+                    fn type_guard<T: 'static>() {
+                        use core::any::TypeId;
+                        static mut LAST_TYPE: Option<TypeId> = None;
+                        unsafe {
+                            assert!(!cfg!(target_feature = "threads"));
+                            let id = TypeId::of::<T>();
+                            match LAST_TYPE {
+                                Some(ty) => assert!(
+                                    ty == id,
+                                    "cannot use two types with this resource type"
+                                ),
+                                None => LAST_TYPE = Some(id),
+                            }
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn dtor<T: 'static>(handle: *mut u8) {
+                        Self::type_guard::<T>();
+                        let _ = _rt::Box::from_raw(handle as *mut _PollableRep<T>);
+                    }
+
+                    fn as_ptr<T: GuestPollable>(&self) -> *mut _PollableRep<T> {
+                        Pollable::type_guard::<T>();
+                        T::_resource_rep(self.handle()).cast()
+                    }
+                }
+
+                /// A borrowed version of [`Pollable`] which represents a borrowed value
+                /// with the lifetime `'a`.
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct PollableBorrow<'a> {
+                    rep: *mut u8,
+                    _marker: core::marker::PhantomData<&'a Pollable>,
+                }
+
+                impl<'a> PollableBorrow<'a> {
+                    #[doc(hidden)]
+                    pub unsafe fn lift(rep: usize) -> Self {
+                        Self {
+                            rep: rep as *mut u8,
+                            _marker: core::marker::PhantomData,
+                        }
+                    }
+
+                    /// Gets access to the underlying `T` in this resource.
+                    pub fn get<T: GuestPollable>(&self) -> &T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    // NB: mutable access is not allowed due to the component model allowing
+                    // multiple borrows of the same resource.
+
+                    fn as_ptr<T: 'static>(&self) -> *mut _PollableRep<T> {
+                        Pollable::type_guard::<T>();
+                        self.rep.cast()
+                    }
+                }
+
+                unsafe impl _rt::WasmResource for Pollable {
+                    #[inline]
+                    unsafe fn drop(_handle: u32) {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        unreachable!();
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/poll@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-drop]pollable"]
+                                fn drop(_: u32);
+                            }
+
+                            drop(_handle);
+                        }
+                    }
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_pollable_ready_cabi<T: GuestPollable>(
+                    arg0: *mut u8,
+                ) -> i32 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::ready(PollableBorrow::lift(arg0 as u32 as usize).get());
+                    match result0 {
+                        true => 1,
+                        false => 0,
+                    }
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_pollable_block_cabi<T: GuestPollable>(arg0: *mut u8) {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    T::block(PollableBorrow::lift(arg0 as u32 as usize).get());
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_poll_cabi<T: Guest>(arg0: *mut u8, arg1: usize) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let base1 = arg0;
+                    let len1 = arg1;
+                    let mut result1 = _rt::Vec::with_capacity(len1);
+                    for i in 0..len1 {
+                        let base = base1.add(i * 4);
+                        let e1 = {
+                            let l0 = *base.add(0).cast::<i32>();
+
+                            PollableBorrow::lift(l0 as u32 as usize)
+                        };
+                        result1.push(e1);
+                    }
+                    _rt::cabi_dealloc(base1, len1 * 4, 4);
+                    let result2 = T::poll(result1);
+                    let ptr3 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    let vec4 = (result2).into_boxed_slice();
+                    let ptr4 = vec4.as_ptr().cast::<u8>();
+                    let len4 = vec4.len();
+                    ::core::mem::forget(vec4);
+                    *ptr3.add(4).cast::<usize>() = len4;
+                    *ptr3.add(0).cast::<*mut u8>() = ptr4.cast_mut();
+                    ptr3
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_poll<T: Guest>(arg0: *mut u8) {
+                    let l0 = *arg0.add(0).cast::<*mut u8>();
+                    let l1 = *arg0.add(4).cast::<usize>();
+                    let base2 = l0;
+                    let len2 = l1;
+                    _rt::cabi_dealloc(base2, len2 * 4, 4);
+                }
+                pub trait Guest {
+                    type Pollable: GuestPollable;
+                    /// Poll for completion on a set of pollables.
+                    ///
+                    /// This function takes a list of pollables, which identify I/O sources of
+                    /// interest, and waits until one or more of the events is ready for I/O.
+                    ///
+                    /// The result `list<u32>` contains one or more indices of handles in the
+                    /// argument list that is ready for I/O.
+                    ///
+                    /// If the list contains more elements than can be indexed with a `u32`
+                    /// value, this function traps.
+                    ///
+                    /// A timeout can be implemented by adding a pollable from the
+                    /// wasi-clocks API to the list.
+                    ///
+                    /// This function does not return a `result`; polling in itself does not
+                    /// do any I/O so it doesn't fail. If any of the I/O sources identified by
+                    /// the pollables has an error, it is indicated by marking the source as
+                    /// being reaedy for I/O.
+                    fn poll(in_: _rt::Vec<PollableBorrow<'_>>) -> _rt::Vec<u32>;
+                }
+                pub trait GuestPollable: 'static {
+                    #[doc(hidden)]
+                    unsafe fn _resource_new(val: *mut u8) -> u32
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = val;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/poll@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-new]pollable"]
+                                fn new(_: *mut u8) -> u32;
+                            }
+                            new(val)
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    fn _resource_rep(handle: u32) -> *mut u8
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = handle;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/poll@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-rep]pollable"]
+                                fn rep(_: u32) -> *mut u8;
+                            }
+                            unsafe { rep(handle) }
+                        }
+                    }
+
+                    /// Return the readiness of a pollable. This function never blocks.
+                    ///
+                    /// Returns `true` when the pollable is ready, and `false` otherwise.
+                    fn ready(&self) -> bool;
+                    /// `block` returns immediately if the pollable is ready, and otherwise
+                    /// blocks until ready.
+                    ///
+                    /// This function is equivalent to calling `poll.poll` on a list
+                    /// containing only this pollable.
+                    fn block(&self);
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_io_poll_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:io/poll@0.2.0#[method]pollable.ready"]
+    unsafe extern "C" fn export_method_pollable_ready(arg0: *mut u8,) -> i32 {
+      $($path_to_types)*::_export_method_pollable_ready_cabi::<<$ty as $($path_to_types)*::Guest>::Pollable>(arg0)
+    }
+    #[export_name = "wasi:io/poll@0.2.0#[method]pollable.block"]
+    unsafe extern "C" fn export_method_pollable_block(arg0: *mut u8,) {
+      $($path_to_types)*::_export_method_pollable_block_cabi::<<$ty as $($path_to_types)*::Guest>::Pollable>(arg0)
+    }
+    #[export_name = "wasi:io/poll@0.2.0#poll"]
+    unsafe extern "C" fn export_poll(arg0: *mut u8,arg1: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_poll_cabi::<$ty>(arg0, arg1)
+    }
+    #[export_name = "cabi_post_wasi:io/poll@0.2.0#poll"]
+    unsafe extern "C" fn _post_return_poll(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_poll::<$ty>(arg0)
+    }
+
+    const _: () = {
+      #[doc(hidden)]
+      #[export_name = "wasi:io/poll@0.2.0#[dtor]pollable"]
+      #[allow(non_snake_case)]
+      unsafe extern "C" fn dtor(rep: *mut u8) {
+        $($path_to_types)*::Pollable::dtor::<
+        <$ty as $($path_to_types)*::Guest>::Pollable
+        >(rep)
+      }
+    };
+
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_io_poll_0_2_0_cabi;
+                #[repr(align(4))]
+                struct _RetArea([::core::mem::MaybeUninit<u8>; 8]);
+                static mut _RET_AREA: _RetArea = _RetArea([::core::mem::MaybeUninit::uninit(); 8]);
+            }
+
+            #[allow(dead_code, clippy::all)]
+            pub mod streams {
+                #[used]
+                #[doc(hidden)]
+                #[cfg(target_arch = "wasm32")]
+                static __FORCE_SECTION_REF: fn() =
+                    super::super::super::super::__link_custom_section_describing_imports;
+                use super::super::super::super::_rt;
+                pub type Error = super::super::super::super::exports::wasi::io::error::Error;
+                pub type ErrorBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::error::ErrorBorrow<'a>;
+                pub type Pollable = super::super::super::super::exports::wasi::io::poll::Pollable;
+                pub type PollableBorrow<'a> =
+                    super::super::super::super::exports::wasi::io::poll::PollableBorrow<'a>;
+                /// An error for input-stream and output-stream operations.
+                pub enum StreamError {
+                    /// The last operation (a write or flush) failed before completion.
+                    ///
+                    /// More information is available in the `error` payload.
+                    LastOperationFailed(Error),
+                    /// The stream is closed: no more input will be accepted by the
+                    /// stream. A closed output-stream will return this error on all
+                    /// future operations.
+                    Closed,
+                }
+                impl ::core::fmt::Debug for StreamError {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        match self {
+                            StreamError::LastOperationFailed(e) => f
+                                .debug_tuple("StreamError::LastOperationFailed")
+                                .field(e)
+                                .finish(),
+                            StreamError::Closed => f.debug_tuple("StreamError::Closed").finish(),
+                        }
+                    }
+                }
+                impl ::core::fmt::Display for StreamError {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        write!(f, "{:?}", self)
+                    }
+                }
+
+                impl std::error::Error for StreamError {}
+                /// An input bytestream.
+                ///
+                /// `input-stream`s are *non-blocking* to the extent practical on underlying
+                /// platforms. I/O operations always return promptly; if fewer bytes are
+                /// promptly available than requested, they return the number of bytes promptly
+                /// available, which could even be zero. To wait for data to be available,
+                /// use the `subscribe` function to obtain a `pollable` which can be polled
+                /// for using `wasi:io/poll`.
+
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct InputStream {
+                    handle: _rt::Resource<InputStream>,
+                }
+
+                type _InputStreamRep<T> = Option<T>;
+
+                impl InputStream {
+                    /// Creates a new resource from the specified representation.
+                    ///
+                    /// This function will create a new resource handle by moving `val` onto
+                    /// the heap and then passing that heap pointer to the component model to
+                    /// create a handle. The owned handle is then returned as `InputStream`.
+                    pub fn new<T: GuestInputStream>(val: T) -> Self {
+                        Self::type_guard::<T>();
+                        let val: _InputStreamRep<T> = Some(val);
+                        let ptr: *mut _InputStreamRep<T> = _rt::Box::into_raw(_rt::Box::new(val));
+                        unsafe { Self::from_handle(T::_resource_new(ptr.cast())) }
+                    }
+
+                    /// Gets access to the underlying `T` which represents this resource.
+                    pub fn get<T: GuestInputStream>(&self) -> &T {
+                        let ptr = unsafe { &*self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    /// Gets mutable access to the underlying `T` which represents this
+                    /// resource.
+                    pub fn get_mut<T: GuestInputStream>(&mut self) -> &mut T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_mut().unwrap()
+                    }
+
+                    /// Consumes this resource and returns the underlying `T`.
+                    pub fn into_inner<T: GuestInputStream>(self) -> T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.take().unwrap()
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn from_handle(handle: u32) -> Self {
+                        Self {
+                            handle: _rt::Resource::from_handle(handle),
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub fn take_handle(&self) -> u32 {
+                        _rt::Resource::take_handle(&self.handle)
+                    }
+
+                    #[doc(hidden)]
+                    pub fn handle(&self) -> u32 {
+                        _rt::Resource::handle(&self.handle)
+                    }
+
+                    // It's theoretically possible to implement the `GuestInputStream` trait twice
+                    // so guard against using it with two different types here.
+                    #[doc(hidden)]
+                    fn type_guard<T: 'static>() {
+                        use core::any::TypeId;
+                        static mut LAST_TYPE: Option<TypeId> = None;
+                        unsafe {
+                            assert!(!cfg!(target_feature = "threads"));
+                            let id = TypeId::of::<T>();
+                            match LAST_TYPE {
+                                Some(ty) => assert!(
+                                    ty == id,
+                                    "cannot use two types with this resource type"
+                                ),
+                                None => LAST_TYPE = Some(id),
+                            }
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn dtor<T: 'static>(handle: *mut u8) {
+                        Self::type_guard::<T>();
+                        let _ = _rt::Box::from_raw(handle as *mut _InputStreamRep<T>);
+                    }
+
+                    fn as_ptr<T: GuestInputStream>(&self) -> *mut _InputStreamRep<T> {
+                        InputStream::type_guard::<T>();
+                        T::_resource_rep(self.handle()).cast()
+                    }
+                }
+
+                /// A borrowed version of [`InputStream`] which represents a borrowed value
+                /// with the lifetime `'a`.
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct InputStreamBorrow<'a> {
+                    rep: *mut u8,
+                    _marker: core::marker::PhantomData<&'a InputStream>,
+                }
+
+                impl<'a> InputStreamBorrow<'a> {
+                    #[doc(hidden)]
+                    pub unsafe fn lift(rep: usize) -> Self {
+                        Self {
+                            rep: rep as *mut u8,
+                            _marker: core::marker::PhantomData,
+                        }
+                    }
+
+                    /// Gets access to the underlying `T` in this resource.
+                    pub fn get<T: GuestInputStream>(&self) -> &T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    // NB: mutable access is not allowed due to the component model allowing
+                    // multiple borrows of the same resource.
+
+                    fn as_ptr<T: 'static>(&self) -> *mut _InputStreamRep<T> {
+                        InputStream::type_guard::<T>();
+                        self.rep.cast()
+                    }
+                }
+
+                unsafe impl _rt::WasmResource for InputStream {
+                    #[inline]
+                    unsafe fn drop(_handle: u32) {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        unreachable!();
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/streams@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-drop]input-stream"]
+                                fn drop(_: u32);
+                            }
+
+                            drop(_handle);
+                        }
+                    }
+                }
+
+                /// An output bytestream.
+                ///
+                /// `output-stream`s are *non-blocking* to the extent practical on
+                /// underlying platforms. Except where specified otherwise, I/O operations also
+                /// always return promptly, after the number of bytes that can be written
+                /// promptly, which could even be zero. To wait for the stream to be ready to
+                /// accept data, the `subscribe` function to obtain a `pollable` which can be
+                /// polled for using `wasi:io/poll`.
+
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct OutputStream {
+                    handle: _rt::Resource<OutputStream>,
+                }
+
+                type _OutputStreamRep<T> = Option<T>;
+
+                impl OutputStream {
+                    /// Creates a new resource from the specified representation.
+                    ///
+                    /// This function will create a new resource handle by moving `val` onto
+                    /// the heap and then passing that heap pointer to the component model to
+                    /// create a handle. The owned handle is then returned as `OutputStream`.
+                    pub fn new<T: GuestOutputStream>(val: T) -> Self {
+                        Self::type_guard::<T>();
+                        let val: _OutputStreamRep<T> = Some(val);
+                        let ptr: *mut _OutputStreamRep<T> = _rt::Box::into_raw(_rt::Box::new(val));
+                        unsafe { Self::from_handle(T::_resource_new(ptr.cast())) }
+                    }
+
+                    /// Gets access to the underlying `T` which represents this resource.
+                    pub fn get<T: GuestOutputStream>(&self) -> &T {
+                        let ptr = unsafe { &*self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    /// Gets mutable access to the underlying `T` which represents this
+                    /// resource.
+                    pub fn get_mut<T: GuestOutputStream>(&mut self) -> &mut T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_mut().unwrap()
+                    }
+
+                    /// Consumes this resource and returns the underlying `T`.
+                    pub fn into_inner<T: GuestOutputStream>(self) -> T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.take().unwrap()
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn from_handle(handle: u32) -> Self {
+                        Self {
+                            handle: _rt::Resource::from_handle(handle),
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub fn take_handle(&self) -> u32 {
+                        _rt::Resource::take_handle(&self.handle)
+                    }
+
+                    #[doc(hidden)]
+                    pub fn handle(&self) -> u32 {
+                        _rt::Resource::handle(&self.handle)
+                    }
+
+                    // It's theoretically possible to implement the `GuestOutputStream` trait twice
+                    // so guard against using it with two different types here.
+                    #[doc(hidden)]
+                    fn type_guard<T: 'static>() {
+                        use core::any::TypeId;
+                        static mut LAST_TYPE: Option<TypeId> = None;
+                        unsafe {
+                            assert!(!cfg!(target_feature = "threads"));
+                            let id = TypeId::of::<T>();
+                            match LAST_TYPE {
+                                Some(ty) => assert!(
+                                    ty == id,
+                                    "cannot use two types with this resource type"
+                                ),
+                                None => LAST_TYPE = Some(id),
+                            }
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    pub unsafe fn dtor<T: 'static>(handle: *mut u8) {
+                        Self::type_guard::<T>();
+                        let _ = _rt::Box::from_raw(handle as *mut _OutputStreamRep<T>);
+                    }
+
+                    fn as_ptr<T: GuestOutputStream>(&self) -> *mut _OutputStreamRep<T> {
+                        OutputStream::type_guard::<T>();
+                        T::_resource_rep(self.handle()).cast()
+                    }
+                }
+
+                /// A borrowed version of [`OutputStream`] which represents a borrowed value
+                /// with the lifetime `'a`.
+                #[derive(Debug)]
+                #[repr(transparent)]
+                pub struct OutputStreamBorrow<'a> {
+                    rep: *mut u8,
+                    _marker: core::marker::PhantomData<&'a OutputStream>,
+                }
+
+                impl<'a> OutputStreamBorrow<'a> {
+                    #[doc(hidden)]
+                    pub unsafe fn lift(rep: usize) -> Self {
+                        Self {
+                            rep: rep as *mut u8,
+                            _marker: core::marker::PhantomData,
+                        }
+                    }
+
+                    /// Gets access to the underlying `T` in this resource.
+                    pub fn get<T: GuestOutputStream>(&self) -> &T {
+                        let ptr = unsafe { &mut *self.as_ptr::<T>() };
+                        ptr.as_ref().unwrap()
+                    }
+
+                    // NB: mutable access is not allowed due to the component model allowing
+                    // multiple borrows of the same resource.
+
+                    fn as_ptr<T: 'static>(&self) -> *mut _OutputStreamRep<T> {
+                        OutputStream::type_guard::<T>();
+                        self.rep.cast()
+                    }
+                }
+
+                unsafe impl _rt::WasmResource for OutputStream {
+                    #[inline]
+                    unsafe fn drop(_handle: u32) {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        unreachable!();
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/streams@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-drop]output-stream"]
+                                fn drop(_: u32);
+                            }
+
+                            drop(_handle);
+                        }
+                    }
+                }
+
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_input_stream_read_cabi<T: GuestInputStream>(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::read(
+                        InputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            let vec2 = (e).into_boxed_slice();
+                            let ptr2 = vec2.as_ptr().cast::<u8>();
+                            let len2 = vec2.len();
+                            ::core::mem::forget(vec2);
+                            *ptr1.add(8).cast::<usize>() = len2;
+                            *ptr1.add(4).cast::<*mut u8>() = ptr2.cast_mut();
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_method_input_stream_read<T: GuestInputStream>(
+                    arg0: *mut u8,
+                ) {
+                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
+                    match l0 {
+                        0 => {
+                            let l1 = *arg0.add(4).cast::<*mut u8>();
+                            let l2 = *arg0.add(8).cast::<usize>();
+                            let base3 = l1;
+                            let len3 = l2;
+                            _rt::cabi_dealloc(base3, len3 * 1, 1);
+                        }
+                        _ => (),
+                    }
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_input_stream_blocking_read_cabi<
+                    T: GuestInputStream,
+                >(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::blocking_read(
+                        InputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            let vec2 = (e).into_boxed_slice();
+                            let ptr2 = vec2.as_ptr().cast::<u8>();
+                            let len2 = vec2.len();
+                            ::core::mem::forget(vec2);
+                            *ptr1.add(8).cast::<usize>() = len2;
+                            *ptr1.add(4).cast::<*mut u8>() = ptr2.cast_mut();
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn __post_return_method_input_stream_blocking_read<
+                    T: GuestInputStream,
+                >(
+                    arg0: *mut u8,
+                ) {
+                    let l0 = i32::from(*arg0.add(0).cast::<u8>());
+                    match l0 {
+                        0 => {
+                            let l1 = *arg0.add(4).cast::<*mut u8>();
+                            let l2 = *arg0.add(8).cast::<usize>();
+                            let base3 = l1;
+                            let len3 = l2;
+                            _rt::cabi_dealloc(base3, len3 * 1, 1);
+                        }
+                        _ => (),
+                    }
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_input_stream_skip_cabi<T: GuestInputStream>(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::skip(
+                        InputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(8).cast::<i64>() = _rt::as_i64(e);
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(8).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(12).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(8).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_input_stream_blocking_skip_cabi<
+                    T: GuestInputStream,
+                >(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::blocking_skip(
+                        InputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(8).cast::<i64>() = _rt::as_i64(e);
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(8).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(12).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(8).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_input_stream_subscribe_cabi<T: GuestInputStream>(
+                    arg0: *mut u8,
+                ) -> i32 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::subscribe(InputStreamBorrow::lift(arg0 as u32 as usize).get());
+                    (result0).take_handle() as i32
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_check_write_cabi<
+                    T: GuestOutputStream,
+                >(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 =
+                        T::check_write(OutputStreamBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(8).cast::<i64>() = _rt::as_i64(e);
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(8).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(12).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(8).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_write_cabi<T: GuestOutputStream>(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let result1 = T::write(
+                        OutputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
+                    );
+                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result1 {
+                        Ok(_) => {
+                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr2.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr2
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_blocking_write_and_flush_cabi<
+                    T: GuestOutputStream,
+                >(
+                    arg0: *mut u8,
+                    arg1: *mut u8,
+                    arg2: usize,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let len0 = arg2;
+                    let result1 = T::blocking_write_and_flush(
+                        OutputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        _rt::Vec::from_raw_parts(arg1.cast(), len0, len0),
+                    );
+                    let ptr2 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result1 {
+                        Ok(_) => {
+                            *ptr2.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr2.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr2.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr2
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_flush_cabi<T: GuestOutputStream>(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::flush(OutputStreamBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_blocking_flush_cabi<
+                    T: GuestOutputStream,
+                >(
+                    arg0: *mut u8,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 =
+                        T::blocking_flush(OutputStreamBorrow::lift(arg0 as u32 as usize).get());
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_subscribe_cabi<T: GuestOutputStream>(
+                    arg0: *mut u8,
+                ) -> i32 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 =
+                        T::subscribe(OutputStreamBorrow::lift(arg0 as u32 as usize).get());
+                    (result0).take_handle() as i32
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_write_zeroes_cabi<
+                    T: GuestOutputStream,
+                >(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::write_zeroes(
+                        OutputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_blocking_write_zeroes_and_flush_cabi<
+                    T: GuestOutputStream,
+                >(
+                    arg0: *mut u8,
+                    arg1: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::blocking_write_zeroes_and_flush(
+                        OutputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        arg1 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(_) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(8).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(4).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_splice_cabi<T: GuestOutputStream>(
+                    arg0: *mut u8,
+                    arg1: i32,
+                    arg2: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::splice(
+                        OutputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        InputStreamBorrow::lift(arg1 as u32 as usize),
+                        arg2 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(8).cast::<i64>() = _rt::as_i64(e);
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(8).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(12).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(8).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                #[doc(hidden)]
+                #[allow(non_snake_case)]
+                pub unsafe fn _export_method_output_stream_blocking_splice_cabi<
+                    T: GuestOutputStream,
+                >(
+                    arg0: *mut u8,
+                    arg1: i32,
+                    arg2: i64,
+                ) -> *mut u8 {
+                    #[cfg(target_arch = "wasm32")]
+                    _rt::run_ctors_once();
+                    let result0 = T::blocking_splice(
+                        OutputStreamBorrow::lift(arg0 as u32 as usize).get(),
+                        InputStreamBorrow::lift(arg1 as u32 as usize),
+                        arg2 as u64,
+                    );
+                    let ptr1 = _RET_AREA.0.as_mut_ptr().cast::<u8>();
+                    match result0 {
+                        Ok(e) => {
+                            *ptr1.add(0).cast::<u8>() = (0i32) as u8;
+                            *ptr1.add(8).cast::<i64>() = _rt::as_i64(e);
+                        }
+                        Err(e) => {
+                            *ptr1.add(0).cast::<u8>() = (1i32) as u8;
+                            match e {
+                                StreamError::LastOperationFailed(e) => {
+                                    *ptr1.add(8).cast::<u8>() = (0i32) as u8;
+                                    *ptr1.add(12).cast::<i32>() = (e).take_handle() as i32;
+                                }
+                                StreamError::Closed => {
+                                    *ptr1.add(8).cast::<u8>() = (1i32) as u8;
+                                }
+                            }
+                        }
+                    };
+                    ptr1
+                }
+                pub trait Guest {
+                    type InputStream: GuestInputStream;
+                    type OutputStream: GuestOutputStream;
+                }
+                pub trait GuestInputStream: 'static {
+                    #[doc(hidden)]
+                    unsafe fn _resource_new(val: *mut u8) -> u32
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = val;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/streams@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-new]input-stream"]
+                                fn new(_: *mut u8) -> u32;
+                            }
+                            new(val)
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    fn _resource_rep(handle: u32) -> *mut u8
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = handle;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/streams@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-rep]input-stream"]
+                                fn rep(_: u32) -> *mut u8;
+                            }
+                            unsafe { rep(handle) }
+                        }
+                    }
+
+                    /// Perform a non-blocking read from the stream.
+                    ///
+                    /// When the source of a `read` is binary data, the bytes from the source
+                    /// are returned verbatim. When the source of a `read` is known to the
+                    /// implementation to be text, bytes containing the UTF-8 encoding of the
+                    /// text are returned.
+                    ///
+                    /// This function returns a list of bytes containing the read data,
+                    /// when successful. The returned list will contain up to `len` bytes;
+                    /// it may return fewer than requested, but not more. The list is
+                    /// empty when no bytes are available for reading at this time. The
+                    /// pollable given by `subscribe` will be ready when more bytes are
+                    /// available.
+                    ///
+                    /// This function fails with a `stream-error` when the operation
+                    /// encounters an error, giving `last-operation-failed`, or when the
+                    /// stream is closed, giving `closed`.
+                    ///
+                    /// When the caller gives a `len` of 0, it represents a request to
+                    /// read 0 bytes. If the stream is still open, this call should
+                    /// succeed and return an empty list, or otherwise fail with `closed`.
+                    ///
+                    /// The `len` parameter is a `u64`, which could represent a list of u8 which
+                    /// is not possible to allocate in wasm32, or not desirable to allocate as
+                    /// as a return value by the callee. The callee may return a list of bytes
+                    /// less than `len` in size while more bytes are available for reading.
+                    fn read(&self, len: u64) -> Result<_rt::Vec<u8>, StreamError>;
+                    /// Read bytes from a stream, after blocking until at least one byte can
+                    /// be read. Except for blocking, behavior is identical to `read`.
+                    fn blocking_read(&self, len: u64) -> Result<_rt::Vec<u8>, StreamError>;
+                    /// Skip bytes from a stream. Returns number of bytes skipped.
+                    ///
+                    /// Behaves identical to `read`, except instead of returning a list
+                    /// of bytes, returns the number of bytes consumed from the stream.
+                    fn skip(&self, len: u64) -> Result<u64, StreamError>;
+                    /// Skip bytes from a stream, after blocking until at least one byte
+                    /// can be skipped. Except for blocking behavior, identical to `skip`.
+                    fn blocking_skip(&self, len: u64) -> Result<u64, StreamError>;
+                    /// Create a `pollable` which will resolve once either the specified stream
+                    /// has bytes available to read or the other end of the stream has been
+                    /// closed.
+                    /// The created `pollable` is a child resource of the `input-stream`.
+                    /// Implementations may trap if the `input-stream` is dropped before
+                    /// all derived `pollable`s created with this function are dropped.
+                    fn subscribe(&self) -> Pollable;
+                }
+                pub trait GuestOutputStream: 'static {
+                    #[doc(hidden)]
+                    unsafe fn _resource_new(val: *mut u8) -> u32
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = val;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/streams@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-new]output-stream"]
+                                fn new(_: *mut u8) -> u32;
+                            }
+                            new(val)
+                        }
+                    }
+
+                    #[doc(hidden)]
+                    fn _resource_rep(handle: u32) -> *mut u8
+                    where
+                        Self: Sized,
+                    {
+                        #[cfg(not(target_arch = "wasm32"))]
+                        {
+                            let _ = handle;
+                            unreachable!();
+                        }
+
+                        #[cfg(target_arch = "wasm32")]
+                        {
+                            #[link(wasm_import_module = "[export]wasi:io/streams@0.2.0")]
+                            extern "C" {
+                                #[link_name = "[resource-rep]output-stream"]
+                                fn rep(_: u32) -> *mut u8;
+                            }
+                            unsafe { rep(handle) }
+                        }
+                    }
+
+                    /// Check readiness for writing. This function never blocks.
+                    ///
+                    /// Returns the number of bytes permitted for the next call to `write`,
+                    /// or an error. Calling `write` with more bytes than this function has
+                    /// permitted will trap.
+                    ///
+                    /// When this function returns 0 bytes, the `subscribe` pollable will
+                    /// become ready when this function will report at least 1 byte, or an
+                    /// error.
+                    fn check_write(&self) -> Result<u64, StreamError>;
+                    /// Perform a write. This function never blocks.
+                    ///
+                    /// When the destination of a `write` is binary data, the bytes from
+                    /// `contents` are written verbatim. When the destination of a `write` is
+                    /// known to the implementation to be text, the bytes of `contents` are
+                    /// transcoded from UTF-8 into the encoding of the destination and then
+                    /// written.
+                    ///
+                    /// Precondition: check-write gave permit of Ok(n) and contents has a
+                    /// length of less than or equal to n. Otherwise, this function will trap.
+                    ///
+                    /// returns Err(closed) without writing if the stream has closed since
+                    /// the last call to check-write provided a permit.
+                    fn write(&self, contents: _rt::Vec<u8>) -> Result<(), StreamError>;
+                    /// Perform a write of up to 4096 bytes, and then flush the stream. Block
+                    /// until all of these operations are complete, or an error occurs.
+                    ///
+                    /// This is a convenience wrapper around the use of `check-write`,
+                    /// `subscribe`, `write`, and `flush`, and is implemented with the
+                    /// following pseudo-code:
+                    ///
+                    /// ```text
+                    /// let pollable = this.subscribe();
+                    /// while !contents.is_empty() {
+                    /// // Wait for the stream to become writable
+                    /// pollable.block();
+                    /// let Ok(n) = this.check-write(); // eliding error handling
+                    /// let len = min(n, contents.len());
+                    /// let (chunk, rest) = contents.split_at(len);
+                    /// this.write(chunk  );            // eliding error handling
+                    /// contents = rest;
+                    /// }
+                    /// this.flush();
+                    /// // Wait for completion of `flush`
+                    /// pollable.block();
+                    /// // Check for any errors that arose during `flush`
+                    /// let _ = this.check-write();         // eliding error handling
+                    /// ```
+                    fn blocking_write_and_flush(
+                        &self,
+                        contents: _rt::Vec<u8>,
+                    ) -> Result<(), StreamError>;
+                    /// Request to flush buffered output. This function never blocks.
+                    ///
+                    /// This tells the output-stream that the caller intends any buffered
+                    /// output to be flushed. the output which is expected to be flushed
+                    /// is all that has been passed to `write` prior to this call.
+                    ///
+                    /// Upon calling this function, the `output-stream` will not accept any
+                    /// writes (`check-write` will return `ok(0)`) until the flush has
+                    /// completed. The `subscribe` pollable will become ready when the
+                    /// flush has completed and the stream can accept more writes.
+                    fn flush(&self) -> Result<(), StreamError>;
+                    /// Request to flush buffered output, and block until flush completes
+                    /// and stream is ready for writing again.
+                    fn blocking_flush(&self) -> Result<(), StreamError>;
+                    /// Create a `pollable` which will resolve once the output-stream
+                    /// is ready for more writing, or an error has occured. When this
+                    /// pollable is ready, `check-write` will return `ok(n)` with n>0, or an
+                    /// error.
+                    ///
+                    /// If the stream is closed, this pollable is always ready immediately.
+                    ///
+                    /// The created `pollable` is a child resource of the `output-stream`.
+                    /// Implementations may trap if the `output-stream` is dropped before
+                    /// all derived `pollable`s created with this function are dropped.
+                    fn subscribe(&self) -> Pollable;
+                    /// Write zeroes to a stream.
+                    ///
+                    /// This should be used precisely like `write` with the exact same
+                    /// preconditions (must use check-write first), but instead of
+                    /// passing a list of bytes, you simply pass the number of zero-bytes
+                    /// that should be written.
+                    fn write_zeroes(&self, len: u64) -> Result<(), StreamError>;
+                    /// Perform a write of up to 4096 zeroes, and then flush the stream.
+                    /// Block until all of these operations are complete, or an error
+                    /// occurs.
+                    ///
+                    /// This is a convenience wrapper around the use of `check-write`,
+                    /// `subscribe`, `write-zeroes`, and `flush`, and is implemented with
+                    /// the following pseudo-code:
+                    ///
+                    /// ```text
+                    /// let pollable = this.subscribe();
+                    /// while num_zeroes != 0 {
+                    /// // Wait for the stream to become writable
+                    /// pollable.block();
+                    /// let Ok(n) = this.check-write(); // eliding error handling
+                    /// let len = min(n, num_zeroes);
+                    /// this.write-zeroes(len);         // eliding error handling
+                    /// num_zeroes -= len;
+                    /// }
+                    /// this.flush();
+                    /// // Wait for completion of `flush`
+                    /// pollable.block();
+                    /// // Check for any errors that arose during `flush`
+                    /// let _ = this.check-write();         // eliding error handling
+                    /// ```
+                    fn blocking_write_zeroes_and_flush(&self, len: u64) -> Result<(), StreamError>;
+                    /// Read from one stream and write to another.
+                    ///
+                    /// The behavior of splice is equivelant to:
+                    /// 1. calling `check-write` on the `output-stream`
+                    /// 2. calling `read` on the `input-stream` with the smaller of the
+                    /// `check-write` permitted length and the `len` provided to `splice`
+                    /// 3. calling `write` on the `output-stream` with that read data.
+                    ///
+                    /// Any error reported by the call to `check-write`, `read`, or
+                    /// `write` ends the splice and reports that error.
+                    ///
+                    /// This function returns the number of bytes transferred; it may be less
+                    /// than `len`.
+                    fn splice(
+                        &self,
+                        src: InputStreamBorrow<'_>,
+                        len: u64,
+                    ) -> Result<u64, StreamError>;
+                    /// Read from one stream and write to another, with blocking.
+                    ///
+                    /// This is similar to `splice`, except that it blocks until the
+                    /// `output-stream` is ready for writing, and the `input-stream`
+                    /// is ready for reading, before performing the `splice`.
+                    fn blocking_splice(
+                        &self,
+                        src: InputStreamBorrow<'_>,
+                        len: u64,
+                    ) -> Result<u64, StreamError>;
+                }
+                #[doc(hidden)]
+
+                macro_rules! __export_wasi_io_streams_0_2_0_cabi{
+  ($ty:ident with_types_in $($path_to_types:tt)*) => (const _: () = {
+
+    #[export_name = "wasi:io/streams@0.2.0#[method]input-stream.read"]
+    unsafe extern "C" fn export_method_input_stream_read(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_input_stream_read_cabi::<<$ty as $($path_to_types)*::Guest>::InputStream>(arg0, arg1)
+    }
+    #[export_name = "cabi_post_wasi:io/streams@0.2.0#[method]input-stream.read"]
+    unsafe extern "C" fn _post_return_method_input_stream_read(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_method_input_stream_read::<<$ty as $($path_to_types)*::Guest>::InputStream>(arg0)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]input-stream.blocking-read"]
+    unsafe extern "C" fn export_method_input_stream_blocking_read(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_input_stream_blocking_read_cabi::<<$ty as $($path_to_types)*::Guest>::InputStream>(arg0, arg1)
+    }
+    #[export_name = "cabi_post_wasi:io/streams@0.2.0#[method]input-stream.blocking-read"]
+    unsafe extern "C" fn _post_return_method_input_stream_blocking_read(arg0: *mut u8,) {
+      $($path_to_types)*::__post_return_method_input_stream_blocking_read::<<$ty as $($path_to_types)*::Guest>::InputStream>(arg0)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]input-stream.skip"]
+    unsafe extern "C" fn export_method_input_stream_skip(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_input_stream_skip_cabi::<<$ty as $($path_to_types)*::Guest>::InputStream>(arg0, arg1)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]input-stream.blocking-skip"]
+    unsafe extern "C" fn export_method_input_stream_blocking_skip(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_input_stream_blocking_skip_cabi::<<$ty as $($path_to_types)*::Guest>::InputStream>(arg0, arg1)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]input-stream.subscribe"]
+    unsafe extern "C" fn export_method_input_stream_subscribe(arg0: *mut u8,) -> i32 {
+      $($path_to_types)*::_export_method_input_stream_subscribe_cabi::<<$ty as $($path_to_types)*::Guest>::InputStream>(arg0)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.check-write"]
+    unsafe extern "C" fn export_method_output_stream_check_write(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_check_write_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.write"]
+    unsafe extern "C" fn export_method_output_stream_write(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_write_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0, arg1, arg2)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.blocking-write-and-flush"]
+    unsafe extern "C" fn export_method_output_stream_blocking_write_and_flush(arg0: *mut u8,arg1: *mut u8,arg2: usize,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_blocking_write_and_flush_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0, arg1, arg2)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.flush"]
+    unsafe extern "C" fn export_method_output_stream_flush(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_flush_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.blocking-flush"]
+    unsafe extern "C" fn export_method_output_stream_blocking_flush(arg0: *mut u8,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_blocking_flush_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.subscribe"]
+    unsafe extern "C" fn export_method_output_stream_subscribe(arg0: *mut u8,) -> i32 {
+      $($path_to_types)*::_export_method_output_stream_subscribe_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.write-zeroes"]
+    unsafe extern "C" fn export_method_output_stream_write_zeroes(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_write_zeroes_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0, arg1)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.blocking-write-zeroes-and-flush"]
+    unsafe extern "C" fn export_method_output_stream_blocking_write_zeroes_and_flush(arg0: *mut u8,arg1: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_blocking_write_zeroes_and_flush_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0, arg1)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.splice"]
+    unsafe extern "C" fn export_method_output_stream_splice(arg0: *mut u8,arg1: i32,arg2: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_splice_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0, arg1, arg2)
+    }
+    #[export_name = "wasi:io/streams@0.2.0#[method]output-stream.blocking-splice"]
+    unsafe extern "C" fn export_method_output_stream_blocking_splice(arg0: *mut u8,arg1: i32,arg2: i64,) -> *mut u8 {
+      $($path_to_types)*::_export_method_output_stream_blocking_splice_cabi::<<$ty as $($path_to_types)*::Guest>::OutputStream>(arg0, arg1, arg2)
+    }
+
+    const _: () = {
+      #[doc(hidden)]
+      #[export_name = "wasi:io/streams@0.2.0#[dtor]input-stream"]
+      #[allow(non_snake_case)]
+      unsafe extern "C" fn dtor(rep: *mut u8) {
+        $($path_to_types)*::InputStream::dtor::<
+        <$ty as $($path_to_types)*::Guest>::InputStream
+        >(rep)
+      }
+    };
+
+
+    const _: () = {
+      #[doc(hidden)]
+      #[export_name = "wasi:io/streams@0.2.0#[dtor]output-stream"]
+      #[allow(non_snake_case)]
+      unsafe extern "C" fn dtor(rep: *mut u8) {
+        $($path_to_types)*::OutputStream::dtor::<
+        <$ty as $($path_to_types)*::Guest>::OutputStream
+        >(rep)
+      }
+    };
+
+  };);
+}
+                #[doc(hidden)]
+                pub(crate) use __export_wasi_io_streams_0_2_0_cabi;
+                #[repr(align(8))]
+                struct _RetArea([::core::mem::MaybeUninit<u8>; 16]);
+                static mut _RET_AREA: _RetArea = _RetArea([::core::mem::MaybeUninit::uninit(); 16]);
             }
         }
     }
 }
 mod _rt {
+    pub use alloc_crate::string::String;
+    pub use alloc_crate::vec::Vec;
+    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
+        if cfg!(debug_assertions) {
+            String::from_utf8(bytes).unwrap()
+        } else {
+            String::from_utf8_unchecked(bytes)
+        }
+    }
+    pub unsafe fn cabi_dealloc(ptr: *mut u8, size: usize, align: usize) {
+        if size == 0 {
+            return;
+        }
+        let layout = alloc::Layout::from_size_align_unchecked(size, align);
+        alloc::dealloc(ptr as *mut u8, layout);
+    }
+    pub unsafe fn invalid_enum_discriminant<T>() -> T {
+        if cfg!(debug_assertions) {
+            panic!("invalid enum discriminant")
+        } else {
+            core::hint::unreachable_unchecked()
+        }
+    }
 
     use core::fmt;
     use core::marker;
@@ -8660,15 +9331,6 @@ mod _rt {
         }
     }
     pub use alloc_crate::alloc;
-    pub use alloc_crate::string::String;
-    pub use alloc_crate::vec::Vec;
-    pub unsafe fn string_lift(bytes: Vec<u8>) -> String {
-        if cfg!(debug_assertions) {
-            String::from_utf8(bytes).unwrap()
-        } else {
-            String::from_utf8_unchecked(bytes)
-        }
-    }
 
     pub fn as_i64<T: AsI64>(t: T) -> i64 {
         t.as_i64()
@@ -8695,13 +9357,6 @@ mod _rt {
         #[inline]
         fn as_i64(self) -> i64 {
             self as i64
-        }
-    }
-    pub unsafe fn invalid_enum_discriminant<T>() -> T {
-        if cfg!(debug_assertions) {
-            panic!("invalid enum discriminant")
-        } else {
-            core::hint::unreachable_unchecked()
         }
     }
 
@@ -8774,19 +9429,12 @@ mod _rt {
             self as i32
         }
     }
-    pub use alloc_crate::boxed::Box;
 
     #[cfg(target_arch = "wasm32")]
     pub fn run_ctors_once() {
         wit_bindgen_rt::run_ctors_once();
     }
-    pub unsafe fn cabi_dealloc(ptr: *mut u8, size: usize, align: usize) {
-        if size == 0 {
-            return;
-        }
-        let layout = alloc::Layout::from_size_align_unchecked(size, align);
-        alloc::dealloc(ptr as *mut u8, layout);
-    }
+    pub use alloc_crate::boxed::Box;
     extern crate alloc as alloc_crate;
 }
 
@@ -8812,7 +9460,17 @@ mod _rt {
 macro_rules! __export_nfs_rs_impl {
   ($ty:ident) => (self::export!($ty with_types_in self););
   ($ty:ident with_types_in $($path_to_types_root:tt)*) => (
-  $($path_to_types_root)*::exports::component::nfs_rs::nfs::__export_component_nfs_rs_nfs_cabi!($ty with_types_in $($path_to_types_root)*::exports::component::nfs_rs::nfs);
+  $($path_to_types_root)*::exports::wasi::cli::environment::__export_wasi_cli_environment_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::cli::environment);
+  $($path_to_types_root)*::exports::wasi::cli::exit::__export_wasi_cli_exit_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::cli::exit);
+  $($path_to_types_root)*::exports::wasi::io::error::__export_wasi_io_error_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::io::error);
+  $($path_to_types_root)*::exports::wasi::io::poll::__export_wasi_io_poll_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::io::poll);
+  $($path_to_types_root)*::exports::wasi::io::streams::__export_wasi_io_streams_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::io::streams);
+  $($path_to_types_root)*::exports::wasi::cli::stdin::__export_wasi_cli_stdin_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::cli::stdin);
+  $($path_to_types_root)*::exports::wasi::cli::stdout::__export_wasi_cli_stdout_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::cli::stdout);
+  $($path_to_types_root)*::exports::wasi::cli::stderr::__export_wasi_cli_stderr_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::cli::stderr);
+  $($path_to_types_root)*::exports::wasi::clocks::wall_clock::__export_wasi_clocks_wall_clock_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::clocks::wall_clock);
+  $($path_to_types_root)*::exports::wasi::filesystem::types::__export_wasi_filesystem_types_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::filesystem::types);
+  $($path_to_types_root)*::exports::wasi::filesystem::preopens::__export_wasi_filesystem_preopens_0_2_0_cabi!($ty with_types_in $($path_to_types_root)*::exports::wasi::filesystem::preopens);
   )
 }
 #[doc(inline)]
@@ -8821,19 +9479,23 @@ pub(crate) use __export_nfs_rs_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.24.0:nfs-rs:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 7703] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\x9a;\x01A\x02\x01A\x1f\
-\x01B\x0a\x04\0\x08pollable\x03\x01\x01h\0\x01@\x01\x04self\x01\0\x7f\x04\0\x16[\
-method]pollable.ready\x01\x02\x01@\x01\x04self\x01\x01\0\x04\0\x16[method]pollab\
-le.block\x01\x03\x01p\x01\x01py\x01@\x01\x02in\x04\0\x05\x04\0\x04poll\x01\x06\x03\
-\x01\x12wasi:io/poll@0.2.0\x05\0\x01B\x04\x04\0\x05error\x03\x01\x01h\0\x01@\x01\
-\x04self\x01\0s\x04\0\x1d[method]error.to-debug-string\x01\x02\x03\x01\x13wasi:i\
-o/error@0.2.0\x05\x01\x02\x03\0\x01\x05error\x02\x03\0\0\x08pollable\x01B(\x02\x03\
-\x02\x01\x02\x04\0\x05error\x03\0\0\x02\x03\x02\x01\x03\x04\0\x08pollable\x03\0\x02\
-\x01i\x01\x01q\x02\x15last-operation-failed\x01\x04\0\x06closed\0\0\x04\0\x0cstr\
-eam-error\x03\0\x05\x04\0\x0cinput-stream\x03\x01\x04\0\x0doutput-stream\x03\x01\
-\x01h\x07\x01p}\x01j\x01\x0a\x01\x06\x01@\x02\x04self\x09\x03lenw\0\x0b\x04\0\x19\
-[method]input-stream.read\x01\x0c\x04\0\"[method]input-stream.blocking-read\x01\x0c\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 10074] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xddM\x01A\x02\x01AB\x01\
+B\x0a\x01o\x02ss\x01p\0\x01@\0\0\x01\x04\0\x0fget-environment\x01\x02\x01ps\x01@\
+\0\0\x03\x04\0\x0dget-arguments\x01\x04\x01ks\x01@\0\0\x05\x04\0\x0binitial-cwd\x01\
+\x06\x03\x01\x1awasi:cli/environment@0.2.0\x05\0\x01B\x03\x01j\0\0\x01@\x01\x06s\
+tatus\0\x01\0\x04\0\x04exit\x01\x01\x03\x01\x13wasi:cli/exit@0.2.0\x05\x01\x01B\x04\
+\x04\0\x05error\x03\x01\x01h\0\x01@\x01\x04self\x01\0s\x04\0\x1d[method]error.to\
+-debug-string\x01\x02\x03\x01\x13wasi:io/error@0.2.0\x05\x02\x01B\x0a\x04\0\x08p\
+ollable\x03\x01\x01h\0\x01@\x01\x04self\x01\0\x7f\x04\0\x16[method]pollable.read\
+y\x01\x02\x01@\x01\x04self\x01\x01\0\x04\0\x16[method]pollable.block\x01\x03\x01\
+p\x01\x01py\x01@\x01\x02in\x04\0\x05\x04\0\x04poll\x01\x06\x03\x01\x12wasi:io/po\
+ll@0.2.0\x05\x03\x02\x03\0\x02\x05error\x02\x03\0\x03\x08pollable\x01B(\x02\x03\x02\
+\x01\x04\x04\0\x05error\x03\0\0\x02\x03\x02\x01\x05\x04\0\x08pollable\x03\0\x02\x01\
+i\x01\x01q\x02\x15last-operation-failed\x01\x04\0\x06closed\0\0\x04\0\x0cstream-\
+error\x03\0\x05\x04\0\x0cinput-stream\x03\x01\x04\0\x0doutput-stream\x03\x01\x01\
+h\x07\x01p}\x01j\x01\x0a\x01\x06\x01@\x02\x04self\x09\x03lenw\0\x0b\x04\0\x19[me\
+thod]input-stream.read\x01\x0c\x04\0\"[method]input-stream.blocking-read\x01\x0c\
 \x01j\x01w\x01\x06\x01@\x02\x04self\x09\x03lenw\0\x0d\x04\0\x19[method]input-str\
 eam.skip\x01\x0e\x04\0\"[method]input-stream.blocking-skip\x01\x0e\x01i\x03\x01@\
 \x01\x04self\x09\0\x0f\x04\0\x1e[method]input-stream.subscribe\x01\x10\x01h\x08\x01\
@@ -8846,47 +9508,55 @@ utput-stream.subscribe\x01\x16\x01@\x02\x04self\x11\x03lenw\0\x13\x04\0\"[method
 ]output-stream.write-zeroes\x01\x17\x04\05[method]output-stream.blocking-write-z\
 eroes-and-flush\x01\x17\x01@\x03\x04self\x11\x03src\x09\x03lenw\0\x0d\x04\0\x1c[\
 method]output-stream.splice\x01\x18\x04\0%[method]output-stream.blocking-splice\x01\
-\x18\x03\x01\x15wasi:io/streams@0.2.0\x05\x04\x01B\x11\x04\0\x07network\x03\x01\x01\
-m\x15\x07unknown\x0daccess-denied\x0dnot-supported\x10invalid-argument\x0dout-of\
--memory\x07timeout\x14concurrency-conflict\x0fnot-in-progress\x0bwould-block\x0d\
-invalid-state\x10new-socket-limit\x14address-not-bindable\x0eaddress-in-use\x12r\
-emote-unreachable\x12connection-refused\x10connection-reset\x12connection-aborte\
-d\x12datagram-too-large\x11name-unresolvable\x1atemporary-resolver-failure\x1ape\
-rmanent-resolver-failure\x04\0\x0aerror-code\x03\0\x01\x01m\x02\x04ipv4\x04ipv6\x04\
-\0\x11ip-address-family\x03\0\x03\x01o\x04}}}}\x04\0\x0cipv4-address\x03\0\x05\x01\
-o\x08{{{{{{{{\x04\0\x0cipv6-address\x03\0\x07\x01q\x02\x04ipv4\x01\x06\0\x04ipv6\
-\x01\x08\0\x04\0\x0aip-address\x03\0\x09\x01r\x02\x04port{\x07address\x06\x04\0\x13\
-ipv4-socket-address\x03\0\x0b\x01r\x04\x04port{\x09flow-infoy\x07address\x08\x08\
-scope-idy\x04\0\x13ipv6-socket-address\x03\0\x0d\x01q\x02\x04ipv4\x01\x0c\0\x04i\
-pv6\x01\x0e\0\x04\0\x11ip-socket-address\x03\0\x0f\x03\x01\x1awasi:sockets/netwo\
-rk@0.2.0\x05\x05\x02\x03\0\x03\x07network\x01B\x05\x02\x03\x02\x01\x06\x04\0\x07\
-network\x03\0\0\x01i\x01\x01@\0\0\x02\x04\0\x10instance-network\x01\x03\x03\x01#\
-wasi:sockets/instance-network@0.2.0\x05\x07\x02\x03\0\x03\x0aerror-code\x02\x03\0\
-\x03\x0aip-address\x01B\x16\x02\x03\x02\x01\x03\x04\0\x08pollable\x03\0\0\x02\x03\
-\x02\x01\x06\x04\0\x07network\x03\0\x02\x02\x03\x02\x01\x08\x04\0\x0aerror-code\x03\
-\0\x04\x02\x03\x02\x01\x09\x04\0\x0aip-address\x03\0\x06\x04\0\x16resolve-addres\
-s-stream\x03\x01\x01h\x08\x01k\x07\x01j\x01\x0a\x01\x05\x01@\x01\x04self\x09\0\x0b\
-\x04\03[method]resolve-address-stream.resolve-next-address\x01\x0c\x01i\x01\x01@\
-\x01\x04self\x09\0\x0d\x04\0([method]resolve-address-stream.subscribe\x01\x0e\x01\
-h\x03\x01i\x08\x01j\x01\x10\x01\x05\x01@\x02\x07network\x0f\x04names\0\x11\x04\0\
-\x11resolve-addresses\x01\x12\x03\x01!wasi:sockets/ip-name-lookup@0.2.0\x05\x0a\x01\
-B\x0f\x02\x03\x02\x01\x03\x04\0\x08pollable\x03\0\0\x01w\x04\0\x07instant\x03\0\x02\
-\x01w\x04\0\x08duration\x03\0\x04\x01@\0\0\x03\x04\0\x03now\x01\x06\x01@\0\0\x05\
-\x04\0\x0aresolution\x01\x07\x01i\x01\x01@\x01\x04when\x03\0\x08\x04\0\x11subscr\
-ibe-instant\x01\x09\x01@\x01\x04when\x05\0\x08\x04\0\x12subscribe-duration\x01\x0a\
-\x03\x01!wasi:clocks/monotonic-clock@0.2.0\x05\x0b\x02\x03\0\x02\x0cinput-stream\
-\x02\x03\0\x02\x0doutput-stream\x02\x03\0\x06\x08duration\x02\x03\0\x03\x11ip-so\
-cket-address\x02\x03\0\x03\x11ip-address-family\x01BT\x02\x03\x02\x01\x0c\x04\0\x0c\
-input-stream\x03\0\0\x02\x03\x02\x01\x0d\x04\0\x0doutput-stream\x03\0\x02\x02\x03\
-\x02\x01\x03\x04\0\x08pollable\x03\0\x04\x02\x03\x02\x01\x0e\x04\0\x08duration\x03\
-\0\x06\x02\x03\x02\x01\x06\x04\0\x07network\x03\0\x08\x02\x03\x02\x01\x08\x04\0\x0a\
-error-code\x03\0\x0a\x02\x03\x02\x01\x0f\x04\0\x11ip-socket-address\x03\0\x0c\x02\
-\x03\x02\x01\x10\x04\0\x11ip-address-family\x03\0\x0e\x01m\x03\x07receive\x04sen\
-d\x04both\x04\0\x0dshutdown-type\x03\0\x10\x04\0\x0atcp-socket\x03\x01\x01h\x12\x01\
-h\x09\x01j\0\x01\x0b\x01@\x03\x04self\x13\x07network\x14\x0dlocal-address\x0d\0\x15\
-\x04\0\x1d[method]tcp-socket.start-bind\x01\x16\x01@\x01\x04self\x13\0\x15\x04\0\
-\x1e[method]tcp-socket.finish-bind\x01\x17\x01@\x03\x04self\x13\x07network\x14\x0e\
-remote-address\x0d\0\x15\x04\0\x20[method]tcp-socket.start-connect\x01\x18\x01i\x01\
+\x18\x03\x01\x15wasi:io/streams@0.2.0\x05\x06\x02\x03\0\x04\x0cinput-stream\x01B\
+\x05\x02\x03\x02\x01\x07\x04\0\x0cinput-stream\x03\0\0\x01i\x01\x01@\0\0\x02\x04\
+\0\x09get-stdin\x01\x03\x03\x01\x14wasi:cli/stdin@0.2.0\x05\x08\x02\x03\0\x04\x0d\
+output-stream\x01B\x05\x02\x03\x02\x01\x09\x04\0\x0doutput-stream\x03\0\0\x01i\x01\
+\x01@\0\0\x02\x04\0\x0aget-stdout\x01\x03\x03\x01\x15wasi:cli/stdout@0.2.0\x05\x0a\
+\x01B\x05\x02\x03\x02\x01\x09\x04\0\x0doutput-stream\x03\0\0\x01i\x01\x01@\0\0\x02\
+\x04\0\x0aget-stderr\x01\x03\x03\x01\x15wasi:cli/stderr@0.2.0\x05\x0b\x01B\x05\x01\
+r\x02\x07secondsw\x0bnanosecondsy\x04\0\x08datetime\x03\0\0\x01@\0\0\x01\x04\0\x03\
+now\x01\x02\x04\0\x0aresolution\x01\x02\x03\x01\x1cwasi:clocks/wall-clock@0.2.0\x05\
+\x0c\x01B\x11\x04\0\x07network\x03\x01\x01m\x15\x07unknown\x0daccess-denied\x0dn\
+ot-supported\x10invalid-argument\x0dout-of-memory\x07timeout\x14concurrency-conf\
+lict\x0fnot-in-progress\x0bwould-block\x0dinvalid-state\x10new-socket-limit\x14a\
+ddress-not-bindable\x0eaddress-in-use\x12remote-unreachable\x12connection-refuse\
+d\x10connection-reset\x12connection-aborted\x12datagram-too-large\x11name-unreso\
+lvable\x1atemporary-resolver-failure\x1apermanent-resolver-failure\x04\0\x0aerro\
+r-code\x03\0\x01\x01m\x02\x04ipv4\x04ipv6\x04\0\x11ip-address-family\x03\0\x03\x01\
+o\x04}}}}\x04\0\x0cipv4-address\x03\0\x05\x01o\x08{{{{{{{{\x04\0\x0cipv6-address\
+\x03\0\x07\x01q\x02\x04ipv4\x01\x06\0\x04ipv6\x01\x08\0\x04\0\x0aip-address\x03\0\
+\x09\x01r\x02\x04port{\x07address\x06\x04\0\x13ipv4-socket-address\x03\0\x0b\x01\
+r\x04\x04port{\x09flow-infoy\x07address\x08\x08scope-idy\x04\0\x13ipv6-socket-ad\
+dress\x03\0\x0d\x01q\x02\x04ipv4\x01\x0c\0\x04ipv6\x01\x0e\0\x04\0\x11ip-socket-\
+address\x03\0\x0f\x03\x01\x1awasi:sockets/network@0.2.0\x05\x0d\x02\x03\0\x09\x07\
+network\x01B\x05\x02\x03\x02\x01\x0e\x04\0\x07network\x03\0\0\x01i\x01\x01@\0\0\x02\
+\x04\0\x10instance-network\x01\x03\x03\x01#wasi:sockets/instance-network@0.2.0\x05\
+\x0f\x02\x03\0\x09\x0aerror-code\x02\x03\0\x09\x0aip-address\x01B\x16\x02\x03\x02\
+\x01\x05\x04\0\x08pollable\x03\0\0\x02\x03\x02\x01\x0e\x04\0\x07network\x03\0\x02\
+\x02\x03\x02\x01\x10\x04\0\x0aerror-code\x03\0\x04\x02\x03\x02\x01\x11\x04\0\x0a\
+ip-address\x03\0\x06\x04\0\x16resolve-address-stream\x03\x01\x01h\x08\x01k\x07\x01\
+j\x01\x0a\x01\x05\x01@\x01\x04self\x09\0\x0b\x04\03[method]resolve-address-strea\
+m.resolve-next-address\x01\x0c\x01i\x01\x01@\x01\x04self\x09\0\x0d\x04\0([method\
+]resolve-address-stream.subscribe\x01\x0e\x01h\x03\x01i\x08\x01j\x01\x10\x01\x05\
+\x01@\x02\x07network\x0f\x04names\0\x11\x04\0\x11resolve-addresses\x01\x12\x03\x01\
+!wasi:sockets/ip-name-lookup@0.2.0\x05\x12\x01B\x0f\x02\x03\x02\x01\x05\x04\0\x08\
+pollable\x03\0\0\x01w\x04\0\x07instant\x03\0\x02\x01w\x04\0\x08duration\x03\0\x04\
+\x01@\0\0\x03\x04\0\x03now\x01\x06\x01@\0\0\x05\x04\0\x0aresolution\x01\x07\x01i\
+\x01\x01@\x01\x04when\x03\0\x08\x04\0\x11subscribe-instant\x01\x09\x01@\x01\x04w\
+hen\x05\0\x08\x04\0\x12subscribe-duration\x01\x0a\x03\x01!wasi:clocks/monotonic-\
+clock@0.2.0\x05\x13\x02\x03\0\x0c\x08duration\x02\x03\0\x09\x11ip-socket-address\
+\x02\x03\0\x09\x11ip-address-family\x01BT\x02\x03\x02\x01\x07\x04\0\x0cinput-str\
+eam\x03\0\0\x02\x03\x02\x01\x09\x04\0\x0doutput-stream\x03\0\x02\x02\x03\x02\x01\
+\x05\x04\0\x08pollable\x03\0\x04\x02\x03\x02\x01\x14\x04\0\x08duration\x03\0\x06\
+\x02\x03\x02\x01\x0e\x04\0\x07network\x03\0\x08\x02\x03\x02\x01\x10\x04\0\x0aerr\
+or-code\x03\0\x0a\x02\x03\x02\x01\x15\x04\0\x11ip-socket-address\x03\0\x0c\x02\x03\
+\x02\x01\x16\x04\0\x11ip-address-family\x03\0\x0e\x01m\x03\x07receive\x04send\x04\
+both\x04\0\x0dshutdown-type\x03\0\x10\x04\0\x0atcp-socket\x03\x01\x01h\x12\x01h\x09\
+\x01j\0\x01\x0b\x01@\x03\x04self\x13\x07network\x14\x0dlocal-address\x0d\0\x15\x04\
+\0\x1d[method]tcp-socket.start-bind\x01\x16\x01@\x01\x04self\x13\0\x15\x04\0\x1e\
+[method]tcp-socket.finish-bind\x01\x17\x01@\x03\x04self\x13\x07network\x14\x0ere\
+mote-address\x0d\0\x15\x04\0\x20[method]tcp-socket.start-connect\x01\x18\x01i\x01\
 \x01i\x03\x01o\x02\x19\x1a\x01j\x01\x1b\x01\x0b\x01@\x01\x04self\x13\0\x1c\x04\0\
 ![method]tcp-socket.finish-connect\x01\x1d\x04\0\x1f[method]tcp-socket.start-lis\
 ten\x01\x17\x04\0\x20[method]tcp-socket.finish-listen\x01\x17\x01i\x12\x01o\x03\x1e\
@@ -8911,74 +9581,110 @@ j\x01}\x01\x0b\x01@\x01\x04self\x13\00\x04\0\x1c[method]tcp-socket.hop-limit\x01
 ethod]tcp-socket.send-buffer-size\x014\x04\0'[method]tcp-socket.set-send-buffer-\
 size\x01&\x01i\x05\x01@\x01\x04self\x13\05\x04\0\x1c[method]tcp-socket.subscribe\
 \x016\x01@\x02\x04self\x13\x0dshutdown-type\x11\0\x15\x04\0\x1b[method]tcp-socke\
-t.shutdown\x017\x03\x01\x16wasi:sockets/tcp@0.2.0\x05\x11\x02\x03\0\x07\x0atcp-s\
-ocket\x01B\x0c\x02\x03\x02\x01\x06\x04\0\x07network\x03\0\0\x02\x03\x02\x01\x08\x04\
-\0\x0aerror-code\x03\0\x02\x02\x03\x02\x01\x10\x04\0\x11ip-address-family\x03\0\x04\
-\x02\x03\x02\x01\x12\x04\0\x0atcp-socket\x03\0\x06\x01i\x07\x01j\x01\x08\x01\x03\
+t.shutdown\x017\x03\x01\x16wasi:sockets/tcp@0.2.0\x05\x17\x02\x03\0\x0d\x0atcp-s\
+ocket\x01B\x0c\x02\x03\x02\x01\x0e\x04\0\x07network\x03\0\0\x02\x03\x02\x01\x10\x04\
+\0\x0aerror-code\x03\0\x02\x02\x03\x02\x01\x16\x04\0\x11ip-address-family\x03\0\x04\
+\x02\x03\x02\x01\x18\x04\0\x0atcp-socket\x03\0\x06\x01i\x07\x01j\x01\x08\x01\x03\
 \x01@\x01\x0eaddress-family\x05\0\x09\x04\0\x11create-tcp-socket\x01\x0a\x03\x01\
-$wasi:sockets/tcp-create-socket@0.2.0\x05\x13\x01Bs\x01r\x02\x07secondsy\x08nsec\
-ondsy\x04\0\x04time\x03\0\0\x01o\x02yy\x01r\x0d\x09attr-typey\x09file-modey\x05n\
-linky\x03uidy\x03gidy\x08filesizew\x04usedw\x09spec-data\x02\x04fsidw\x06fileidw\
-\x05atime\x01\x05mtime\x01\x05ctime\x01\x04\0\x04attr\x03\0\x03\x01k\x04\x01r\x07\
-\x04attr\x05\x07linkmaxy\x08name-maxy\x08no-trunc\x7f\x10chown-restricted\x7f\x10\
-case-insensitive\x7f\x0fcase-preserving\x7f\x04\0\x09path-conf\x03\0\x06\x01r\x03\
-\x06fileidw\x09file-names\x06cookiew\x04\0\x0dreaddir-entry\x03\0\x08\x01p}\x01r\
-\x05\x06fileidw\x09file-names\x06cookiew\x04attr\x05\x06handle\x0a\x04\0\x11read\
-dirplus-entry\x03\0\x0b\x01kz\x01r\x02\x0enfs-error-code\x0d\x07messages\x04\0\x05\
-error\x03\0\x0e\x04\0\x09nfs-mount\x03\x01\x01h\x10\x01j\0\x01\x0f\x01@\x01\x04s\
-elf\x11\0\x12\x04\0\x19[method]nfs-mount.null-op\x01\x13\x01j\x01y\x01\x0f\x01@\x03\
-\x04self\x11\x02fh\x0a\x04modey\0\x14\x04\0\x18[method]nfs-mount.access\x01\x15\x01\
-@\x03\x04self\x11\x04paths\x04modey\0\x14\x04\0\x1d[method]nfs-mount.access-path\
-\x01\x16\x01@\x03\x04self\x11\x05seqidy\x07stateidw\0\x12\x04\0\x17[method]nfs-m\
-ount.close\x01\x17\x01@\x04\x04self\x11\x02fh\x0a\x06offsetw\x05county\0\x12\x04\
-\0\x18[method]nfs-mount.commit\x01\x18\x01@\x04\x04self\x11\x04paths\x06offsetw\x05\
-county\0\x12\x04\0\x1d[method]nfs-mount.commit-path\x01\x19\x01j\x01\x0a\x01\x0f\
-\x01@\x04\x04self\x11\x06dir-fh\x0a\x08filenames\x04modey\0\x1a\x04\0\x18[method\
-]nfs-mount.create\x01\x1b\x01@\x03\x04self\x11\x04paths\x04modey\0\x1a\x04\0\x1d\
-[method]nfs-mount.create-path\x01\x1c\x01@\x02\x04self\x11\x08clientidw\0\x12\x04\
-\0\x1c[method]nfs-mount.delegpurge\x01\x1d\x01@\x02\x04self\x11\x07stateidw\0\x12\
-\x04\0\x1d[method]nfs-mount.delegreturn\x01\x1e\x01j\x01\x04\x01\x0f\x01@\x02\x04\
-self\x11\x02fh\x0a\0\x1f\x04\0\x19[method]nfs-mount.getattr\x01\x20\x01@\x02\x04\
-self\x11\x04paths\0\x1f\x04\0\x1e[method]nfs-mount.getattr-path\x01!\x01k\x01\x01\
-ky\x01kw\x01@\x09\x04self\x11\x02fh\x0a\x0bguard-ctime\"\x04mode#\x03uid#\x03gid\
-#\x04size$\x05atime\"\x05mtime\"\0\x12\x04\0\x19[method]nfs-mount.setattr\x01%\x01\
-@\x09\x04self\x11\x04paths\x0dspecify-guard\x7f\x04mode#\x03uid#\x03gid#\x04size\
-$\x05atime\"\x05mtime\"\0\x12\x04\0\x1e[method]nfs-mount.setattr-path\x01&\x04\0\
-\x17[method]nfs-mount.getfh\x01\x13\x01@\x04\x04self\x11\x06src-fh\x0a\x0adst-di\
-r-fh\x0a\x0cdst-filenames\0\x1f\x04\0\x16[method]nfs-mount.link\x01'\x01@\x03\x04\
-self\x11\x08src-paths\x08dst-paths\0\x1f\x04\0\x1b[method]nfs-mount.link-path\x01\
-(\x01@\x04\x04self\x11\x08src-paths\x0adst-dir-fh\x0a\x0cdst-filenames\0\x1a\x04\
-\0\x19[method]nfs-mount.symlink\x01)\x01@\x03\x04self\x11\x08src-paths\x08dst-pa\
-ths\0\x1a\x04\0\x1e[method]nfs-mount.symlink-path\x01*\x01j\x01s\x01\x0f\x01@\x02\
-\x04self\x11\x02fh\x0a\0+\x04\0\x1a[method]nfs-mount.readlink\x01,\x01@\x02\x04s\
-elf\x11\x04paths\0+\x04\0\x1f[method]nfs-mount.readlink-path\x01-\x01@\x03\x04se\
-lf\x11\x06dir-fh\x0a\x08filenames\0\x1a\x04\0\x18[method]nfs-mount.lookup\x01.\x01\
-@\x02\x04self\x11\x04paths\0\x1a\x04\0\x1d[method]nfs-mount.lookup-path\x01/\x01\
-j\x01\x07\x01\x0f\x01@\x02\x04self\x11\x02fh\x0a\00\x04\0\x1a[method]nfs-mount.p\
-athconf\x011\x01@\x02\x04self\x11\x04paths\00\x04\0\x1f[method]nfs-mount.pathcon\
-f-path\x012\x01@\x04\x04self\x11\x02fh\x0a\x06offsetw\x05county\0\x1a\x04\0\x16[\
-method]nfs-mount.read\x013\x01@\x04\x04self\x11\x04paths\x06offsetw\x05county\0\x1a\
-\x04\0\x1b[method]nfs-mount.read-path\x014\x01@\x04\x04self\x11\x02fh\x0a\x06off\
-setw\x04data\x0a\0\x14\x04\0\x17[method]nfs-mount.write\x015\x01@\x04\x04self\x11\
-\x04paths\x06offsetw\x04data\x0a\0\x14\x04\0\x1c[method]nfs-mount.write-path\x01\
-6\x01p\x09\x01j\x017\x01\x0f\x01@\x02\x04self\x11\x06dir-fh\x0a\08\x04\0\x19[met\
-hod]nfs-mount.readdir\x019\x01@\x02\x04self\x11\x08dir-paths\08\x04\0\x1e[method\
-]nfs-mount.readdir-path\x01:\x01p\x0c\x01j\x01;\x01\x0f\x01@\x02\x04self\x11\x06\
-dir-fh\x0a\0<\x04\0\x1d[method]nfs-mount.readdirplus\x01=\x01@\x02\x04self\x11\x08\
-dir-paths\0<\x04\0\"[method]nfs-mount.readdirplus-path\x01>\x01@\x04\x04self\x11\
-\x06dir-fh\x0a\x07dirnames\x04modey\0\x1a\x04\0\x17[method]nfs-mount.mkdir\x01?\x04\
-\0\x1c[method]nfs-mount.mkdir-path\x01\x1c\x01@\x03\x04self\x11\x06dir-fh\x0a\x08\
-filenames\0\x12\x04\0\x18[method]nfs-mount.remove\x01@\x01@\x02\x04self\x11\x04p\
-aths\0\x12\x04\0\x1d[method]nfs-mount.remove-path\x01A\x01@\x03\x04self\x11\x06d\
-ir-fh\x0a\x07dirnames\0\x12\x04\0\x17[method]nfs-mount.rmdir\x01B\x04\0\x1c[meth\
-od]nfs-mount.rmdir-path\x01A\x01@\x05\x04self\x11\x0bfrom-dir-fh\x0a\x0dfrom-fil\
-enames\x09to-dir-fh\x0a\x0bto-filenames\0\x12\x04\0\x18[method]nfs-mount.rename\x01\
-C\x01@\x03\x04self\x11\x09from-paths\x07to-paths\0\x12\x04\0\x1d[method]nfs-moun\
-t.rename-path\x01D\x04\0\x18[method]nfs-mount.umount\x01\x13\x01i\x10\x01j\x01\xc5\
-\0\x01\x0f\x01@\x01\x03urls\0\xc6\0\x04\0\x13parse-url-and-mount\x01G\x04\x01\x14\
-component:nfs-rs/nfs\x05\x14\x04\x01\x17component:nfs-rs/nfs-rs\x04\0\x0b\x0c\x01\
-\0\x06nfs-rs\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x07\
-0.202.0\x10wit-bindgen-rust\x060.24.0";
+$wasi:sockets/tcp-create-socket@0.2.0\x05\x19\x01B\x0a\x01o\x02ss\x01p\0\x01@\0\0\
+\x01\x04\0\x0fget-environment\x01\x02\x01ps\x01@\0\0\x03\x04\0\x0dget-arguments\x01\
+\x04\x01ks\x01@\0\0\x05\x04\0\x0binitial-cwd\x01\x06\x04\x01\x1awasi:cli/environ\
+ment@0.2.0\x05\x1a\x01B\x03\x01j\0\0\x01@\x01\x06status\0\x01\0\x04\0\x04exit\x01\
+\x01\x04\x01\x13wasi:cli/exit@0.2.0\x05\x1b\x01B\x04\x04\0\x05error\x03\x01\x01h\
+\0\x01@\x01\x04self\x01\0s\x04\0\x1d[method]error.to-debug-string\x01\x02\x04\x01\
+\x13wasi:io/error@0.2.0\x05\x1c\x01B\x0a\x04\0\x08pollable\x03\x01\x01h\0\x01@\x01\
+\x04self\x01\0\x7f\x04\0\x16[method]pollable.ready\x01\x02\x01@\x01\x04self\x01\x01\
+\0\x04\0\x16[method]pollable.block\x01\x03\x01p\x01\x01py\x01@\x01\x02in\x04\0\x05\
+\x04\0\x04poll\x01\x06\x04\x01\x12wasi:io/poll@0.2.0\x05\x1d\x01B(\x02\x03\x02\x01\
+\x04\x04\0\x05error\x03\0\0\x02\x03\x02\x01\x05\x04\0\x08pollable\x03\0\x02\x01i\
+\x01\x01q\x02\x15last-operation-failed\x01\x04\0\x06closed\0\0\x04\0\x0cstream-e\
+rror\x03\0\x05\x04\0\x0cinput-stream\x03\x01\x04\0\x0doutput-stream\x03\x01\x01h\
+\x07\x01p}\x01j\x01\x0a\x01\x06\x01@\x02\x04self\x09\x03lenw\0\x0b\x04\0\x19[met\
+hod]input-stream.read\x01\x0c\x04\0\"[method]input-stream.blocking-read\x01\x0c\x01\
+j\x01w\x01\x06\x01@\x02\x04self\x09\x03lenw\0\x0d\x04\0\x19[method]input-stream.\
+skip\x01\x0e\x04\0\"[method]input-stream.blocking-skip\x01\x0e\x01i\x03\x01@\x01\
+\x04self\x09\0\x0f\x04\0\x1e[method]input-stream.subscribe\x01\x10\x01h\x08\x01@\
+\x01\x04self\x11\0\x0d\x04\0![method]output-stream.check-write\x01\x12\x01j\0\x01\
+\x06\x01@\x02\x04self\x11\x08contents\x0a\0\x13\x04\0\x1b[method]output-stream.w\
+rite\x01\x14\x04\0.[method]output-stream.blocking-write-and-flush\x01\x14\x01@\x01\
+\x04self\x11\0\x13\x04\0\x1b[method]output-stream.flush\x01\x15\x04\0$[method]ou\
+tput-stream.blocking-flush\x01\x15\x01@\x01\x04self\x11\0\x0f\x04\0\x1f[method]o\
+utput-stream.subscribe\x01\x16\x01@\x02\x04self\x11\x03lenw\0\x13\x04\0\"[method\
+]output-stream.write-zeroes\x01\x17\x04\05[method]output-stream.blocking-write-z\
+eroes-and-flush\x01\x17\x01@\x03\x04self\x11\x03src\x09\x03lenw\0\x0d\x04\0\x1c[\
+method]output-stream.splice\x01\x18\x04\0%[method]output-stream.blocking-splice\x01\
+\x18\x04\x01\x15wasi:io/streams@0.2.0\x05\x1e\x01B\x05\x02\x03\x02\x01\x07\x04\0\
+\x0cinput-stream\x03\0\0\x01i\x01\x01@\0\0\x02\x04\0\x09get-stdin\x01\x03\x04\x01\
+\x14wasi:cli/stdin@0.2.0\x05\x1f\x01B\x05\x02\x03\x02\x01\x09\x04\0\x0doutput-st\
+ream\x03\0\0\x01i\x01\x01@\0\0\x02\x04\0\x0aget-stdout\x01\x03\x04\x01\x15wasi:c\
+li/stdout@0.2.0\x05\x20\x01B\x05\x02\x03\x02\x01\x09\x04\0\x0doutput-stream\x03\0\
+\0\x01i\x01\x01@\0\0\x02\x04\0\x0aget-stderr\x01\x03\x04\x01\x15wasi:cli/stderr@\
+0.2.0\x05!\x01B\x05\x01r\x02\x07secondsw\x0bnanosecondsy\x04\0\x08datetime\x03\0\
+\0\x01@\0\0\x01\x04\0\x03now\x01\x02\x04\0\x0aresolution\x01\x02\x04\x01\x1cwasi\
+:clocks/wall-clock@0.2.0\x05\"\x02\x03\0\x13\x05error\x02\x03\0\x17\x08datetime\x01\
+Br\x02\x03\x02\x01\x07\x04\0\x0cinput-stream\x03\0\0\x02\x03\x02\x01\x09\x04\0\x0d\
+output-stream\x03\0\x02\x02\x03\x02\x01#\x04\0\x05error\x03\0\x04\x02\x03\x02\x01\
+$\x04\0\x08datetime\x03\0\x06\x01w\x04\0\x08filesize\x03\0\x08\x01m\x08\x07unkno\
+wn\x0cblock-device\x10character-device\x09directory\x04fifo\x0dsymbolic-link\x0c\
+regular-file\x06socket\x04\0\x0fdescriptor-type\x03\0\x0a\x01n\x06\x04read\x05wr\
+ite\x13file-integrity-sync\x13data-integrity-sync\x14requested-write-sync\x10mut\
+ate-directory\x04\0\x10descriptor-flags\x03\0\x0c\x01n\x01\x0esymlink-follow\x04\
+\0\x0apath-flags\x03\0\x0e\x01n\x04\x06create\x09directory\x09exclusive\x08trunc\
+ate\x04\0\x0aopen-flags\x03\0\x10\x01w\x04\0\x0alink-count\x03\0\x12\x01k\x07\x01\
+r\x06\x04type\x0b\x0alink-count\x13\x04size\x09\x15data-access-timestamp\x14\x1b\
+data-modification-timestamp\x14\x17status-change-timestamp\x14\x04\0\x0fdescript\
+or-stat\x03\0\x15\x01q\x03\x09no-change\0\0\x03now\0\0\x09timestamp\x01\x07\0\x04\
+\0\x0dnew-timestamp\x03\0\x17\x01r\x02\x04type\x0b\x04names\x04\0\x0fdirectory-e\
+ntry\x03\0\x19\x01m%\x06access\x0bwould-block\x07already\x0ebad-descriptor\x04bu\
+sy\x08deadlock\x05quota\x05exist\x0efile-too-large\x15illegal-byte-sequence\x0bi\
+n-progress\x0binterrupted\x07invalid\x02io\x0cis-directory\x04loop\x0etoo-many-l\
+inks\x0cmessage-size\x0dname-too-long\x09no-device\x08no-entry\x07no-lock\x13ins\
+ufficient-memory\x12insufficient-space\x0dnot-directory\x09not-empty\x0fnot-reco\
+verable\x0bunsupported\x06no-tty\x0eno-such-device\x08overflow\x0dnot-permitted\x04\
+pipe\x09read-only\x0cinvalid-seek\x0etext-file-busy\x0ccross-device\x04\0\x0aerr\
+or-code\x03\0\x1b\x01m\x06\x06normal\x0asequential\x06random\x09will-need\x09don\
+t-need\x08no-reuse\x04\0\x06advice\x03\0\x1d\x01r\x02\x05lowerw\x05upperw\x04\0\x13\
+metadata-hash-value\x03\0\x1f\x04\0\x0adescriptor\x03\x01\x04\0\x16directory-ent\
+ry-stream\x03\x01\x01h!\x01i\x01\x01j\x01$\x01\x1c\x01@\x02\x04self#\x06offset\x09\
+\0%\x04\0\"[method]descriptor.read-via-stream\x01&\x01i\x03\x01j\x01'\x01\x1c\x01\
+@\x02\x04self#\x06offset\x09\0(\x04\0#[method]descriptor.write-via-stream\x01)\x01\
+@\x01\x04self#\0(\x04\0$[method]descriptor.append-via-stream\x01*\x01j\0\x01\x1c\
+\x01@\x04\x04self#\x06offset\x09\x06length\x09\x06advice\x1e\0+\x04\0\x19[method\
+]descriptor.advise\x01,\x01@\x01\x04self#\0+\x04\0\x1c[method]descriptor.sync-da\
+ta\x01-\x01j\x01\x0d\x01\x1c\x01@\x01\x04self#\0.\x04\0\x1c[method]descriptor.ge\
+t-flags\x01/\x01j\x01\x0b\x01\x1c\x01@\x01\x04self#\00\x04\0\x1b[method]descript\
+or.get-type\x011\x01@\x02\x04self#\x04size\x09\0+\x04\0\x1b[method]descriptor.se\
+t-size\x012\x01@\x03\x04self#\x15data-access-timestamp\x18\x1bdata-modification-\
+timestamp\x18\0+\x04\0\x1c[method]descriptor.set-times\x013\x01p}\x01o\x024\x7f\x01\
+j\x015\x01\x1c\x01@\x03\x04self#\x06length\x09\x06offset\x09\06\x04\0\x17[method\
+]descriptor.read\x017\x01j\x01\x09\x01\x1c\x01@\x03\x04self#\x06buffer4\x06offse\
+t\x09\08\x04\0\x18[method]descriptor.write\x019\x01i\"\x01j\x01:\x01\x1c\x01@\x01\
+\x04self#\0;\x04\0![method]descriptor.read-directory\x01<\x04\0\x17[method]descr\
+iptor.sync\x01-\x01@\x02\x04self#\x04paths\0+\x04\0&[method]descriptor.create-di\
+rectory-at\x01=\x01j\x01\x16\x01\x1c\x01@\x01\x04self#\0>\x04\0\x17[method]descr\
+iptor.stat\x01?\x01@\x03\x04self#\x0apath-flags\x0f\x04paths\0>\x04\0\x1a[method\
+]descriptor.stat-at\x01@\x01@\x05\x04self#\x0apath-flags\x0f\x04paths\x15data-ac\
+cess-timestamp\x18\x1bdata-modification-timestamp\x18\0+\x04\0\x1f[method]descri\
+ptor.set-times-at\x01A\x01@\x05\x04self#\x0eold-path-flags\x0f\x08old-paths\x0en\
+ew-descriptor#\x08new-paths\0+\x04\0\x1a[method]descriptor.link-at\x01B\x01i!\x01\
+j\x01\xc3\0\x01\x1c\x01@\x05\x04self#\x0apath-flags\x0f\x04paths\x0aopen-flags\x11\
+\x05flags\x0d\0\xc4\0\x04\0\x1a[method]descriptor.open-at\x01E\x01j\x01s\x01\x1c\
+\x01@\x02\x04self#\x04paths\0\xc6\0\x04\0\x1e[method]descriptor.readlink-at\x01G\
+\x04\0&[method]descriptor.remove-directory-at\x01=\x01@\x04\x04self#\x08old-path\
+s\x0enew-descriptor#\x08new-paths\0+\x04\0\x1c[method]descriptor.rename-at\x01H\x01\
+@\x03\x04self#\x08old-paths\x08new-paths\0+\x04\0\x1d[method]descriptor.symlink-\
+at\x01I\x04\0![method]descriptor.unlink-file-at\x01=\x01@\x02\x04self#\x05other#\
+\0\x7f\x04\0![method]descriptor.is-same-object\x01J\x01j\x01\x20\x01\x1c\x01@\x01\
+\x04self#\0\xcb\0\x04\0\x20[method]descriptor.metadata-hash\x01L\x01@\x03\x04sel\
+f#\x0apath-flags\x0f\x04paths\0\xcb\0\x04\0#[method]descriptor.metadata-hash-at\x01\
+M\x01h\"\x01k\x1a\x01j\x01\xcf\0\x01\x1c\x01@\x01\x04self\xce\0\0\xd0\0\x04\03[m\
+ethod]directory-entry-stream.read-directory-entry\x01Q\x01h\x05\x01k\x1c\x01@\x01\
+\x03err\xd2\0\0\xd3\0\x04\0\x15filesystem-error-code\x01T\x04\x01\x1bwasi:filesy\
+stem/types@0.2.0\x05%\x02\x03\0\x18\x0adescriptor\x01B\x07\x02\x03\x02\x01&\x04\0\
+\x0adescriptor\x03\0\0\x01i\x01\x01o\x02\x02s\x01p\x03\x01@\0\0\x04\x04\0\x0fget\
+-directories\x01\x05\x04\x01\x1ewasi:filesystem/preopens@0.2.0\x05'\x04\x01\x17c\
+omponent:nfs-rs/nfs-rs\x04\0\x0b\x0c\x01\0\x06nfs-rs\x03\0\0\0G\x09producers\x01\
+\x0cprocessed-by\x02\x0dwit-component\x070.202.0\x10wit-bindgen-rust\x060.24.0";
 
 #[inline(never)]
 #[doc(hidden)]
