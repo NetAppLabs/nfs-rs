@@ -4055,6 +4055,8 @@ pub mod exports {
                 static __FORCE_SECTION_REF: fn() =
                     super::super::super::super::__link_custom_section_describing_imports;
                 use super::super::super::super::_rt;
+                pub type Fh = _rt::Vec<u8>;
+                pub type Bytes = _rt::Vec<u8>;
                 #[repr(C)]
                 #[derive(Clone, Copy)]
                 pub struct Time {
@@ -4105,6 +4107,19 @@ pub mod exports {
                             .finish()
                     }
                 }
+                #[derive(Clone)]
+                pub struct ObjRes {
+                    pub obj: Fh,
+                    pub attr: Option<Attr>,
+                }
+                impl ::core::fmt::Debug for ObjRes {
+                    fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
+                        f.debug_struct("ObjRes")
+                            .field("obj", &self.obj)
+                            .field("attr", &self.attr)
+                            .finish()
+                    }
+                }
                 #[repr(C)]
                 #[derive(Clone, Copy)]
                 pub struct PathConf {
@@ -4150,7 +4165,7 @@ pub mod exports {
                     pub file_name: _rt::String,
                     pub cookie: u64,
                     pub attr: Option<Attr>,
-                    pub handle: _rt::Vec<u8>,
+                    pub handle: Fh,
                 }
                 impl ::core::fmt::Debug for ReaddirplusEntry {
                     fn fmt(&self, f: &mut ::core::fmt::Formatter<'_>) -> ::core::fmt::Result {
@@ -4767,34 +4782,91 @@ pub mod exports {
                     match result2 {
                         Ok(e) => {
                             *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
+                            let ObjRes {
+                                obj: obj4,
+                                attr: attr4,
+                            } = e;
+                            let vec5 = (obj4).into_boxed_slice();
+                            let ptr5 = vec5.as_ptr().cast::<u8>();
+                            let len5 = vec5.len();
+                            ::core::mem::forget(vec5);
+                            *ptr3.add(12).cast::<usize>() = len5;
+                            *ptr3.add(8).cast::<*mut u8>() = ptr5.cast_mut();
+                            match attr4 {
+                                Some(e) => {
+                                    *ptr3.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type6,
+                                        file_mode: file_mode6,
+                                        nlink: nlink6,
+                                        uid: uid6,
+                                        gid: gid6,
+                                        filesize: filesize6,
+                                        used: used6,
+                                        spec_data: spec_data6,
+                                        fsid: fsid6,
+                                        fileid: fileid6,
+                                        atime: atime6,
+                                        mtime: mtime6,
+                                        ctime: ctime6,
+                                    } = e;
+                                    *ptr3.add(24).cast::<i32>() = _rt::as_i32(attr_type6);
+                                    *ptr3.add(28).cast::<i32>() = _rt::as_i32(file_mode6);
+                                    *ptr3.add(32).cast::<i32>() = _rt::as_i32(nlink6);
+                                    *ptr3.add(36).cast::<i32>() = _rt::as_i32(uid6);
+                                    *ptr3.add(40).cast::<i32>() = _rt::as_i32(gid6);
+                                    *ptr3.add(48).cast::<i64>() = _rt::as_i64(filesize6);
+                                    *ptr3.add(56).cast::<i64>() = _rt::as_i64(used6);
+                                    let (t7_0, t7_1) = spec_data6;
+                                    *ptr3.add(64).cast::<i32>() = _rt::as_i32(t7_0);
+                                    *ptr3.add(68).cast::<i32>() = _rt::as_i32(t7_1);
+                                    *ptr3.add(72).cast::<i64>() = _rt::as_i64(fsid6);
+                                    *ptr3.add(80).cast::<i64>() = _rt::as_i64(fileid6);
+                                    let Time {
+                                        seconds: seconds8,
+                                        nseconds: nseconds8,
+                                    } = atime6;
+                                    *ptr3.add(88).cast::<i32>() = _rt::as_i32(seconds8);
+                                    *ptr3.add(92).cast::<i32>() = _rt::as_i32(nseconds8);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = mtime6;
+                                    *ptr3.add(96).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr3.add(100).cast::<i32>() = _rt::as_i32(nseconds9);
+                                    let Time {
+                                        seconds: seconds10,
+                                        nseconds: nseconds10,
+                                    } = ctime6;
+                                    *ptr3.add(104).cast::<i32>() = _rt::as_i32(seconds10);
+                                    *ptr3.add(108).cast::<i32>() = _rt::as_i32(nseconds10);
+                                }
+                                None => {
+                                    *ptr3.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr3.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
+                                nfs_error_code: nfs_error_code11,
+                                message: message11,
                             } = e;
-                            match nfs_error_code5 {
+                            match nfs_error_code11 {
                                 Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr3.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr3.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr3.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
+                            let vec12 = (message11.into_bytes()).into_boxed_slice();
+                            let ptr12 = vec12.as_ptr().cast::<u8>();
+                            let len12 = vec12.len();
+                            ::core::mem::forget(vec12);
+                            *ptr3.add(20).cast::<usize>() = len12;
+                            *ptr3.add(16).cast::<*mut u8>() = ptr12.cast_mut();
                         }
                     };
                     ptr3
@@ -4807,15 +4879,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -4841,34 +4913,91 @@ pub mod exports {
                     match result1 {
                         Ok(e) => {
                             *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
+                            let ObjRes {
+                                obj: obj3,
+                                attr: attr3,
+                            } = e;
+                            let vec4 = (obj3).into_boxed_slice();
+                            let ptr4 = vec4.as_ptr().cast::<u8>();
+                            let len4 = vec4.len();
+                            ::core::mem::forget(vec4);
+                            *ptr2.add(12).cast::<usize>() = len4;
+                            *ptr2.add(8).cast::<*mut u8>() = ptr4.cast_mut();
+                            match attr3 {
+                                Some(e) => {
+                                    *ptr2.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type5,
+                                        file_mode: file_mode5,
+                                        nlink: nlink5,
+                                        uid: uid5,
+                                        gid: gid5,
+                                        filesize: filesize5,
+                                        used: used5,
+                                        spec_data: spec_data5,
+                                        fsid: fsid5,
+                                        fileid: fileid5,
+                                        atime: atime5,
+                                        mtime: mtime5,
+                                        ctime: ctime5,
+                                    } = e;
+                                    *ptr2.add(24).cast::<i32>() = _rt::as_i32(attr_type5);
+                                    *ptr2.add(28).cast::<i32>() = _rt::as_i32(file_mode5);
+                                    *ptr2.add(32).cast::<i32>() = _rt::as_i32(nlink5);
+                                    *ptr2.add(36).cast::<i32>() = _rt::as_i32(uid5);
+                                    *ptr2.add(40).cast::<i32>() = _rt::as_i32(gid5);
+                                    *ptr2.add(48).cast::<i64>() = _rt::as_i64(filesize5);
+                                    *ptr2.add(56).cast::<i64>() = _rt::as_i64(used5);
+                                    let (t6_0, t6_1) = spec_data5;
+                                    *ptr2.add(64).cast::<i32>() = _rt::as_i32(t6_0);
+                                    *ptr2.add(68).cast::<i32>() = _rt::as_i32(t6_1);
+                                    *ptr2.add(72).cast::<i64>() = _rt::as_i64(fsid5);
+                                    *ptr2.add(80).cast::<i64>() = _rt::as_i64(fileid5);
+                                    let Time {
+                                        seconds: seconds7,
+                                        nseconds: nseconds7,
+                                    } = atime5;
+                                    *ptr2.add(88).cast::<i32>() = _rt::as_i32(seconds7);
+                                    *ptr2.add(92).cast::<i32>() = _rt::as_i32(nseconds7);
+                                    let Time {
+                                        seconds: seconds8,
+                                        nseconds: nseconds8,
+                                    } = mtime5;
+                                    *ptr2.add(96).cast::<i32>() = _rt::as_i32(seconds8);
+                                    *ptr2.add(100).cast::<i32>() = _rt::as_i32(nseconds8);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = ctime5;
+                                    *ptr2.add(104).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr2.add(108).cast::<i32>() = _rt::as_i32(nseconds9);
+                                }
+                                None => {
+                                    *ptr2.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr2.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
+                                nfs_error_code: nfs_error_code10,
+                                message: message10,
                             } = e;
-                            match nfs_error_code4 {
+                            match nfs_error_code10 {
                                 Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr2.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
+                            let vec11 = (message10.into_bytes()).into_boxed_slice();
+                            let ptr11 = vec11.as_ptr().cast::<u8>();
+                            let len11 = vec11.len();
+                            ::core::mem::forget(vec11);
+                            *ptr2.add(20).cast::<usize>() = len11;
+                            *ptr2.add(16).cast::<*mut u8>() = ptr11.cast_mut();
                         }
                     };
                     ptr2
@@ -4881,15 +5010,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -5833,34 +5962,91 @@ pub mod exports {
                     match result3 {
                         Ok(e) => {
                             *ptr4.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec5 = (e).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr4.add(8).cast::<usize>() = len5;
-                            *ptr4.add(4).cast::<*mut u8>() = ptr5.cast_mut();
+                            let ObjRes {
+                                obj: obj5,
+                                attr: attr5,
+                            } = e;
+                            let vec6 = (obj5).into_boxed_slice();
+                            let ptr6 = vec6.as_ptr().cast::<u8>();
+                            let len6 = vec6.len();
+                            ::core::mem::forget(vec6);
+                            *ptr4.add(12).cast::<usize>() = len6;
+                            *ptr4.add(8).cast::<*mut u8>() = ptr6.cast_mut();
+                            match attr5 {
+                                Some(e) => {
+                                    *ptr4.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type7,
+                                        file_mode: file_mode7,
+                                        nlink: nlink7,
+                                        uid: uid7,
+                                        gid: gid7,
+                                        filesize: filesize7,
+                                        used: used7,
+                                        spec_data: spec_data7,
+                                        fsid: fsid7,
+                                        fileid: fileid7,
+                                        atime: atime7,
+                                        mtime: mtime7,
+                                        ctime: ctime7,
+                                    } = e;
+                                    *ptr4.add(24).cast::<i32>() = _rt::as_i32(attr_type7);
+                                    *ptr4.add(28).cast::<i32>() = _rt::as_i32(file_mode7);
+                                    *ptr4.add(32).cast::<i32>() = _rt::as_i32(nlink7);
+                                    *ptr4.add(36).cast::<i32>() = _rt::as_i32(uid7);
+                                    *ptr4.add(40).cast::<i32>() = _rt::as_i32(gid7);
+                                    *ptr4.add(48).cast::<i64>() = _rt::as_i64(filesize7);
+                                    *ptr4.add(56).cast::<i64>() = _rt::as_i64(used7);
+                                    let (t8_0, t8_1) = spec_data7;
+                                    *ptr4.add(64).cast::<i32>() = _rt::as_i32(t8_0);
+                                    *ptr4.add(68).cast::<i32>() = _rt::as_i32(t8_1);
+                                    *ptr4.add(72).cast::<i64>() = _rt::as_i64(fsid7);
+                                    *ptr4.add(80).cast::<i64>() = _rt::as_i64(fileid7);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = atime7;
+                                    *ptr4.add(88).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr4.add(92).cast::<i32>() = _rt::as_i32(nseconds9);
+                                    let Time {
+                                        seconds: seconds10,
+                                        nseconds: nseconds10,
+                                    } = mtime7;
+                                    *ptr4.add(96).cast::<i32>() = _rt::as_i32(seconds10);
+                                    *ptr4.add(100).cast::<i32>() = _rt::as_i32(nseconds10);
+                                    let Time {
+                                        seconds: seconds11,
+                                        nseconds: nseconds11,
+                                    } = ctime7;
+                                    *ptr4.add(104).cast::<i32>() = _rt::as_i32(seconds11);
+                                    *ptr4.add(108).cast::<i32>() = _rt::as_i32(nseconds11);
+                                }
+                                None => {
+                                    *ptr4.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr4.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code6,
-                                message: message6,
+                                nfs_error_code: nfs_error_code12,
+                                message: message12,
                             } = e;
-                            match nfs_error_code6 {
+                            match nfs_error_code12 {
                                 Some(e) => {
-                                    *ptr4.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr4.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr4.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr4.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr4.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr4.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec7 = (message6.into_bytes()).into_boxed_slice();
-                            let ptr7 = vec7.as_ptr().cast::<u8>();
-                            let len7 = vec7.len();
-                            ::core::mem::forget(vec7);
-                            *ptr4.add(16).cast::<usize>() = len7;
-                            *ptr4.add(12).cast::<*mut u8>() = ptr7.cast_mut();
+                            let vec13 = (message12.into_bytes()).into_boxed_slice();
+                            let ptr13 = vec13.as_ptr().cast::<u8>();
+                            let len13 = vec13.len();
+                            ::core::mem::forget(vec13);
+                            *ptr4.add(20).cast::<usize>() = len13;
+                            *ptr4.add(16).cast::<*mut u8>() = ptr13.cast_mut();
                         }
                     };
                     ptr4
@@ -5873,15 +6059,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -5910,34 +6096,91 @@ pub mod exports {
                     match result2 {
                         Ok(e) => {
                             *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
+                            let ObjRes {
+                                obj: obj4,
+                                attr: attr4,
+                            } = e;
+                            let vec5 = (obj4).into_boxed_slice();
+                            let ptr5 = vec5.as_ptr().cast::<u8>();
+                            let len5 = vec5.len();
+                            ::core::mem::forget(vec5);
+                            *ptr3.add(12).cast::<usize>() = len5;
+                            *ptr3.add(8).cast::<*mut u8>() = ptr5.cast_mut();
+                            match attr4 {
+                                Some(e) => {
+                                    *ptr3.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type6,
+                                        file_mode: file_mode6,
+                                        nlink: nlink6,
+                                        uid: uid6,
+                                        gid: gid6,
+                                        filesize: filesize6,
+                                        used: used6,
+                                        spec_data: spec_data6,
+                                        fsid: fsid6,
+                                        fileid: fileid6,
+                                        atime: atime6,
+                                        mtime: mtime6,
+                                        ctime: ctime6,
+                                    } = e;
+                                    *ptr3.add(24).cast::<i32>() = _rt::as_i32(attr_type6);
+                                    *ptr3.add(28).cast::<i32>() = _rt::as_i32(file_mode6);
+                                    *ptr3.add(32).cast::<i32>() = _rt::as_i32(nlink6);
+                                    *ptr3.add(36).cast::<i32>() = _rt::as_i32(uid6);
+                                    *ptr3.add(40).cast::<i32>() = _rt::as_i32(gid6);
+                                    *ptr3.add(48).cast::<i64>() = _rt::as_i64(filesize6);
+                                    *ptr3.add(56).cast::<i64>() = _rt::as_i64(used6);
+                                    let (t7_0, t7_1) = spec_data6;
+                                    *ptr3.add(64).cast::<i32>() = _rt::as_i32(t7_0);
+                                    *ptr3.add(68).cast::<i32>() = _rt::as_i32(t7_1);
+                                    *ptr3.add(72).cast::<i64>() = _rt::as_i64(fsid6);
+                                    *ptr3.add(80).cast::<i64>() = _rt::as_i64(fileid6);
+                                    let Time {
+                                        seconds: seconds8,
+                                        nseconds: nseconds8,
+                                    } = atime6;
+                                    *ptr3.add(88).cast::<i32>() = _rt::as_i32(seconds8);
+                                    *ptr3.add(92).cast::<i32>() = _rt::as_i32(nseconds8);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = mtime6;
+                                    *ptr3.add(96).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr3.add(100).cast::<i32>() = _rt::as_i32(nseconds9);
+                                    let Time {
+                                        seconds: seconds10,
+                                        nseconds: nseconds10,
+                                    } = ctime6;
+                                    *ptr3.add(104).cast::<i32>() = _rt::as_i32(seconds10);
+                                    *ptr3.add(108).cast::<i32>() = _rt::as_i32(nseconds10);
+                                }
+                                None => {
+                                    *ptr3.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr3.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
+                                nfs_error_code: nfs_error_code11,
+                                message: message11,
                             } = e;
-                            match nfs_error_code5 {
+                            match nfs_error_code11 {
                                 Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr3.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr3.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr3.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
+                            let vec12 = (message11.into_bytes()).into_boxed_slice();
+                            let ptr12 = vec12.as_ptr().cast::<u8>();
+                            let len12 = vec12.len();
+                            ::core::mem::forget(vec12);
+                            *ptr3.add(20).cast::<usize>() = len12;
+                            *ptr3.add(16).cast::<*mut u8>() = ptr12.cast_mut();
                         }
                     };
                     ptr3
@@ -5950,15 +6193,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -6125,34 +6368,91 @@ pub mod exports {
                     match result2 {
                         Ok(e) => {
                             *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
+                            let ObjRes {
+                                obj: obj4,
+                                attr: attr4,
+                            } = e;
+                            let vec5 = (obj4).into_boxed_slice();
+                            let ptr5 = vec5.as_ptr().cast::<u8>();
+                            let len5 = vec5.len();
+                            ::core::mem::forget(vec5);
+                            *ptr3.add(12).cast::<usize>() = len5;
+                            *ptr3.add(8).cast::<*mut u8>() = ptr5.cast_mut();
+                            match attr4 {
+                                Some(e) => {
+                                    *ptr3.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type6,
+                                        file_mode: file_mode6,
+                                        nlink: nlink6,
+                                        uid: uid6,
+                                        gid: gid6,
+                                        filesize: filesize6,
+                                        used: used6,
+                                        spec_data: spec_data6,
+                                        fsid: fsid6,
+                                        fileid: fileid6,
+                                        atime: atime6,
+                                        mtime: mtime6,
+                                        ctime: ctime6,
+                                    } = e;
+                                    *ptr3.add(24).cast::<i32>() = _rt::as_i32(attr_type6);
+                                    *ptr3.add(28).cast::<i32>() = _rt::as_i32(file_mode6);
+                                    *ptr3.add(32).cast::<i32>() = _rt::as_i32(nlink6);
+                                    *ptr3.add(36).cast::<i32>() = _rt::as_i32(uid6);
+                                    *ptr3.add(40).cast::<i32>() = _rt::as_i32(gid6);
+                                    *ptr3.add(48).cast::<i64>() = _rt::as_i64(filesize6);
+                                    *ptr3.add(56).cast::<i64>() = _rt::as_i64(used6);
+                                    let (t7_0, t7_1) = spec_data6;
+                                    *ptr3.add(64).cast::<i32>() = _rt::as_i32(t7_0);
+                                    *ptr3.add(68).cast::<i32>() = _rt::as_i32(t7_1);
+                                    *ptr3.add(72).cast::<i64>() = _rt::as_i64(fsid6);
+                                    *ptr3.add(80).cast::<i64>() = _rt::as_i64(fileid6);
+                                    let Time {
+                                        seconds: seconds8,
+                                        nseconds: nseconds8,
+                                    } = atime6;
+                                    *ptr3.add(88).cast::<i32>() = _rt::as_i32(seconds8);
+                                    *ptr3.add(92).cast::<i32>() = _rt::as_i32(nseconds8);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = mtime6;
+                                    *ptr3.add(96).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr3.add(100).cast::<i32>() = _rt::as_i32(nseconds9);
+                                    let Time {
+                                        seconds: seconds10,
+                                        nseconds: nseconds10,
+                                    } = ctime6;
+                                    *ptr3.add(104).cast::<i32>() = _rt::as_i32(seconds10);
+                                    *ptr3.add(108).cast::<i32>() = _rt::as_i32(nseconds10);
+                                }
+                                None => {
+                                    *ptr3.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr3.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
+                                nfs_error_code: nfs_error_code11,
+                                message: message11,
                             } = e;
-                            match nfs_error_code5 {
+                            match nfs_error_code11 {
                                 Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr3.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr3.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr3.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
+                            let vec12 = (message11.into_bytes()).into_boxed_slice();
+                            let ptr12 = vec12.as_ptr().cast::<u8>();
+                            let len12 = vec12.len();
+                            ::core::mem::forget(vec12);
+                            *ptr3.add(20).cast::<usize>() = len12;
+                            *ptr3.add(16).cast::<*mut u8>() = ptr12.cast_mut();
                         }
                     };
                     ptr3
@@ -6165,15 +6465,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -6197,34 +6497,91 @@ pub mod exports {
                     match result1 {
                         Ok(e) => {
                             *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
+                            let ObjRes {
+                                obj: obj3,
+                                attr: attr3,
+                            } = e;
+                            let vec4 = (obj3).into_boxed_slice();
+                            let ptr4 = vec4.as_ptr().cast::<u8>();
+                            let len4 = vec4.len();
+                            ::core::mem::forget(vec4);
+                            *ptr2.add(12).cast::<usize>() = len4;
+                            *ptr2.add(8).cast::<*mut u8>() = ptr4.cast_mut();
+                            match attr3 {
+                                Some(e) => {
+                                    *ptr2.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type5,
+                                        file_mode: file_mode5,
+                                        nlink: nlink5,
+                                        uid: uid5,
+                                        gid: gid5,
+                                        filesize: filesize5,
+                                        used: used5,
+                                        spec_data: spec_data5,
+                                        fsid: fsid5,
+                                        fileid: fileid5,
+                                        atime: atime5,
+                                        mtime: mtime5,
+                                        ctime: ctime5,
+                                    } = e;
+                                    *ptr2.add(24).cast::<i32>() = _rt::as_i32(attr_type5);
+                                    *ptr2.add(28).cast::<i32>() = _rt::as_i32(file_mode5);
+                                    *ptr2.add(32).cast::<i32>() = _rt::as_i32(nlink5);
+                                    *ptr2.add(36).cast::<i32>() = _rt::as_i32(uid5);
+                                    *ptr2.add(40).cast::<i32>() = _rt::as_i32(gid5);
+                                    *ptr2.add(48).cast::<i64>() = _rt::as_i64(filesize5);
+                                    *ptr2.add(56).cast::<i64>() = _rt::as_i64(used5);
+                                    let (t6_0, t6_1) = spec_data5;
+                                    *ptr2.add(64).cast::<i32>() = _rt::as_i32(t6_0);
+                                    *ptr2.add(68).cast::<i32>() = _rt::as_i32(t6_1);
+                                    *ptr2.add(72).cast::<i64>() = _rt::as_i64(fsid5);
+                                    *ptr2.add(80).cast::<i64>() = _rt::as_i64(fileid5);
+                                    let Time {
+                                        seconds: seconds7,
+                                        nseconds: nseconds7,
+                                    } = atime5;
+                                    *ptr2.add(88).cast::<i32>() = _rt::as_i32(seconds7);
+                                    *ptr2.add(92).cast::<i32>() = _rt::as_i32(nseconds7);
+                                    let Time {
+                                        seconds: seconds8,
+                                        nseconds: nseconds8,
+                                    } = mtime5;
+                                    *ptr2.add(96).cast::<i32>() = _rt::as_i32(seconds8);
+                                    *ptr2.add(100).cast::<i32>() = _rt::as_i32(nseconds8);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = ctime5;
+                                    *ptr2.add(104).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr2.add(108).cast::<i32>() = _rt::as_i32(nseconds9);
+                                }
+                                None => {
+                                    *ptr2.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr2.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
+                                nfs_error_code: nfs_error_code10,
+                                message: message10,
                             } = e;
-                            match nfs_error_code4 {
+                            match nfs_error_code10 {
                                 Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr2.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
+                            let vec11 = (message10.into_bytes()).into_boxed_slice();
+                            let ptr11 = vec11.as_ptr().cast::<u8>();
+                            let len11 = vec11.len();
+                            ::core::mem::forget(vec11);
+                            *ptr2.add(20).cast::<usize>() = len11;
+                            *ptr2.add(16).cast::<*mut u8>() = ptr11.cast_mut();
                         }
                     };
                     ptr2
@@ -6237,15 +6594,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -7402,34 +7759,91 @@ pub mod exports {
                     match result2 {
                         Ok(e) => {
                             *ptr3.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec4 = (e).into_boxed_slice();
-                            let ptr4 = vec4.as_ptr().cast::<u8>();
-                            let len4 = vec4.len();
-                            ::core::mem::forget(vec4);
-                            *ptr3.add(8).cast::<usize>() = len4;
-                            *ptr3.add(4).cast::<*mut u8>() = ptr4.cast_mut();
+                            let ObjRes {
+                                obj: obj4,
+                                attr: attr4,
+                            } = e;
+                            let vec5 = (obj4).into_boxed_slice();
+                            let ptr5 = vec5.as_ptr().cast::<u8>();
+                            let len5 = vec5.len();
+                            ::core::mem::forget(vec5);
+                            *ptr3.add(12).cast::<usize>() = len5;
+                            *ptr3.add(8).cast::<*mut u8>() = ptr5.cast_mut();
+                            match attr4 {
+                                Some(e) => {
+                                    *ptr3.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type6,
+                                        file_mode: file_mode6,
+                                        nlink: nlink6,
+                                        uid: uid6,
+                                        gid: gid6,
+                                        filesize: filesize6,
+                                        used: used6,
+                                        spec_data: spec_data6,
+                                        fsid: fsid6,
+                                        fileid: fileid6,
+                                        atime: atime6,
+                                        mtime: mtime6,
+                                        ctime: ctime6,
+                                    } = e;
+                                    *ptr3.add(24).cast::<i32>() = _rt::as_i32(attr_type6);
+                                    *ptr3.add(28).cast::<i32>() = _rt::as_i32(file_mode6);
+                                    *ptr3.add(32).cast::<i32>() = _rt::as_i32(nlink6);
+                                    *ptr3.add(36).cast::<i32>() = _rt::as_i32(uid6);
+                                    *ptr3.add(40).cast::<i32>() = _rt::as_i32(gid6);
+                                    *ptr3.add(48).cast::<i64>() = _rt::as_i64(filesize6);
+                                    *ptr3.add(56).cast::<i64>() = _rt::as_i64(used6);
+                                    let (t7_0, t7_1) = spec_data6;
+                                    *ptr3.add(64).cast::<i32>() = _rt::as_i32(t7_0);
+                                    *ptr3.add(68).cast::<i32>() = _rt::as_i32(t7_1);
+                                    *ptr3.add(72).cast::<i64>() = _rt::as_i64(fsid6);
+                                    *ptr3.add(80).cast::<i64>() = _rt::as_i64(fileid6);
+                                    let Time {
+                                        seconds: seconds8,
+                                        nseconds: nseconds8,
+                                    } = atime6;
+                                    *ptr3.add(88).cast::<i32>() = _rt::as_i32(seconds8);
+                                    *ptr3.add(92).cast::<i32>() = _rt::as_i32(nseconds8);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = mtime6;
+                                    *ptr3.add(96).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr3.add(100).cast::<i32>() = _rt::as_i32(nseconds9);
+                                    let Time {
+                                        seconds: seconds10,
+                                        nseconds: nseconds10,
+                                    } = ctime6;
+                                    *ptr3.add(104).cast::<i32>() = _rt::as_i32(seconds10);
+                                    *ptr3.add(108).cast::<i32>() = _rt::as_i32(nseconds10);
+                                }
+                                None => {
+                                    *ptr3.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr3.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code5,
-                                message: message5,
+                                nfs_error_code: nfs_error_code11,
+                                message: message11,
                             } = e;
-                            match nfs_error_code5 {
+                            match nfs_error_code11 {
                                 Some(e) => {
-                                    *ptr3.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr3.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr3.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr3.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr3.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr3.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec6 = (message5.into_bytes()).into_boxed_slice();
-                            let ptr6 = vec6.as_ptr().cast::<u8>();
-                            let len6 = vec6.len();
-                            ::core::mem::forget(vec6);
-                            *ptr3.add(16).cast::<usize>() = len6;
-                            *ptr3.add(12).cast::<*mut u8>() = ptr6.cast_mut();
+                            let vec12 = (message11.into_bytes()).into_boxed_slice();
+                            let ptr12 = vec12.as_ptr().cast::<u8>();
+                            let len12 = vec12.len();
+                            ::core::mem::forget(vec12);
+                            *ptr3.add(20).cast::<usize>() = len12;
+                            *ptr3.add(16).cast::<*mut u8>() = ptr12.cast_mut();
                         }
                     };
                     ptr3
@@ -7442,15 +7856,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -7476,34 +7890,91 @@ pub mod exports {
                     match result1 {
                         Ok(e) => {
                             *ptr2.add(0).cast::<u8>() = (0i32) as u8;
-                            let vec3 = (e).into_boxed_slice();
-                            let ptr3 = vec3.as_ptr().cast::<u8>();
-                            let len3 = vec3.len();
-                            ::core::mem::forget(vec3);
-                            *ptr2.add(8).cast::<usize>() = len3;
-                            *ptr2.add(4).cast::<*mut u8>() = ptr3.cast_mut();
+                            let ObjRes {
+                                obj: obj3,
+                                attr: attr3,
+                            } = e;
+                            let vec4 = (obj3).into_boxed_slice();
+                            let ptr4 = vec4.as_ptr().cast::<u8>();
+                            let len4 = vec4.len();
+                            ::core::mem::forget(vec4);
+                            *ptr2.add(12).cast::<usize>() = len4;
+                            *ptr2.add(8).cast::<*mut u8>() = ptr4.cast_mut();
+                            match attr3 {
+                                Some(e) => {
+                                    *ptr2.add(16).cast::<u8>() = (1i32) as u8;
+                                    let Attr {
+                                        attr_type: attr_type5,
+                                        file_mode: file_mode5,
+                                        nlink: nlink5,
+                                        uid: uid5,
+                                        gid: gid5,
+                                        filesize: filesize5,
+                                        used: used5,
+                                        spec_data: spec_data5,
+                                        fsid: fsid5,
+                                        fileid: fileid5,
+                                        atime: atime5,
+                                        mtime: mtime5,
+                                        ctime: ctime5,
+                                    } = e;
+                                    *ptr2.add(24).cast::<i32>() = _rt::as_i32(attr_type5);
+                                    *ptr2.add(28).cast::<i32>() = _rt::as_i32(file_mode5);
+                                    *ptr2.add(32).cast::<i32>() = _rt::as_i32(nlink5);
+                                    *ptr2.add(36).cast::<i32>() = _rt::as_i32(uid5);
+                                    *ptr2.add(40).cast::<i32>() = _rt::as_i32(gid5);
+                                    *ptr2.add(48).cast::<i64>() = _rt::as_i64(filesize5);
+                                    *ptr2.add(56).cast::<i64>() = _rt::as_i64(used5);
+                                    let (t6_0, t6_1) = spec_data5;
+                                    *ptr2.add(64).cast::<i32>() = _rt::as_i32(t6_0);
+                                    *ptr2.add(68).cast::<i32>() = _rt::as_i32(t6_1);
+                                    *ptr2.add(72).cast::<i64>() = _rt::as_i64(fsid5);
+                                    *ptr2.add(80).cast::<i64>() = _rt::as_i64(fileid5);
+                                    let Time {
+                                        seconds: seconds7,
+                                        nseconds: nseconds7,
+                                    } = atime5;
+                                    *ptr2.add(88).cast::<i32>() = _rt::as_i32(seconds7);
+                                    *ptr2.add(92).cast::<i32>() = _rt::as_i32(nseconds7);
+                                    let Time {
+                                        seconds: seconds8,
+                                        nseconds: nseconds8,
+                                    } = mtime5;
+                                    *ptr2.add(96).cast::<i32>() = _rt::as_i32(seconds8);
+                                    *ptr2.add(100).cast::<i32>() = _rt::as_i32(nseconds8);
+                                    let Time {
+                                        seconds: seconds9,
+                                        nseconds: nseconds9,
+                                    } = ctime5;
+                                    *ptr2.add(104).cast::<i32>() = _rt::as_i32(seconds9);
+                                    *ptr2.add(108).cast::<i32>() = _rt::as_i32(nseconds9);
+                                }
+                                None => {
+                                    *ptr2.add(16).cast::<u8>() = (0i32) as u8;
+                                }
+                            };
                         }
                         Err(e) => {
                             *ptr2.add(0).cast::<u8>() = (1i32) as u8;
                             let Error {
-                                nfs_error_code: nfs_error_code4,
-                                message: message4,
+                                nfs_error_code: nfs_error_code10,
+                                message: message10,
                             } = e;
-                            match nfs_error_code4 {
+                            match nfs_error_code10 {
                                 Some(e) => {
-                                    *ptr2.add(4).cast::<u8>() = (1i32) as u8;
-                                    *ptr2.add(8).cast::<i32>() = _rt::as_i32(e);
+                                    *ptr2.add(8).cast::<u8>() = (1i32) as u8;
+                                    *ptr2.add(12).cast::<i32>() = _rt::as_i32(e);
                                 }
                                 None => {
-                                    *ptr2.add(4).cast::<u8>() = (0i32) as u8;
+                                    *ptr2.add(8).cast::<u8>() = (0i32) as u8;
                                 }
                             };
-                            let vec5 = (message4.into_bytes()).into_boxed_slice();
-                            let ptr5 = vec5.as_ptr().cast::<u8>();
-                            let len5 = vec5.len();
-                            ::core::mem::forget(vec5);
-                            *ptr2.add(16).cast::<usize>() = len5;
-                            *ptr2.add(12).cast::<*mut u8>() = ptr5.cast_mut();
+                            let vec11 = (message10.into_bytes()).into_boxed_slice();
+                            let ptr11 = vec11.as_ptr().cast::<u8>();
+                            let len11 = vec11.len();
+                            ::core::mem::forget(vec11);
+                            *ptr2.add(20).cast::<usize>() = len11;
+                            *ptr2.add(16).cast::<*mut u8>() = ptr11.cast_mut();
                         }
                     };
                     ptr2
@@ -7516,15 +7987,15 @@ pub mod exports {
                     let l0 = i32::from(*arg0.add(0).cast::<u8>());
                     match l0 {
                         0 => {
-                            let l1 = *arg0.add(4).cast::<*mut u8>();
-                            let l2 = *arg0.add(8).cast::<usize>();
+                            let l1 = *arg0.add(8).cast::<*mut u8>();
+                            let l2 = *arg0.add(12).cast::<usize>();
                             let base3 = l1;
                             let len3 = l2;
                             _rt::cabi_dealloc(base3, len3 * 1, 1);
                         }
                         _ => {
-                            let l4 = *arg0.add(12).cast::<*mut u8>();
-                            let l5 = *arg0.add(16).cast::<usize>();
+                            let l4 = *arg0.add(16).cast::<*mut u8>();
+                            let l5 = *arg0.add(20).cast::<usize>();
                             _rt::cabi_dealloc(l4, l5, 1);
                         }
                     }
@@ -8018,15 +8489,10 @@ pub mod exports {
                     }
 
                     fn null_op(&self) -> Result<(), Error>;
-                    fn access(&self, fh: _rt::Vec<u8>, mode: u32) -> Result<u32, Error>;
+                    fn access(&self, fh: Fh, mode: u32) -> Result<u32, Error>;
                     fn access_path(&self, path: _rt::String, mode: u32) -> Result<u32, Error>;
                     fn close(&self, seqid: u32, stateid: u64) -> Result<(), Error>;
-                    fn commit(
-                        &self,
-                        fh: _rt::Vec<u8>,
-                        offset: u64,
-                        count: u32,
-                    ) -> Result<(), Error>;
+                    fn commit(&self, fh: Fh, offset: u64, count: u32) -> Result<(), Error>;
                     fn commit_path(
                         &self,
                         path: _rt::String,
@@ -8035,22 +8501,18 @@ pub mod exports {
                     ) -> Result<(), Error>;
                     fn create(
                         &self,
-                        dir_fh: _rt::Vec<u8>,
+                        dir_fh: Fh,
                         filename: _rt::String,
                         mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn create_path(
-                        &self,
-                        path: _rt::String,
-                        mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
+                    ) -> Result<ObjRes, Error>;
+                    fn create_path(&self, path: _rt::String, mode: u32) -> Result<ObjRes, Error>;
                     fn delegpurge(&self, clientid: u64) -> Result<(), Error>;
                     fn delegreturn(&self, stateid: u64) -> Result<(), Error>;
-                    fn getattr(&self, fh: _rt::Vec<u8>) -> Result<Attr, Error>;
+                    fn getattr(&self, fh: Fh) -> Result<Attr, Error>;
                     fn getattr_path(&self, path: _rt::String) -> Result<Attr, Error>;
                     fn setattr(
                         &self,
-                        fh: _rt::Vec<u8>,
+                        fh: Fh,
                         guard_ctime: Option<Time>,
                         mode: Option<u32>,
                         uid: Option<u32>,
@@ -8073,8 +8535,8 @@ pub mod exports {
                     fn getfh(&self) -> Result<(), Error>;
                     fn link(
                         &self,
-                        src_fh: _rt::Vec<u8>,
-                        dst_dir_fh: _rt::Vec<u8>,
+                        src_fh: Fh,
+                        dst_dir_fh: Fh,
                         dst_filename: _rt::String,
                     ) -> Result<Attr, Error>;
                     fn link_path(
@@ -8085,92 +8547,60 @@ pub mod exports {
                     fn symlink(
                         &self,
                         src_path: _rt::String,
-                        dst_dir_fh: _rt::Vec<u8>,
+                        dst_dir_fh: Fh,
                         dst_filename: _rt::String,
-                    ) -> Result<_rt::Vec<u8>, Error>;
+                    ) -> Result<ObjRes, Error>;
                     fn symlink_path(
                         &self,
                         src_path: _rt::String,
                         dst_path: _rt::String,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn readlink(&self, fh: _rt::Vec<u8>) -> Result<_rt::String, Error>;
+                    ) -> Result<ObjRes, Error>;
+                    fn readlink(&self, fh: Fh) -> Result<_rt::String, Error>;
                     fn readlink_path(&self, path: _rt::String) -> Result<_rt::String, Error>;
-                    fn lookup(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                        filename: _rt::String,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn lookup_path(&self, path: _rt::String) -> Result<_rt::Vec<u8>, Error>;
-                    fn pathconf(&self, fh: _rt::Vec<u8>) -> Result<PathConf, Error>;
+                    fn lookup(&self, dir_fh: Fh, filename: _rt::String) -> Result<ObjRes, Error>;
+                    fn lookup_path(&self, path: _rt::String) -> Result<ObjRes, Error>;
+                    fn pathconf(&self, fh: Fh) -> Result<PathConf, Error>;
                     fn pathconf_path(&self, path: _rt::String) -> Result<PathConf, Error>;
-                    fn read(
-                        &self,
-                        fh: _rt::Vec<u8>,
-                        offset: u64,
-                        count: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
+                    fn read(&self, fh: Fh, offset: u64, count: u32) -> Result<Bytes, Error>;
                     fn read_path(
                         &self,
                         path: _rt::String,
                         offset: u64,
                         count: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn write(
-                        &self,
-                        fh: _rt::Vec<u8>,
-                        offset: u64,
-                        data: _rt::Vec<u8>,
-                    ) -> Result<u32, Error>;
+                    ) -> Result<Bytes, Error>;
+                    fn write(&self, fh: Fh, offset: u64, data: Bytes) -> Result<u32, Error>;
                     fn write_path(
                         &self,
                         path: _rt::String,
                         offset: u64,
-                        data: _rt::Vec<u8>,
+                        data: Bytes,
                     ) -> Result<u32, Error>;
-                    fn readdir(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                    ) -> Result<_rt::Vec<ReaddirEntry>, Error>;
+                    fn readdir(&self, dir_fh: Fh) -> Result<_rt::Vec<ReaddirEntry>, Error>;
                     fn readdir_path(
                         &self,
                         dir_path: _rt::String,
                     ) -> Result<_rt::Vec<ReaddirEntry>, Error>;
-                    fn readdirplus(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                    ) -> Result<_rt::Vec<ReaddirplusEntry>, Error>;
+                    fn readdirplus(&self, dir_fh: Fh) -> Result<_rt::Vec<ReaddirplusEntry>, Error>;
                     fn readdirplus_path(
                         &self,
                         dir_path: _rt::String,
                     ) -> Result<_rt::Vec<ReaddirplusEntry>, Error>;
                     fn mkdir(
                         &self,
-                        dir_fh: _rt::Vec<u8>,
+                        dir_fh: Fh,
                         dirname: _rt::String,
                         mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn mkdir_path(
-                        &self,
-                        path: _rt::String,
-                        mode: u32,
-                    ) -> Result<_rt::Vec<u8>, Error>;
-                    fn remove(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                        filename: _rt::String,
-                    ) -> Result<(), Error>;
+                    ) -> Result<ObjRes, Error>;
+                    fn mkdir_path(&self, path: _rt::String, mode: u32) -> Result<ObjRes, Error>;
+                    fn remove(&self, dir_fh: Fh, filename: _rt::String) -> Result<(), Error>;
                     fn remove_path(&self, path: _rt::String) -> Result<(), Error>;
-                    fn rmdir(
-                        &self,
-                        dir_fh: _rt::Vec<u8>,
-                        dirname: _rt::String,
-                    ) -> Result<(), Error>;
+                    fn rmdir(&self, dir_fh: Fh, dirname: _rt::String) -> Result<(), Error>;
                     fn rmdir_path(&self, path: _rt::String) -> Result<(), Error>;
                     fn rename(
                         &self,
-                        from_dir_fh: _rt::Vec<u8>,
+                        from_dir_fh: Fh,
                         from_filename: _rt::String,
-                        to_dir_fh: _rt::Vec<u8>,
+                        to_dir_fh: Fh,
                         to_filename: _rt::String,
                     ) -> Result<(), Error>;
                     fn rename_path(
@@ -8821,8 +9251,8 @@ pub(crate) use __export_nfs_rs_impl as export;
 #[cfg(target_arch = "wasm32")]
 #[link_section = "component-type:wit-bindgen:0.24.0:nfs-rs:encoded world"]
 #[doc(hidden)]
-pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 7703] = *b"\
-\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\x9a;\x01A\x02\x01A\x1f\
+pub static __WIT_BINDGEN_COMPONENT_TYPE: [u8; 7761] = *b"\
+\0asm\x0d\0\x01\0\0\x19\x16wit-component-encoding\x04\0\x07\xd4;\x01A\x02\x01A\x1f\
 \x01B\x0a\x04\0\x08pollable\x03\x01\x01h\0\x01@\x01\x04self\x01\0\x7f\x04\0\x16[\
 method]pollable.ready\x01\x02\x01@\x01\x04self\x01\x01\0\x04\0\x16[method]pollab\
 le.block\x01\x03\x01p\x01\x01py\x01@\x01\x02in\x04\0\x05\x04\0\x04poll\x01\x06\x03\
@@ -8916,69 +9346,70 @@ ocket\x01B\x0c\x02\x03\x02\x01\x06\x04\0\x07network\x03\0\0\x02\x03\x02\x01\x08\
 \0\x0aerror-code\x03\0\x02\x02\x03\x02\x01\x10\x04\0\x11ip-address-family\x03\0\x04\
 \x02\x03\x02\x01\x12\x04\0\x0atcp-socket\x03\0\x06\x01i\x07\x01j\x01\x08\x01\x03\
 \x01@\x01\x0eaddress-family\x05\0\x09\x04\0\x11create-tcp-socket\x01\x0a\x03\x01\
-$wasi:sockets/tcp-create-socket@0.2.0\x05\x13\x01Bs\x01r\x02\x07secondsy\x08nsec\
-ondsy\x04\0\x04time\x03\0\0\x01o\x02yy\x01r\x0d\x09attr-typey\x09file-modey\x05n\
-linky\x03uidy\x03gidy\x08filesizew\x04usedw\x09spec-data\x02\x04fsidw\x06fileidw\
-\x05atime\x01\x05mtime\x01\x05ctime\x01\x04\0\x04attr\x03\0\x03\x01k\x04\x01r\x07\
-\x04attr\x05\x07linkmaxy\x08name-maxy\x08no-trunc\x7f\x10chown-restricted\x7f\x10\
-case-insensitive\x7f\x0fcase-preserving\x7f\x04\0\x09path-conf\x03\0\x06\x01r\x03\
-\x06fileidw\x09file-names\x06cookiew\x04\0\x0dreaddir-entry\x03\0\x08\x01p}\x01r\
-\x05\x06fileidw\x09file-names\x06cookiew\x04attr\x05\x06handle\x0a\x04\0\x11read\
-dirplus-entry\x03\0\x0b\x01kz\x01r\x02\x0enfs-error-code\x0d\x07messages\x04\0\x05\
-error\x03\0\x0e\x04\0\x09nfs-mount\x03\x01\x01h\x10\x01j\0\x01\x0f\x01@\x01\x04s\
-elf\x11\0\x12\x04\0\x19[method]nfs-mount.null-op\x01\x13\x01j\x01y\x01\x0f\x01@\x03\
-\x04self\x11\x02fh\x0a\x04modey\0\x14\x04\0\x18[method]nfs-mount.access\x01\x15\x01\
-@\x03\x04self\x11\x04paths\x04modey\0\x14\x04\0\x1d[method]nfs-mount.access-path\
-\x01\x16\x01@\x03\x04self\x11\x05seqidy\x07stateidw\0\x12\x04\0\x17[method]nfs-m\
-ount.close\x01\x17\x01@\x04\x04self\x11\x02fh\x0a\x06offsetw\x05county\0\x12\x04\
-\0\x18[method]nfs-mount.commit\x01\x18\x01@\x04\x04self\x11\x04paths\x06offsetw\x05\
-county\0\x12\x04\0\x1d[method]nfs-mount.commit-path\x01\x19\x01j\x01\x0a\x01\x0f\
-\x01@\x04\x04self\x11\x06dir-fh\x0a\x08filenames\x04modey\0\x1a\x04\0\x18[method\
-]nfs-mount.create\x01\x1b\x01@\x03\x04self\x11\x04paths\x04modey\0\x1a\x04\0\x1d\
-[method]nfs-mount.create-path\x01\x1c\x01@\x02\x04self\x11\x08clientidw\0\x12\x04\
-\0\x1c[method]nfs-mount.delegpurge\x01\x1d\x01@\x02\x04self\x11\x07stateidw\0\x12\
-\x04\0\x1d[method]nfs-mount.delegreturn\x01\x1e\x01j\x01\x04\x01\x0f\x01@\x02\x04\
-self\x11\x02fh\x0a\0\x1f\x04\0\x19[method]nfs-mount.getattr\x01\x20\x01@\x02\x04\
-self\x11\x04paths\0\x1f\x04\0\x1e[method]nfs-mount.getattr-path\x01!\x01k\x01\x01\
-ky\x01kw\x01@\x09\x04self\x11\x02fh\x0a\x0bguard-ctime\"\x04mode#\x03uid#\x03gid\
-#\x04size$\x05atime\"\x05mtime\"\0\x12\x04\0\x19[method]nfs-mount.setattr\x01%\x01\
-@\x09\x04self\x11\x04paths\x0dspecify-guard\x7f\x04mode#\x03uid#\x03gid#\x04size\
-$\x05atime\"\x05mtime\"\0\x12\x04\0\x1e[method]nfs-mount.setattr-path\x01&\x04\0\
-\x17[method]nfs-mount.getfh\x01\x13\x01@\x04\x04self\x11\x06src-fh\x0a\x0adst-di\
-r-fh\x0a\x0cdst-filenames\0\x1f\x04\0\x16[method]nfs-mount.link\x01'\x01@\x03\x04\
-self\x11\x08src-paths\x08dst-paths\0\x1f\x04\0\x1b[method]nfs-mount.link-path\x01\
-(\x01@\x04\x04self\x11\x08src-paths\x0adst-dir-fh\x0a\x0cdst-filenames\0\x1a\x04\
-\0\x19[method]nfs-mount.symlink\x01)\x01@\x03\x04self\x11\x08src-paths\x08dst-pa\
-ths\0\x1a\x04\0\x1e[method]nfs-mount.symlink-path\x01*\x01j\x01s\x01\x0f\x01@\x02\
-\x04self\x11\x02fh\x0a\0+\x04\0\x1a[method]nfs-mount.readlink\x01,\x01@\x02\x04s\
-elf\x11\x04paths\0+\x04\0\x1f[method]nfs-mount.readlink-path\x01-\x01@\x03\x04se\
-lf\x11\x06dir-fh\x0a\x08filenames\0\x1a\x04\0\x18[method]nfs-mount.lookup\x01.\x01\
-@\x02\x04self\x11\x04paths\0\x1a\x04\0\x1d[method]nfs-mount.lookup-path\x01/\x01\
-j\x01\x07\x01\x0f\x01@\x02\x04self\x11\x02fh\x0a\00\x04\0\x1a[method]nfs-mount.p\
-athconf\x011\x01@\x02\x04self\x11\x04paths\00\x04\0\x1f[method]nfs-mount.pathcon\
-f-path\x012\x01@\x04\x04self\x11\x02fh\x0a\x06offsetw\x05county\0\x1a\x04\0\x16[\
-method]nfs-mount.read\x013\x01@\x04\x04self\x11\x04paths\x06offsetw\x05county\0\x1a\
-\x04\0\x1b[method]nfs-mount.read-path\x014\x01@\x04\x04self\x11\x02fh\x0a\x06off\
-setw\x04data\x0a\0\x14\x04\0\x17[method]nfs-mount.write\x015\x01@\x04\x04self\x11\
-\x04paths\x06offsetw\x04data\x0a\0\x14\x04\0\x1c[method]nfs-mount.write-path\x01\
-6\x01p\x09\x01j\x017\x01\x0f\x01@\x02\x04self\x11\x06dir-fh\x0a\08\x04\0\x19[met\
-hod]nfs-mount.readdir\x019\x01@\x02\x04self\x11\x08dir-paths\08\x04\0\x1e[method\
-]nfs-mount.readdir-path\x01:\x01p\x0c\x01j\x01;\x01\x0f\x01@\x02\x04self\x11\x06\
-dir-fh\x0a\0<\x04\0\x1d[method]nfs-mount.readdirplus\x01=\x01@\x02\x04self\x11\x08\
-dir-paths\0<\x04\0\"[method]nfs-mount.readdirplus-path\x01>\x01@\x04\x04self\x11\
-\x06dir-fh\x0a\x07dirnames\x04modey\0\x1a\x04\0\x17[method]nfs-mount.mkdir\x01?\x04\
-\0\x1c[method]nfs-mount.mkdir-path\x01\x1c\x01@\x03\x04self\x11\x06dir-fh\x0a\x08\
-filenames\0\x12\x04\0\x18[method]nfs-mount.remove\x01@\x01@\x02\x04self\x11\x04p\
-aths\0\x12\x04\0\x1d[method]nfs-mount.remove-path\x01A\x01@\x03\x04self\x11\x06d\
-ir-fh\x0a\x07dirnames\0\x12\x04\0\x17[method]nfs-mount.rmdir\x01B\x04\0\x1c[meth\
-od]nfs-mount.rmdir-path\x01A\x01@\x05\x04self\x11\x0bfrom-dir-fh\x0a\x0dfrom-fil\
-enames\x09to-dir-fh\x0a\x0bto-filenames\0\x12\x04\0\x18[method]nfs-mount.rename\x01\
-C\x01@\x03\x04self\x11\x09from-paths\x07to-paths\0\x12\x04\0\x1d[method]nfs-moun\
-t.rename-path\x01D\x04\0\x18[method]nfs-mount.umount\x01\x13\x01i\x10\x01j\x01\xc5\
-\0\x01\x0f\x01@\x01\x03urls\0\xc6\0\x04\0\x13parse-url-and-mount\x01G\x04\x01\x14\
-component:nfs-rs/nfs\x05\x14\x04\x01\x17component:nfs-rs/nfs-rs\x04\0\x0b\x0c\x01\
-\0\x06nfs-rs\x03\0\0\0G\x09producers\x01\x0cprocessed-by\x02\x0dwit-component\x07\
-0.202.0\x10wit-bindgen-rust\x060.24.0";
+$wasi:sockets/tcp-create-socket@0.2.0\x05\x13\x01By\x01p}\x04\0\x02fh\x03\0\0\x01\
+p}\x04\0\x05bytes\x03\0\x02\x01r\x02\x07secondsy\x08nsecondsy\x04\0\x04time\x03\0\
+\x04\x01o\x02yy\x01r\x0d\x09attr-typey\x09file-modey\x05nlinky\x03uidy\x03gidy\x08\
+filesizew\x04usedw\x09spec-data\x06\x04fsidw\x06fileidw\x05atime\x05\x05mtime\x05\
+\x05ctime\x05\x04\0\x04attr\x03\0\x07\x01k\x08\x01r\x02\x03obj\x01\x04attr\x09\x04\
+\0\x07obj-res\x03\0\x0a\x01r\x07\x04attr\x09\x07linkmaxy\x08name-maxy\x08no-trun\
+c\x7f\x10chown-restricted\x7f\x10case-insensitive\x7f\x0fcase-preserving\x7f\x04\
+\0\x09path-conf\x03\0\x0c\x01r\x03\x06fileidw\x09file-names\x06cookiew\x04\0\x0d\
+readdir-entry\x03\0\x0e\x01r\x05\x06fileidw\x09file-names\x06cookiew\x04attr\x09\
+\x06handle\x01\x04\0\x11readdirplus-entry\x03\0\x10\x01kz\x01r\x02\x0enfs-error-\
+code\x12\x07messages\x04\0\x05error\x03\0\x13\x04\0\x09nfs-mount\x03\x01\x01h\x15\
+\x01j\0\x01\x14\x01@\x01\x04self\x16\0\x17\x04\0\x19[method]nfs-mount.null-op\x01\
+\x18\x01j\x01y\x01\x14\x01@\x03\x04self\x16\x02fh\x01\x04modey\0\x19\x04\0\x18[m\
+ethod]nfs-mount.access\x01\x1a\x01@\x03\x04self\x16\x04paths\x04modey\0\x19\x04\0\
+\x1d[method]nfs-mount.access-path\x01\x1b\x01@\x03\x04self\x16\x05seqidy\x07stat\
+eidw\0\x17\x04\0\x17[method]nfs-mount.close\x01\x1c\x01@\x04\x04self\x16\x02fh\x01\
+\x06offsetw\x05county\0\x17\x04\0\x18[method]nfs-mount.commit\x01\x1d\x01@\x04\x04\
+self\x16\x04paths\x06offsetw\x05county\0\x17\x04\0\x1d[method]nfs-mount.commit-p\
+ath\x01\x1e\x01j\x01\x0b\x01\x14\x01@\x04\x04self\x16\x06dir-fh\x01\x08filenames\
+\x04modey\0\x1f\x04\0\x18[method]nfs-mount.create\x01\x20\x01@\x03\x04self\x16\x04\
+paths\x04modey\0\x1f\x04\0\x1d[method]nfs-mount.create-path\x01!\x01@\x02\x04sel\
+f\x16\x08clientidw\0\x17\x04\0\x1c[method]nfs-mount.delegpurge\x01\"\x01@\x02\x04\
+self\x16\x07stateidw\0\x17\x04\0\x1d[method]nfs-mount.delegreturn\x01#\x01j\x01\x08\
+\x01\x14\x01@\x02\x04self\x16\x02fh\x01\0$\x04\0\x19[method]nfs-mount.getattr\x01\
+%\x01@\x02\x04self\x16\x04paths\0$\x04\0\x1e[method]nfs-mount.getattr-path\x01&\x01\
+k\x05\x01ky\x01kw\x01@\x09\x04self\x16\x02fh\x01\x0bguard-ctime'\x04mode(\x03uid\
+(\x03gid(\x04size)\x05atime'\x05mtime'\0\x17\x04\0\x19[method]nfs-mount.setattr\x01\
+*\x01@\x09\x04self\x16\x04paths\x0dspecify-guard\x7f\x04mode(\x03uid(\x03gid(\x04\
+size)\x05atime'\x05mtime'\0\x17\x04\0\x1e[method]nfs-mount.setattr-path\x01+\x04\
+\0\x17[method]nfs-mount.getfh\x01\x18\x01@\x04\x04self\x16\x06src-fh\x01\x0adst-\
+dir-fh\x01\x0cdst-filenames\0$\x04\0\x16[method]nfs-mount.link\x01,\x01@\x03\x04\
+self\x16\x08src-paths\x08dst-paths\0$\x04\0\x1b[method]nfs-mount.link-path\x01-\x01\
+@\x04\x04self\x16\x08src-paths\x0adst-dir-fh\x01\x0cdst-filenames\0\x1f\x04\0\x19\
+[method]nfs-mount.symlink\x01.\x01@\x03\x04self\x16\x08src-paths\x08dst-paths\0\x1f\
+\x04\0\x1e[method]nfs-mount.symlink-path\x01/\x01j\x01s\x01\x14\x01@\x02\x04self\
+\x16\x02fh\x01\00\x04\0\x1a[method]nfs-mount.readlink\x011\x01@\x02\x04self\x16\x04\
+paths\00\x04\0\x1f[method]nfs-mount.readlink-path\x012\x01@\x03\x04self\x16\x06d\
+ir-fh\x01\x08filenames\0\x1f\x04\0\x18[method]nfs-mount.lookup\x013\x01@\x02\x04\
+self\x16\x04paths\0\x1f\x04\0\x1d[method]nfs-mount.lookup-path\x014\x01j\x01\x0d\
+\x01\x14\x01@\x02\x04self\x16\x02fh\x01\05\x04\0\x1a[method]nfs-mount.pathconf\x01\
+6\x01@\x02\x04self\x16\x04paths\05\x04\0\x1f[method]nfs-mount.pathconf-path\x017\
+\x01j\x01\x03\x01\x14\x01@\x04\x04self\x16\x02fh\x01\x06offsetw\x05county\08\x04\
+\0\x16[method]nfs-mount.read\x019\x01@\x04\x04self\x16\x04paths\x06offsetw\x05co\
+unty\08\x04\0\x1b[method]nfs-mount.read-path\x01:\x01@\x04\x04self\x16\x02fh\x01\
+\x06offsetw\x04data\x03\0\x19\x04\0\x17[method]nfs-mount.write\x01;\x01@\x04\x04\
+self\x16\x04paths\x06offsetw\x04data\x03\0\x19\x04\0\x1c[method]nfs-mount.write-\
+path\x01<\x01p\x0f\x01j\x01=\x01\x14\x01@\x02\x04self\x16\x06dir-fh\x01\0>\x04\0\
+\x19[method]nfs-mount.readdir\x01?\x01@\x02\x04self\x16\x08dir-paths\0>\x04\0\x1e\
+[method]nfs-mount.readdir-path\x01@\x01p\x11\x01j\x01\xc1\0\x01\x14\x01@\x02\x04\
+self\x16\x06dir-fh\x01\0\xc2\0\x04\0\x1d[method]nfs-mount.readdirplus\x01C\x01@\x02\
+\x04self\x16\x08dir-paths\0\xc2\0\x04\0\"[method]nfs-mount.readdirplus-path\x01D\
+\x01@\x04\x04self\x16\x06dir-fh\x01\x07dirnames\x04modey\0\x1f\x04\0\x17[method]\
+nfs-mount.mkdir\x01E\x04\0\x1c[method]nfs-mount.mkdir-path\x01!\x01@\x03\x04self\
+\x16\x06dir-fh\x01\x08filenames\0\x17\x04\0\x18[method]nfs-mount.remove\x01F\x01\
+@\x02\x04self\x16\x04paths\0\x17\x04\0\x1d[method]nfs-mount.remove-path\x01G\x01\
+@\x03\x04self\x16\x06dir-fh\x01\x07dirnames\0\x17\x04\0\x17[method]nfs-mount.rmd\
+ir\x01H\x04\0\x1c[method]nfs-mount.rmdir-path\x01G\x01@\x05\x04self\x16\x0bfrom-\
+dir-fh\x01\x0dfrom-filenames\x09to-dir-fh\x01\x0bto-filenames\0\x17\x04\0\x18[me\
+thod]nfs-mount.rename\x01I\x01@\x03\x04self\x16\x09from-paths\x07to-paths\0\x17\x04\
+\0\x1d[method]nfs-mount.rename-path\x01J\x04\0\x18[method]nfs-mount.umount\x01\x18\
+\x01i\x15\x01j\x01\xcb\0\x01\x14\x01@\x01\x03urls\0\xcc\0\x04\0\x13parse-url-and\
+-mount\x01M\x04\x01\x14component:nfs-rs/nfs\x05\x14\x04\x01\x17component:nfs-rs/\
+nfs-rs\x04\0\x0b\x0c\x01\0\x06nfs-rs\x03\0\0\0G\x09producers\x01\x0cprocessed-by\
+\x02\x0dwit-component\x070.202.0\x10wit-bindgen-rust\x060.24.0";
 
 #[inline(never)]
 #[doc(hidden)]

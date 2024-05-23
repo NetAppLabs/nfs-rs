@@ -28,7 +28,7 @@ mod nfs3;
 mod mount;
 mod shared;
 
-pub use mount::{Mount, Attr, Pathconf, ReaddirEntry, ReaddirplusEntry};
+pub use mount::{Mount, Attr, ObjRes, Pathconf, ReaddirEntry, ReaddirplusEntry};
 pub use shared::Time;
 pub use std::io::Error;
 

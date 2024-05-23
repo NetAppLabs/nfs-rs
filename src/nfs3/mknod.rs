@@ -74,7 +74,7 @@ impl Mount {
 
     fn mknod(&self, path: &str, what: mknoddata3) -> Result<Vec<u8>> {
         let (dir, name) = split_path(path)?;
-        let fh = self.lookup_path(&dir)?;
+        let fh = self.lookup_path(&dir)?.fh;
         let args = MKNOD3args{
             where_: diropargs3{dir: nfs_fh3{data: fh}, name: filename3(name)},
             what,

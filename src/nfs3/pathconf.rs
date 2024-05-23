@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn pathconf_path(&self, path: &str) -> Result<Pathconf> {
-        self.pathconf(&self.lookup_path(path)?)
+        self.pathconf(&self.lookup_path(path)?.fh)
     }
 
     pub fn pathconf(&self, fh: &Vec<u8>) -> Result<Pathconf> {

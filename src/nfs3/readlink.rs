@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn readlink_path(&self, path: &str) -> Result<String> {
-        self.readlink(&self.lookup_path(path)?)
+        self.readlink(&self.lookup_path(path)?.fh)
     }
 
     pub fn readlink(&self, fh: &Vec<u8>) -> Result<String> {

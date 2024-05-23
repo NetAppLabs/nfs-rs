@@ -22,7 +22,7 @@ impl From<&ReaddirEntry> for crate::mount::ReaddirEntry {
 
 impl Mount {
     pub fn readdir_path(&self, dir_path: &str) -> Result<Vec<ReaddirEntry>> {
-        self.readdir(&self.lookup_path(dir_path)?)
+        self.readdir(&self.lookup_path(dir_path)?.fh)
     }
 
     pub fn readdir(&self, dir_fh: &Vec<u8>) -> Result<Vec<ReaddirEntry>> {
