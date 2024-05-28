@@ -2,7 +2,7 @@
 use std::io;
 
 use xdr_codec::{Pack, Unpack};
-use super::{Mount, Error, ErrorKind, Result, MOUNT3args, Time};
+use super::{Mount, Error, ErrorKind, Result, MOUNT3args, Time, ObjRes};
 use super::mount3xdr::{dirpath, mountres3};
 use crate::{SocketAddr, TcpStream, ToSocketAddrs, nfs3, rpc};
 
@@ -59,11 +59,11 @@ impl crate::Mount for Mount3 {
         self.m.commit_path(path, offset, count)
     }
 
-    fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<Vec<u8>> {
+    fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<ObjRes> {
         self.m.create(dir_fh, filename, mode)
     }
 
-    fn create_path(&self, path: &str, mode: u32) -> Result<Vec<u8>> {
+    fn create_path(&self, path: &str, mode: u32) -> Result<ObjRes> {
         self.m.create_path(path, mode)
     }
 
@@ -103,11 +103,11 @@ impl crate::Mount for Mount3 {
         self.m.link_path(src_path, dst_path).map(|res| res.into())
     }
 
-    fn symlink(&self, src_path: &str, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<Vec<u8>> {
+    fn symlink(&self, src_path: &str, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<ObjRes> {
         self.m.symlink(src_path, dst_dir_fh, dst_filename)
     }
 
-    fn symlink_path(&self, src_path: &str, dst_path: &str) -> Result<Vec<u8>> {
+    fn symlink_path(&self, src_path: &str, dst_path: &str) -> Result<ObjRes> {
         self.m.symlink_path(src_path, dst_path)
     }
 
@@ -119,11 +119,11 @@ impl crate::Mount for Mount3 {
         self.m.readlink_path(path)
     }
 
-    fn lookup(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<Vec<u8>> {
+    fn lookup(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<ObjRes> {
         self.m.lookup(dir_fh, filename)
     }
 
-    fn lookup_path(&self, path: &str) -> Result<Vec<u8>> {
+    fn lookup_path(&self, path: &str) -> Result<ObjRes> {
         self.m.lookup_path(path)
     }
 
@@ -167,11 +167,11 @@ impl crate::Mount for Mount3 {
         Ok(self.m.readdirplus_path(dir_path)?.iter().map(|e| e.into()).collect())
     }
 
-    fn mkdir(&self, dir_fh: &Vec<u8>, dirname: &str, mode: u32) -> Result<Vec<u8>> {
+    fn mkdir(&self, dir_fh: &Vec<u8>, dirname: &str, mode: u32) -> Result<ObjRes> {
         self.m.mkdir(dir_fh, dirname, mode)
     }
 
-    fn mkdir_path(&self, path: &str, mode: u32) -> Result<Vec<u8>> {
+    fn mkdir_path(&self, path: &str, mode: u32) -> Result<ObjRes> {
         self.m.mkdir_path(path, mode)
     }
 

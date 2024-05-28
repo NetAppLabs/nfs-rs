@@ -25,7 +25,7 @@ mod write;
 
 pub(crate) use mount::mount;
 
-use crate::{Auth, Time, Result, Error, ErrorKind, rpc};
+use crate::{Auth, Time, ObjRes, Result, Error, ErrorKind, rpc};
 
 enum MountProc3 {
     Null = 0,
@@ -293,6 +293,35 @@ impl From<nfs3xdr::fattr3> for Fattr {
             atime: Time{seconds: attr.atime.seconds, nseconds: attr.atime.nseconds},
             mtime: Time{seconds: attr.mtime.seconds, nseconds: attr.mtime.nseconds},
             ctime: Time{seconds: attr.ctime.seconds, nseconds: attr.ctime.nseconds},
+        }
+    }
+}
+
+impl From<nfs3xdr::fattr3> for crate::mount::Attr {
+    fn from(attr: nfs3xdr::fattr3) -> Self {
+        Self{
+            type_: attr.type_ as u32,
+            file_mode: attr.mode,
+            nlink: attr.nlink,
+            uid: attr.uid,
+            gid: attr.gid,
+            filesize: attr.size,
+            used: attr.used,
+            spec_data: [attr.rdev.specdata1, attr.rdev.specdata2],
+            fsid: attr.fsid,
+            fileid: attr.fileid,
+            atime: Time{seconds: attr.atime.seconds, nseconds: attr.atime.nseconds},
+            mtime: Time{seconds: attr.mtime.seconds, nseconds: attr.mtime.nseconds},
+            ctime: Time{seconds: attr.ctime.seconds, nseconds: attr.ctime.nseconds},
+        }
+    }
+}
+
+impl From<nfs3xdr::post_op_attr> for Option<crate::mount::Attr> {
+    fn from(attr: nfs3xdr::post_op_attr) -> Self {
+        match attr {
+            nfs3xdr::post_op_attr::TRUE(a) => Some(a.into()),
+            nfs3xdr::post_op_attr::FALSE => None,
         }
     }
 }

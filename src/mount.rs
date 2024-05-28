@@ -25,10 +25,10 @@ pub trait Mount: std::fmt::Debug + Send + Sync {
     fn commit_path(&self, path: &str, offset: u64, count: u32) -> Result<()>;
 
     /// Procedure CREATE creates a regular file.
-    fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<Vec<u8>>;
+    fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<ObjRes>;
 
     /// Same as [`Mount::create`] but instead of taking in directory file handle and filename, takes in a path for which directory file handle is obtained by performing LOOKUP procedure.
-    fn create_path(&self, path: &str, mode: u32) -> Result<Vec<u8>>;
+    fn create_path(&self, path: &str, mode: u32) -> Result<ObjRes>;
 
     /// Purges all of the delegations awaiting recovery for a given client.
     fn delegpurge(&self, clientid: u64) -> Result<()>; // FIXME: validate params + return type
@@ -60,11 +60,11 @@ pub trait Mount: std::fmt::Debug + Send + Sync {
     fn link_path(&self, src_path: &str, dst_path: &str) -> Result<Attr>;
 
     /// Procedure SYMLINK creates a new symbolic link.
-    fn symlink(&self, src_path: &str, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<Vec<u8>>;
+    fn symlink(&self, src_path: &str, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<ObjRes>;
 
     /// Same as [`Mount::symlink`] but instead of taking in a destination directory file handle and destination filename, takes in a  destination path for which
     /// directory file handle is obtained by performing LOOKUP procedure.
-    fn symlink_path(&self, src_path: &str, dst_path: &str) -> Result<Vec<u8>>;
+    fn symlink_path(&self, src_path: &str, dst_path: &str) -> Result<ObjRes>;
 
     /// Procedure READLINK reads the data associated with a symbolic link.
     fn readlink(&self, fh: &Vec<u8>) -> Result<String>;
@@ -72,12 +72,12 @@ pub trait Mount: std::fmt::Debug + Send + Sync {
     /// Same as [`Mount::readlink`] but instead of taking in a file handle, takes in a path for which file handle is obtained by performing LOOKUP procedure.
     fn readlink_path(&self, path: &str) -> Result<String>;
 
-    /// Procedure LOOKUP searches a directory for a specific name and returns the file handle for the corresponding file system object.
-    fn lookup(&self, dir_fh: &Vec<u8>, dirname: &str) -> Result<Vec<u8>>;
+    /// Procedure LOOKUP searches a directory for a specific name and returns the file handle and attributes for the corresponding file system object.
+    fn lookup(&self, dir_fh: &Vec<u8>, dirname: &str) -> Result<ObjRes>;
 
     /// Same as [`Mount::lookup`] but instead of taking in a directory file handle and filename, takes in a path for which directory file handle is obtained by performing LOOKUP procedure
     /// for each directory in the path, in turn.
-    fn lookup_path(&self, path: &str) -> Result<Vec<u8>>;
+    fn lookup_path(&self, path: &str) -> Result<ObjRes>;
 
     /// Procedure PATHCONF retrieves the pathconf information for a file or directory.
     fn pathconf(&self, fh: &Vec<u8>) -> Result<Pathconf>;
@@ -114,10 +114,10 @@ pub trait Mount: std::fmt::Debug + Send + Sync {
     fn readdirplus_path(&self, dir_path: &str) -> Result<Vec<ReaddirplusEntry>>;
 
     /// Procedure MKDIR creates a new subdirectory.
-    fn mkdir(&self, dir_fh: &Vec<u8>, dirname: &str, mode: u32) -> Result<Vec<u8>>;
+    fn mkdir(&self, dir_fh: &Vec<u8>, dirname: &str, mode: u32) -> Result<ObjRes>;
 
     /// Same as [`Mount::mkdir`] but instead of taking in directory file handle and dirname, takes in a path for which directory file handle is obtained by performing LOOKUP procedure.
-    fn mkdir_path(&self, path: &str, mode: u32) -> Result<Vec<u8>>;
+    fn mkdir_path(&self, path: &str, mode: u32) -> Result<ObjRes>;
 
     /// Procedure REMOVE removes (deletes) an entry from a directory.
     fn remove(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<()>;
@@ -158,6 +158,13 @@ pub struct Attr {
     pub atime: Time,
     pub mtime: Time,
     pub ctime: Time,
+}
+
+/// Struct describing an NFS entry response as returned by various operations.
+#[derive(Debug, Default, PartialEq)]
+pub struct ObjRes {
+    pub fh: Vec<u8>,
+    pub attr: Option<Attr>,
 }
 
 /// Struct describing path configuration for an NFS entry as returned by [`Mount::pathconf`] and [`Mount::pathconf_path`].

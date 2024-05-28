@@ -8,11 +8,11 @@ impl Mount {
         let (from_dir, from_filename) = split_path(from)?;
         let (to_dir, to_filename) = split_path(to)?;
         let is_same_dir = from_dir == to_dir;
-        let from_dir_fh = self.lookup_path(&from_dir)?;
+        let from_dir_fh = self.lookup_path(&from_dir)?.fh;
         let to_dir_fh = if is_same_dir {
             from_dir_fh.to_vec()
         } else {
-            self.lookup_path(&to_dir)?
+            self.lookup_path(&to_dir)?.fh
         };
         self.rename(&from_dir_fh, &from_filename, &to_dir_fh, &to_filename)
     }

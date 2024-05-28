@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn commit_path(&self, path: &str, offset: u64, count: u32) -> Result<()> {
-        self.commit(&self.lookup_path(path)?, offset, count)
+        self.commit(&self.lookup_path(path)?.fh, offset, count)
     }
 
     pub fn commit(&self, fh: &Vec<u8>, offset: u64, count: u32) -> Result<()> {

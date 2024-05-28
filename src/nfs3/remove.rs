@@ -6,7 +6,7 @@ use crate::nfs3;
 impl Mount {
     pub fn remove_path(&self, path: &str) -> Result<()> {
         let (dir, filename) = nfs3::split_path(path)?;
-        let dir_fh = self.lookup_path(&dir)?;
+        let dir_fh = self.lookup_path(&dir)?.fh;
         self.remove(&dir_fh, &filename)
     }
 

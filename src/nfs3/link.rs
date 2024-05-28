@@ -6,8 +6,8 @@ use crate::nfs3;
 impl Mount {
     pub fn link_path(&self, src_path: &str, dst_path: &str) -> Result<Fattr> {
         let (dst_dir, dst_filename) = split_path(dst_path)?;
-        let src_fh = self.lookup_path(src_path)?;
-        let dst_dir_fh = self.lookup_path(&dst_dir)?;
+        let src_fh = self.lookup_path(src_path)?.fh;
+        let dst_dir_fh = self.lookup_path(&dst_dir)?.fh;
         self.link(&src_fh, &dst_dir_fh, &dst_filename)
     }
 

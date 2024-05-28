@@ -1,15 +1,15 @@
 use xdr_codec::Unpack;
-use super::{Mount, Result, Error, ErrorKind, CREATE3args, createhow3, sattr3, set_size3, from_post_op_fh3};
-use super::nfs3xdr::{CREATE3res, diropargs3, filename3, nfs_fh3, set_mode3, set_uid3, set_gid3, set_atime, set_mtime};
+use super::{Mount, Result, Error, ErrorKind, ObjRes, CREATE3args, createhow3, sattr3, set_size3, from_post_op_fh3};
+use super::nfs3xdr::{diropargs3, filename3, nfs_fh3, set_atime, set_gid3, set_mode3, set_mtime, set_uid3, CREATE3res, CREATE3resok};
 use crate::nfs3;
 
 impl Mount {
-    pub fn create_path(&self, path: &str, mode: u32) -> Result<Vec<u8>> {
+    pub fn create_path(&self, path: &str, mode: u32) -> Result<ObjRes> {
         let (dir, filename) = nfs3::split_path(path)?;
-        self.create(&self.lookup_path(&dir)?, &filename, mode)
+        self.create(&self.lookup_path(&dir)?.fh, &filename, mode)
     }
 
-    pub fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<Vec<u8>> {
+    pub fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<ObjRes> {
         let args = CREATE3args{
             where_: diropargs3{dir: nfs_fh3{data: dir_fh.to_vec()}, name: filename3(filename.to_string())},
             how: createhow3::UNCHECKED(sattr3{
@@ -35,8 +35,17 @@ impl Mount {
         }
 
         match x.unwrap().0 {
-            CREATE3res::NFS3_OK(ok) => from_post_op_fh3(ok.obj),
+            CREATE3res::NFS3_OK(ok) => ok.into(),
             CREATE3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
+    }
+}
+
+impl From<CREATE3resok> for Result<ObjRes> {
+    fn from(value: CREATE3resok) -> Self {
+        Ok(ObjRes{
+            fh: from_post_op_fh3(value.obj)?,
+            attr: value.obj_attributes.into(),
+        })
     }
 }

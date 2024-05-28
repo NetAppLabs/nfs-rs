@@ -1,33 +1,24 @@
 use xdr_codec::Unpack;
-use super::{Mount, Result, Error, ErrorKind};
-use super::nfs3xdr::{LOOKUP3args, LOOKUP3resok, LOOKUP3res, diropargs3, filename3, nfs_fh3, post_op_attr};
+use super::{Mount, Result, Error, ErrorKind, ObjRes};
+use super::nfs3xdr::{LOOKUP3args, LOOKUP3resok, LOOKUP3res, diropargs3, filename3, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn lookup_path(&self, path: &str) -> Result<Vec<u8>> {
-        Ok(self.lookup_path_raw(path)?.object.data)
-    }
-
-    pub fn lookup(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<Vec<u8>> {
-        Ok(self.lookup_raw(dir_fh, filename)?.object.data)
-    }
-
-    pub(crate) fn lookup_path_raw(&self, path: &str) -> Result<LOOKUP3resok> {
-        let mut res = Ok(LOOKUP3resok{
-            object: nfs_fh3{data: self.fh.to_vec()},
-            dir_attributes: post_op_attr::FALSE,
-            obj_attributes: post_op_attr::FALSE,
+    pub fn lookup_path(&self, path: &str) -> Result<ObjRes> {
+        let mut res = Ok(ObjRes{
+            fh: self.fh.to_vec(),
+            attr: None,
         });
         for n in &path_clean::clean(path) {
             if res.as_mut().is_ok() && n != "" && n != "/" && n != "." {
-                res = self.lookup_raw(&res.as_mut().ok().unwrap().object.data, &n.to_string_lossy());
+                res = self.lookup(&res.as_mut().ok().unwrap().fh, &n.to_string_lossy());
             }
         }
 
         res
     }
 
-    fn lookup_raw(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<LOOKUP3resok> {
+    pub fn lookup(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<ObjRes> {
         let args = LOOKUP3args{
             what: diropargs3{
                 dir: nfs_fh3{data: dir_fh.to_vec()},
@@ -48,8 +39,17 @@ impl Mount {
         }
 
         match x.unwrap().0 {
-            LOOKUP3res::NFS3_OK(ok) => Ok(ok),
+            LOOKUP3res::NFS3_OK(ok) => ok.into(),
             LOOKUP3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
+    }
+}
+
+impl From<LOOKUP3resok> for Result<ObjRes> {
+    fn from(value: LOOKUP3resok) -> Self {
+        Ok(ObjRes{
+            fh: value.object.data,
+            attr: value.obj_attributes.into(),
+        })
     }
 }

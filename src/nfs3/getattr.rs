@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     pub fn getattr_path(&self, path: &str) -> Result<Fattr> {
-        self.getattr(&self.lookup_path(path)?)
+        self.getattr(&self.lookup_path(path)?.fh)
     }
 
     pub(crate) fn getattr(&self, fh: &Vec<u8>) -> Result<Fattr> {
