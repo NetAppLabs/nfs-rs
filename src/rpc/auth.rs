@@ -18,12 +18,17 @@ pub(crate) struct Auth {
 
 impl Auth {
     pub(crate) fn new_null() -> Self {
-        Self{flavor: AuthFlavor::Null, uid: 0, gid: 0, body: vec![]}
+        Self {
+            flavor: AuthFlavor::Null,
+            uid: 0,
+            gid: 0,
+            body: vec![],
+        }
     }
 
     pub(crate) fn new_unix(machinename: &str, uid: u32, gid: u32) -> Self {
         let stamp = super::get_current_time();
-        let unix = AuthUnix{
+        let unix = AuthUnix {
             stamp,
             machinename: machinename.to_string(),
             uid,
@@ -33,13 +38,19 @@ impl Auth {
 
         let mut body = Vec::<u8>::new();
         let _ = unix.pack(&mut body).unwrap();
-        Self{flavor: AuthFlavor::Unix, uid, gid, body}
+        Self {
+            flavor: AuthFlavor::Unix,
+            uid,
+            gid,
+            body,
+        }
     }
 }
 
 impl<Out: xdr_codec::Write> Pack<Out> for Auth {
     fn pack(&self, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok((self.flavor.clone() as u32).pack(out)? + xdr_codec::pack_opaque_flex(&self.body, Some(AUTH_BODY_MAX_SIZE), out)?)
+        Ok((self.flavor.clone() as u32).pack(out)?
+            + xdr_codec::pack_opaque_flex(&self.body, Some(AUTH_BODY_MAX_SIZE), out)?)
     }
 }
 
@@ -53,7 +64,11 @@ struct AuthUnix {
 
 impl<Out: xdr_codec::Write> Pack<Out> for AuthUnix {
     fn pack(&self, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok(self.stamp.pack(out)? + self.machinename.pack(out)? + self.uid.pack(out)? + self.gid.pack(out)? + self.gids.pack(out)?)
+        Ok(self.stamp.pack(out)?
+            + self.machinename.pack(out)?
+            + self.uid.pack(out)?
+            + self.gid.pack(out)?
+            + self.gids.pack(out)?)
     }
 }
 
@@ -63,7 +78,15 @@ mod tests {
 
     #[test]
     fn auth_new_null() {
-        assert_eq!(Auth::new_null(), Auth{flavor: AuthFlavor::Null, uid: 0, gid: 0, body: vec![]});
+        assert_eq!(
+            Auth::new_null(),
+            Auth {
+                flavor: AuthFlavor::Null,
+                uid: 0,
+                gid: 0,
+                body: vec![]
+            }
+        );
     }
 
     #[test]
@@ -83,21 +106,21 @@ mod tests {
     #[test]
     fn auth_new_unix_with_padding_of_0() {
         let actual = Auth::new_unix("machined", 1, 2);
-        let mut expected = Auth{
+        let mut expected = Auth {
             flavor: AuthFlavor::Unix,
             uid: 1,
             gid: 2,
             body: vec![
-                0, 0, 0, 0, // stamp (random - should not match actual unless astronomically unlucky)
-                0, 0, 0, 8, // machinename length in bytes
-                109,        // 'm'
-                97,         // 'a'
-                99,         // 'c'
-                104,        // 'h'
-                105,        // 'i'
-                110,        // 'n'
-                101,        // 'e'
-                100,        // 'd'
+                0, 0, 0, 0, // stamp (random - hopefully never matches actual)
+                0, 0, 0, 8,   // machinename length in bytes
+                109, // 'm'
+                97,  // 'a'
+                99,  // 'c'
+                104, // 'h'
+                105, // 'i'
+                110, // 'n'
+                101, // 'e'
+                100, // 'd'
                 0, 0, 0, 1, // uid (1)
                 0, 0, 0, 2, // gid (2)
                 0, 0, 0, 0, // gidlen
@@ -111,24 +134,24 @@ mod tests {
     #[test]
     fn auth_new_unix_with_padding_of_1() {
         let actual = Auth::new_unix("machine", 350, 400);
-        let mut expected = Auth{
+        let mut expected = Auth {
             flavor: AuthFlavor::Unix,
             uid: 350,
             gid: 400,
             body: vec![
-                0, 0, 0, 0,   // stamp (random - should not match actual unless astronomically unlucky)
+                0, 0, 0, 0, // stamp (random - hopefully never matches actual)
                 0, 0, 0, 7,   // machinename length in bytes
-                109,          // 'm'
-                97,           // 'a'
-                99,           // 'c'
-                104,          // 'h'
-                105,          // 'i'
-                110,          // 'n'
-                101,          // 'e'
-                0,            // padding
-                0, 0, 1, 94,  // uid (350)
+                109, // 'm'
+                97,  // 'a'
+                99,  // 'c'
+                104, // 'h'
+                105, // 'i'
+                110, // 'n'
+                101, // 'e'
+                0,   // padding
+                0, 0, 1, 94, // uid (350)
                 0, 0, 1, 144, // gid (400)
-                0, 0, 0, 0,   // gidlen
+                0, 0, 0, 0, // gidlen
             ],
         };
         assert_ne!(actual, expected);
@@ -139,23 +162,23 @@ mod tests {
     #[test]
     fn auth_new_unix_with_padding_of_2() {
         let actual = Auth::new_unix("machin", 666, 616);
-        let mut expected = Auth{
+        let mut expected = Auth {
             flavor: AuthFlavor::Unix,
             uid: 666,
             gid: 616,
             body: vec![
-                0, 0, 0, 0,   // stamp (random - should not match actual unless astronomically unlucky)
+                0, 0, 0, 0, // stamp (random - hopefully never matches actual)
                 0, 0, 0, 6,   // machinename length in bytes
-                109,          // 'm'
-                97,           // 'a'
-                99,           // 'c'
-                104,          // 'h'
-                105,          // 'i'
-                110,          // 'n'
-                0, 0,         // padding
+                109, // 'm'
+                97,  // 'a'
+                99,  // 'c'
+                104, // 'h'
+                105, // 'i'
+                110, // 'n'
+                0, 0, // padding
                 0, 0, 2, 154, // uid (666)
                 0, 0, 2, 104, // gid (616)
-                0, 0, 0, 0,   // gidlen
+                0, 0, 0, 0, // gidlen
             ],
         };
         assert_ne!(actual, expected);
@@ -166,19 +189,19 @@ mod tests {
     #[test]
     fn auth_new_unix_with_padding_of_3() {
         let actual = Auth::new_unix("machi", 1024, 2048);
-        let mut expected = Auth{
+        let mut expected = Auth {
             flavor: AuthFlavor::Unix,
             uid: 1024,
             gid: 2048,
             body: vec![
-                0, 0, 0, 0, // stamp (random - should not match actual unless astronomically unlucky)
-                0, 0, 0, 5, // machinename length in bytes
-                109,        // 'm'
-                97,         // 'a'
-                99,         // 'c'
-                104,        // 'h'
-                105,        // 'i'
-                0, 0, 0,    // padding
+                0, 0, 0, 0, // stamp (random - hopefully never matches actual)
+                0, 0, 0, 5,   // machinename length in bytes
+                109, // 'm'
+                97,  // 'a'
+                99,  // 'c'
+                104, // 'h'
+                105, // 'i'
+                0, 0, 0, // padding
                 0, 0, 4, 0, // uid (1024)
                 0, 0, 8, 0, // gid (2048)
                 0, 0, 0, 0, // gidlen
@@ -196,21 +219,21 @@ mod tests {
         let res = auth.pack(&mut buf);
         assert!(res.is_ok());
         let mut expected: Vec<u8> = vec![
-            0, 0, 0, 1,   // auth flavor (AuthFlavor::Unix)
-            0, 0, 0, 28,  // body length in bytes
-            0, 0, 0, 0,   // stamp (random - should not match actual unless astronomically unlucky)
+            0, 0, 0, 1, // auth flavor (AuthFlavor::Unix)
+            0, 0, 0, 28, // body length in bytes
+            0, 0, 0, 0, // stamp (random - hopefully never matches actual)
             0, 0, 0, 7,   // machinename length in bytes
-            109,          // 'm'
-            97,           // 'a'
-            99,           // 'c'
-            104,          // 'h'
-            105,          // 'i'
-            110,          // 'n'
-            101,          // 'e'
-            0,            // padding
-            0, 0, 1, 94,  // uid (350)
+            109, // 'm'
+            97,  // 'a'
+            99,  // 'c'
+            104, // 'h'
+            105, // 'i'
+            110, // 'n'
+            101, // 'e'
+            0,   // padding
+            0, 0, 1, 94, // uid (350)
             0, 0, 1, 144, // gid (400)
-            0, 0, 0, 0,   // gidlen
+            0, 0, 0, 0, // gidlen
         ];
         assert_ne!(buf, expected);
         expected.splice(8..12, auth.body[0..4].to_vec());

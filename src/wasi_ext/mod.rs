@@ -12,83 +12,163 @@ pub use std::net::SocketAddr;
 use crate::bindings::wasi::io::streams::{InputStream, OutputStream};
 use crate::bindings::wasi::sockets;
 use crate::bindings::wasi::sockets::ip_name_lookup::ResolveAddressStream;
-use crate::bindings::wasi::sockets::network::{ErrorCode, IpAddressFamily, IpSocketAddress, Ipv4SocketAddress, Ipv6SocketAddress, Network};
+use crate::bindings::wasi::sockets::network::{
+    ErrorCode, IpAddress, IpAddressFamily, IpSocketAddress, Ipv4SocketAddress, Ipv6SocketAddress,
+    Network,
+};
 use crate::bindings::wasi::sockets::tcp::TcpSocket;
+use crate::{add_resource, get_resource, remove_resource};
+use wit_bindgen::rt::{RustResource, WasmResource};
 use xdr_codec::Write;
 
-const ERRNO_SUCCESS: i32 = 0;
+fn check_error<T>(res: Result<T, ErrorCode>, err_msg: &str) -> io::Result<T> {
+    res.map_err(|code| {
+        io::Error::new(
+            io::ErrorKind::Other,
+            format!("{} - {}", err_msg, code.message()).as_str(),
+        )
+    })
+}
 
-fn check_error<T>(res: &Result<T, ErrorCode>, err_msg: &str) -> io::Result<()> {
-    if res.is_err() {
-        let code = res.as_ref().err().unwrap();
-        return Err(io::Error::new(io::ErrorKind::Other, format!("{} - {}", err_msg, code.message()).as_str()));
+fn check_error_retrying_on_would_block<X, T>(
+    x: &X,
+    f: fn(x: &X) -> Result<T, ErrorCode>,
+    err_msg: &str,
+) -> io::Result<T>
+where
+    T: std::fmt::Debug,
+{
+    loop {
+        let res = f(x);
+        if !res.is_err() {
+            return Ok(res.unwrap());
+        }
+        let code = res.unwrap_err();
+        if code != ErrorCode::WouldBlock {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                format!("{} - {}", err_msg, code.message()).as_str(),
+            ));
+        }
+        std::thread::sleep(std::time::Duration::from_millis(1));
     }
-    Ok(())
 }
 
 pub struct TcpStream {
-    sock: TcpSocket,
-    input: InputStream,
-    output: OutputStream,
+    sock: Option<TcpSocket>,
+    input: Option<InputStream>,
+    output: Option<OutputStream>,
 }
 
-fn sock_addr_remote(sock: &TcpSocket) -> io::Result<IpSocketAddress> {
-    let res = sock.remote_address();
-    check_error(&res, "error getting remote address")?;
-    Ok(res.unwrap())
-}
-
-fn sock_addr_local(sock: &TcpSocket) -> io::Result<IpSocketAddress> {
-    let res = sock.local_address();
-    check_error(&res, "error getting local address")?;
-    Ok(res.unwrap())
-}
-
-fn to_socket_addr(addr: &IpSocketAddress) -> io::Result<SocketAddr> {
-    match addr {
-        IpSocketAddress::Ipv4(ref ip4) => Ok(SocketAddr::new(
-            IpAddr::V4(Ipv4Addr::new(
-                ip4.address.0,
-                ip4.address.1,
-                ip4.address.2,
-                ip4.address.3,
-            )),
-            ip4.port,
-        )),
-        IpSocketAddress::Ipv6(ref ip6) => Ok(SocketAddr::new(
-            IpAddr::V6(Ipv6Addr::new(
-                ip6.address.0,
-                ip6.address.1,
-                ip6.address.2,
-                ip6.address.3,
-                ip6.address.4,
-                ip6.address.5,
-                ip6.address.6,
-                ip6.address.7,
-            )),
-            ip6.port,
-        )),
+impl From<Ipv4SocketAddress> for IpAddr {
+    fn from(ip4: Ipv4SocketAddress) -> Self {
+        IpAddr::V4(Ipv4Addr::new(
+            ip4.address.0,
+            ip4.address.1,
+            ip4.address.2,
+            ip4.address.3,
+        ))
     }
 }
 
-fn to_wasi_addr(addr: &SocketAddr) -> io::Result<IpSocketAddress> {
-    match addr {
-        SocketAddr::V4(ref addr) => {
-            let octets = addr.ip().octets();
-            Ok(IpSocketAddress::Ipv4(Ipv4SocketAddress{
-                address: (octets[0], octets[1], octets[2], octets[3]),
-                port: addr.port(),
-            }))
-        },
-        SocketAddr::V6(ref addr) => {
-            let segments = addr.ip().segments();
-            Ok(IpSocketAddress::Ipv6(Ipv6SocketAddress{
-                address: (segments[0], segments[1], segments[2], segments[3], segments[4], segments[5], segments[6], segments[7]),
-                port: addr.port(),
+impl From<Ipv6SocketAddress> for IpAddr {
+    fn from(ip6: Ipv6SocketAddress) -> Self {
+        IpAddr::V6(Ipv6Addr::new(
+            ip6.address.0,
+            ip6.address.1,
+            ip6.address.2,
+            ip6.address.3,
+            ip6.address.4,
+            ip6.address.5,
+            ip6.address.6,
+            ip6.address.7,
+        ))
+    }
+}
+
+impl From<IpAddress> for IpAddr {
+    fn from(ip: IpAddress) -> Self {
+        match ip {
+            IpAddress::Ipv4(address) => Ipv4SocketAddress { address, port: 0 }.into(),
+            IpAddress::Ipv6(address) => Ipv6SocketAddress {
+                address,
+                port: 0,
                 flow_info: 0,
                 scope_id: 0,
-            }))
-        },
+            }
+            .into(),
+        }
+    }
+}
+
+impl From<Ipv4SocketAddress> for SocketAddr {
+    fn from(ip4: Ipv4SocketAddress) -> Self {
+        Self::new(ip4.into(), ip4.port)
+    }
+}
+
+impl From<Ipv6SocketAddress> for SocketAddr {
+    fn from(ip6: Ipv6SocketAddress) -> Self {
+        Self::new(ip6.into(), ip6.port)
+    }
+}
+
+impl From<IpSocketAddress> for SocketAddr {
+    fn from(addr: IpSocketAddress) -> Self {
+        match addr {
+            IpSocketAddress::Ipv4(ip4) => ip4.into(),
+            IpSocketAddress::Ipv6(ip6) => ip6.into(),
+        }
+    }
+}
+
+impl Into<IpSocketAddress> for &SocketAddrV4 {
+    fn into(self) -> IpSocketAddress {
+        let octets = self.ip().octets();
+        IpSocketAddress::Ipv4(Ipv4SocketAddress {
+            address: (octets[0], octets[1], octets[2], octets[3]),
+            port: self.port(),
+        })
+    }
+}
+
+impl Into<IpSocketAddress> for &SocketAddrV6 {
+    fn into(self) -> IpSocketAddress {
+        let segments = self.ip().segments();
+        IpSocketAddress::Ipv6(Ipv6SocketAddress {
+            address: (
+                segments[0],
+                segments[1],
+                segments[2],
+                segments[3],
+                segments[4],
+                segments[5],
+                segments[6],
+                segments[7],
+            ),
+            port: self.port(),
+            flow_info: self.flowinfo(),
+            scope_id: self.scope_id(),
+        })
+    }
+}
+
+impl Into<IpSocketAddress> for &SocketAddr {
+    fn into(self) -> IpSocketAddress {
+        match self {
+            SocketAddr::V4(addr4) => addr4.into(),
+            SocketAddr::V6(addr6) => addr6.into(),
+        }
+    }
+}
+
+impl Into<sockets::tcp::ShutdownType> for Shutdown {
+    fn into(self) -> sockets::tcp::ShutdownType {
+        match self {
+            Shutdown::Read => sockets::tcp::ShutdownType::Receive,
+            Shutdown::Write => sockets::tcp::ShutdownType::Send,
+            Shutdown::Both => sockets::tcp::ShutdownType::Both,
+        }
     }
 }
 
@@ -100,56 +180,50 @@ pub trait ToSocketAddrs {
 
 impl ToSocketAddrs for (&str, u16) {
     type Iter = <Vec<SocketAddr> as IntoIterator>::IntoIter;
-    fn to_socket_addrs(&self) -> io::Result<<Vec<SocketAddr> as IntoIterator>::IntoIter> {
+
+    fn to_socket_addrs(&self) -> io::Result<Self::Iter> {
         let (host, port) = *self;
-        if let Ok(addr) = host.parse::<Ipv4Addr>() {
-            let addr = SocketAddrV4::new(addr, port);
-            return Ok(vec![SocketAddr::V4(addr)].into_iter());
-        }
-        if let Ok(addr) = host.parse::<Ipv6Addr>() {
-            let addr = SocketAddrV6::new(addr, port, 0, 0);
-            return Ok(vec![SocketAddr::V6(addr)].into_iter());
-        }
-        let mut addrs = vec![];
-        for a in LookupHost::try_from(*self)? {
-            addrs.push(a);
-        }
+        let addrs = if let Ok(addr) = host.parse::<Ipv4Addr>() {
+            vec![SocketAddr::V4(SocketAddrV4::new(addr, port))]
+        } else if let Ok(addr) = host.parse::<Ipv6Addr>() {
+            vec![SocketAddr::V6(SocketAddrV6::new(addr, port, 0, 0))]
+        } else {
+            LookupHost::try_from(*self)?.collect()
+        };
         if !addrs.is_empty() {
             return Ok(addrs.into_iter());
         }
-        Err(io::Error::new(io::ErrorKind::Other, "could not resolve host"))
+        Err(io::Error::new(
+            io::ErrorKind::Other,
+            "could not resolve host",
+        ))
     }
 }
 
 impl TcpStream {
     pub fn connect(addr: &SocketAddr) -> io::Result<TcpStream> {
-        let res = to_wasi_addr(&addr);
-        if res.is_err() {
-            return Err(res.unwrap_err());
-        }
-
-        let wasi_addr = res.unwrap();
+        let wasi_addr = addr.into();
         let address_family = match wasi_addr {
             IpSocketAddress::Ipv4(_) => IpAddressFamily::Ipv4,
             IpSocketAddress::Ipv6(_) => IpAddressFamily::Ipv6,
         };
-        let res = sockets::tcp_create_socket::create_tcp_socket(address_family);
-        check_error(&res, "create tcp socket error")?;
-
-        let sock = res.unwrap();
+        let sock = check_error(
+            sockets::tcp_create_socket::create_tcp_socket(address_family),
+            "create tcp socket error",
+        )?;
         let nw = sockets::instance_network::instance_network();
-        let res = sock.start_connect(&nw, wasi_addr);
-        check_error(&res, "start connect error")?;
-
-        let res = sock.finish_connect();
-        check_error(&res, "finish connect error")?;
-
-        let (input, output) = res.unwrap();
-        let stream = Self{sock, input, output};
-        if let Some(err) = stream.peer_addr().err() {
-            return Err(err);
-        }
-
+        let _ = check_error(sock.start_connect(&nw, wasi_addr), "start connect error")?;
+        let (input, output) = check_error_retrying_on_would_block(
+            &sock,
+            |s: &TcpSocket| s.finish_connect(),
+            "finish connect error",
+        )?;
+        let stream = Self {
+            sock: Some(sock),
+            input: Some(input),
+            output: Some(output),
+        };
+        let _ = stream.peer_addr()?;
         Ok(stream)
     }
 
@@ -181,7 +255,7 @@ impl TcpStream {
         // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
         //      what is probably more apt in our case, wasi::io::streams::blocking_read
         let len = buf.len() as u64;
-        let res = self.input.blocking_read(len);
+        let res = self.input.as_ref().unwrap().blocking_read(len);
         if res.is_err() {
             return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error"));
         }
@@ -193,28 +267,27 @@ impl TcpStream {
     pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.read(buf) {
-                Ok(0) => break,
-                Ok(n) => {
-                    let tmp = buf;
-                    buf = &mut tmp[n..];
-                },
-                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {},
+                // XXX: despite documentation for wasi::io::streams::blocking_read stating that it should
+                //      block until at least one byte can be read, it seems that host implementations can
+                //      differ - with some returning empty array when they really should keep blocking
+                //      so, let's "handle" this scenario by blocking (sleeping) on zero bytes read
+                Ok(0) => std::thread::sleep(std::time::Duration::from_millis(1)),
+                Ok(n) => buf = &mut buf[n..],
+                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {}
                 Err(e) => return Err(e),
             }
         }
         if !buf.is_empty() {
-            Err(io::Error::new(io::ErrorKind::UnexpectedEof, "failed to fill whole buffer"))
-        } else {
-            Ok(())
+            return Err(io::Error::new(
+                io::ErrorKind::UnexpectedEof,
+                "failed to fill whole buffer",
+            ));
         }
+        Ok(())
     }
 
     pub fn read_vectored(&self, iov: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
-        let mut res = 0;
-        for buf in iov {
-            res += self.read(buf).unwrap();
-        }
-        Ok(res)
+        iov.iter_mut().map(|buf| self.read(buf)).sum()
     }
 
     pub fn is_read_vectored(&self) -> bool {
@@ -226,16 +299,24 @@ impl TcpStream {
         //      it only writes up to 4096 bytes - so we have to make sure not to pass in all of `buf`, if it
         //      is larger than that
         let sz = buf.len().min(4096);
-        self.output.blocking_write_and_flush(&buf[..sz]);
+        self.output
+            .as_ref()
+            .unwrap()
+            .blocking_write_and_flush(&buf[..sz]);
         Ok(sz)
     }
 
     pub fn write_all(&self, mut buf: &[u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.write(buf) {
-                Ok(0) => return Err(io::Error::new(io::ErrorKind::WriteZero, "failed to write whole buffer")),
+                Ok(0) => {
+                    return Err(io::Error::new(
+                        io::ErrorKind::WriteZero,
+                        "failed to write whole buffer",
+                    ))
+                }
                 Ok(n) => buf = &buf[n..],
-                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {},
+                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {}
                 Err(e) => return Err(e),
             }
         }
@@ -243,11 +324,7 @@ impl TcpStream {
     }
 
     pub fn write_vectored(&self, iov: &[IoSlice<'_>]) -> io::Result<usize> {
-        let mut res = 0;
-        for buf in iov {
-            res += self.write(buf).unwrap();
-        }
-        Ok(res)
+        iov.iter().map(|buf| self.write(buf)).sum()
     }
 
     pub fn is_write_vectored(&self) -> bool {
@@ -255,21 +332,26 @@ impl TcpStream {
     }
 
     pub fn peer_addr(&self) -> io::Result<SocketAddr> {
-        to_socket_addr(&sock_addr_remote(&self.sock)?)
+        check_error(
+            self.sock.as_ref().unwrap().remote_address(),
+            "error getting remote address",
+        )
+        .map(Into::into)
     }
 
     pub fn socket_addr(&self) -> io::Result<SocketAddr> {
-        unimplemented!("socket_addr")
+        check_error(
+            self.sock.as_ref().unwrap().local_address(),
+            "error getting local address",
+        )
+        .map(Into::into)
     }
 
     pub fn shutdown(&self, shutdown_type: Shutdown) -> io::Result<()> {
-        let shutdown_type = match shutdown_type {
-            Shutdown::Read => sockets::tcp::ShutdownType::Receive,
-            Shutdown::Write => sockets::tcp::ShutdownType::Send,
-            Shutdown::Both => sockets::tcp::ShutdownType::Both,
-        };
-        let res = self.sock.shutdown(shutdown_type);
-        check_error(&res, "shutdown error")
+        check_error(
+            self.sock.as_ref().unwrap().shutdown(shutdown_type.into()),
+            "shutdown error",
+        )
     }
 
     pub fn duplicate(&self) -> io::Result<TcpStream> {
@@ -302,19 +384,41 @@ impl TcpStream {
 
     pub fn try_clone(&self) -> io::Result<TcpStream> {
         Ok(unsafe {
-            TcpStream{
-                sock: TcpSocket::from_handle(self.sock.handle()),
-                input: InputStream::from_handle(self.input.handle()),
-                output: OutputStream::from_handle(self.output.handle()),
+            TcpStream {
+                sock: Some(TcpSocket::from_handle(self.sock.as_ref().unwrap().handle())),
+                input: Some(InputStream::from_handle(
+                    self.input.as_ref().unwrap().handle(),
+                )),
+                output: Some(OutputStream::from_handle(
+                    self.output.as_ref().unwrap().handle(),
+                )),
             }
         })
+    }
+}
+
+unsafe impl RustResource for TcpStream {
+    unsafe fn new(rep: usize) -> u32 {
+        add_resource(rep)
+    }
+
+    unsafe fn rep(handle: u32) -> usize {
+        get_resource(handle)
+    }
+}
+
+unsafe impl WasmResource for TcpStream {
+    unsafe fn drop(handle: u32) {
+        remove_resource(handle);
     }
 }
 
 impl fmt::Debug for TcpStream {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("TcpStream")
-            .field("sock", &self.sock.handle())
+            .field("sock", &self.sock.as_ref().unwrap().handle())
+            .field("input", &self.input.as_ref().unwrap().handle())
+            .field("output", &self.output.as_ref().unwrap().handle())
             .finish()
     }
 }
@@ -324,39 +428,18 @@ struct LookupHost {
     port: u16,
 }
 
-impl LookupHost {
-    pub fn port(&self) -> u16 {
-        self.port
-    }
-}
-
 impl Iterator for LookupHost {
     type Item = SocketAddr;
+
     fn next(&mut self) -> Option<SocketAddr> {
-        let mut res = Err(ErrorCode::Unknown);
-        loop {
-            res = self.stream.resolve_next_address();
-            if res.is_err() {
-                let code = res.unwrap_err();
-                if code == ErrorCode::WouldBlock { // TODO: also sleep and retry on ErrorCode::TemporaryResolverFailure?
-                    std::thread::sleep(std::time::Duration::from_millis(50));
-                    continue;
-                }
-                // self.stream.drop_resolve_address_stream(); FIXME?
-                return None;
-            }
-            break;
-        }
-        if let Some(addr_) = res.unwrap() {
-            let addr = match addr_ {
-                sockets::network::IpAddress::Ipv4(addr4) => IpSocketAddress::Ipv4(Ipv4SocketAddress{port: self.port, address: addr4}),
-                sockets::network::IpAddress::Ipv6(addr6) => IpSocketAddress::Ipv6(Ipv6SocketAddress{port: self.port, address: addr6, flow_info: 0, scope_id: 0}),
-            };
-            to_socket_addr(&addr).ok()
-        } else {
-            // self.stream.drop_resolve_address_stream(); FIXME?
-            None
-        }
+        check_error_retrying_on_would_block(
+            &self.stream,
+            |stream: &ResolveAddressStream| stream.resolve_next_address(),
+            "host lookup error",
+        )
+        .map(|opt_ip| opt_ip.map(|ip| SocketAddr::new(ip.into(), self.port)))
+        .map_err(|_e| Option::<SocketAddr>::None)
+        .unwrap()
     }
 }
 
@@ -364,21 +447,18 @@ impl TryFrom<&str> for LookupHost {
     type Error = io::Error;
 
     fn try_from(s: &str) -> io::Result<LookupHost> {
-        macro_rules! try_opt {
-            ($e:expr, $msg:expr) => {
-                match $e {
-                    Some(r) => r,
-                    None => return Err(io::Error::new(io::ErrorKind::InvalidInput, $msg)),
-                }
-            };
-        }
-
-        // split the string by ':' and convert the second part to u16
         let mut parts_iter = s.rsplitn(2, ':');
-        let port_str = try_opt!(parts_iter.next(), "invalid socket address");
-        let host = try_opt!(parts_iter.next(), "invalid socket address");
-        let port: u16 = try_opt!(port_str.parse().ok(), "invalid port value");
-
+        let port_str = parts_iter.next().ok_or(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "invalid socket address",
+        ))?;
+        let host = parts_iter.next().ok_or(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "invalid socket address",
+        ))?;
+        let port: u16 = port_str
+            .parse()
+            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "invalid port value"))?;
         (host, port).try_into()
     }
 }
@@ -388,9 +468,10 @@ impl<'a> TryFrom<(&'a str, u16)> for LookupHost {
 
     fn try_from((host, port): (&'a str, u16)) -> io::Result<LookupHost> {
         let nw = sockets::instance_network::instance_network();
-        let res = sockets::ip_name_lookup::resolve_addresses(&nw, host);
-        check_error(&res, "addr_resolve error")?;
-        let stream = res.unwrap();
-        Ok(LookupHost{stream, port})
+        let stream = check_error(
+            sockets::ip_name_lookup::resolve_addresses(&nw, host),
+            "addr_resolve error",
+        )?;
+        Ok(LookupHost { stream, port })
     }
 }

@@ -25,7 +25,7 @@ mod write;
 
 pub(crate) use mount::mount;
 
-use crate::{Auth, Time, ObjRes, Result, Error, ErrorKind, rpc};
+use crate::{rpc, Auth, Error, ErrorKind, ObjRes, Result, Time};
 
 enum MountProc3 {
     Null = 0,
@@ -61,6 +61,32 @@ enum NFSProc3 {
     Commit = 21,
 }
 
+use xdr_codec::Unpack;
+
+macro_rules! nfs3_call {
+    ($name:ident, $proc:ident, $args:ty, $res:ty) => {
+        fn $name(&self, args: $args) -> Result<$res> {
+            let mut buf = Vec::<u8>::new();
+            let res = self.pack_nfs3(NFSProc3::$proc, &args, &mut buf);
+            if res.is_err() {
+                return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
+            }
+
+            let res = self.rpc.call(buf)?;
+            let mut r = res.as_slice();
+            let x = <$res>::unpack(&mut r);
+            if x.is_err() {
+                return Err(Error::new(
+                    ErrorKind::Other,
+                    format!("could not parse {} response", stringify!($proc)),
+                ));
+            }
+
+            Ok(x.unwrap().0)
+        }
+    };
+}
+
 #[derive(Debug)]
 pub struct Mount {
     rpc: rpc::Client,
@@ -72,13 +98,56 @@ pub struct Mount {
 }
 
 impl Mount {
-    fn pack_nfs3<Out: xdr_codec::Write>(&self, proc: NFSProc3, args: &dyn xdr_codec::Pack<Out>, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok(rpc_header(rpc::NFS3_PROG, rpc::NFS3_VERSION, proc as u32, &self.auth).pack(out)? + args.pack(out)?)
+    fn pack_nfs3<Out: xdr_codec::Write>(
+        &self,
+        proc: NFSProc3,
+        args: &dyn xdr_codec::Pack<Out>,
+        out: &mut Out,
+    ) -> xdr_codec::Result<usize> {
+        Ok(
+            rpc_header(rpc::NFS3_PROG, rpc::NFS3_VERSION, proc as u32, &self.auth).pack(out)?
+                + args.pack(out)?,
+        )
     }
 
-    fn pack_mount3<Out: xdr_codec::Write>(&self, proc: MountProc3, args: &dyn xdr_codec::Pack<Out>, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok(rpc_header(rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, proc as u32, &self.auth).pack(out)? + args.pack(out)?)
+    fn pack_mount3<Out: xdr_codec::Write>(
+        &self,
+        proc: MountProc3,
+        args: &dyn xdr_codec::Pack<Out>,
+        out: &mut Out,
+    ) -> xdr_codec::Result<usize> {
+        Ok(rpc_header(
+            rpc::MOUNT3_PROG,
+            rpc::MOUNT3_VERSION,
+            proc as u32,
+            &self.auth,
+        )
+        .pack(out)?
+            + args.pack(out)?)
     }
+
+    nfs3_call!(_access, Access, ACCESS3args, ACCESS3res);
+    nfs3_call!(_commit, Commit, COMMIT3args, COMMIT3res);
+    nfs3_call!(_create, Create, CREATE3args, CREATE3res);
+    nfs3_call!(_fsinfo, FSInfo, FSINFO3args, FSINFO3res);
+    nfs3_call!(_fsstat, FSStat, FSSTAT3args, FSSTAT3res);
+    nfs3_call!(_getattr, GetAttr, GETATTR3args, GETATTR3res);
+    nfs3_call!(_link, Link, LINK3args, LINK3res);
+    nfs3_call!(_lookup, Lookup, LOOKUP3args, LOOKUP3res);
+    nfs3_call!(_mkdir, Mkdir, MKDIR3args, MKDIR3res);
+    nfs3_call!(_mknod, Mknod, MKNOD3args, MKNOD3res);
+    nfs3_call!(_null, Null, NULL3args, ());
+    nfs3_call!(_pathconf, Pathconf, PATHCONF3args, PATHCONF3res);
+    nfs3_call!(_read, Read, READ3args, READ3res);
+    nfs3_call!(_readdir, Readdir, READDIR3args, READDIR3res);
+    nfs3_call!(_readdirplus, Readdirplus, READDIRPLUS3args, READDIRPLUS3res);
+    nfs3_call!(_readlink, Readlink, READLINK3args, READLINK3res);
+    nfs3_call!(_remove, Remove, REMOVE3args, REMOVE3res);
+    nfs3_call!(_rename, Rename, RENAME3args, RENAME3res);
+    nfs3_call!(_rmdir, Rmdir, RMDIR3args, RMDIR3res);
+    nfs3_call!(_setattr, SetAttr, SETATTR3args, SETATTR3res);
+    nfs3_call!(_symlink, Symlink, SYMLINK3args, SYMLINK3res);
+    nfs3_call!(_write, Write, WRITE3args, WRITE3res);
 }
 
 fn rpc_header(prog: u32, vers: u32, proc: u32, cred: &Auth) -> rpc::Header {
@@ -87,8 +156,14 @@ fn rpc_header(prog: u32, vers: u32, proc: u32, cred: &Auth) -> rpc::Header {
 
 fn split_path(path: &str) -> Result<(String, String)> {
     let cleaned = &path_clean::clean(path);
-    let dir = cleaned.parent().map_or("/".to_string(), |x| x.to_string_lossy().to_string());
-    let name = cleaned.file_name().unwrap_or_default().to_string_lossy().to_string();
+    let dir = cleaned
+        .parent()
+        .map_or("/".to_string(), |x| x.to_string_lossy().to_string());
+    let name = cleaned
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .to_string();
     Ok((dir, name))
 }
 
@@ -98,8 +173,19 @@ mod nfs3xdr;
 #[allow(unused, non_camel_case_types)]
 mod mount3xdr;
 
+use nfs3xdr::{
+    cookieverf3, createmode3, createverf3, dirlist3, dirlistplus3, diropargs3, entry3, entryplus3,
+    fattr3, filename3, nfs_fh3, nfspath3, nfstime3, post_op_attr, post_op_fh3, sattrguard3,
+    set_atime, set_gid3, set_mode3, set_mtime, set_uid3, size3, stable_how, ACCESS3args,
+    ACCESS3res, COMMIT3args, COMMIT3res, CREATE3res, CREATE3resok, FSINFO3args, FSINFO3res,
+    FSINFO3resok, FSSTAT3args, FSSTAT3res, FSSTAT3resok, GETATTR3args, GETATTR3res, LINK3args,
+    LINK3res, LOOKUP3args, LOOKUP3res, LOOKUP3resok, MKDIR3res, MKDIR3resok, MKNOD3res,
+    PATHCONF3args, PATHCONF3res, PATHCONF3resok, READ3args, READ3res, READDIR3args, READDIR3res,
+    READDIR3resok, READDIRPLUS3args, READDIRPLUS3res, READDIRPLUS3resok, READLINK3args,
+    READLINK3res, REMOVE3args, REMOVE3res, RENAME3args, RENAME3res, RMDIR3args, RMDIR3res,
+    SETATTR3res, SYMLINK3res, SYMLINK3resok, WRITE3args, WRITE3res, FALSE, TRUE,
+};
 use xdr_codec::Pack;
-use nfs3xdr::{TRUE, FALSE, createmode3, createverf3, diropargs3, nfs_fh3, nfspath3, post_op_fh3, sattrguard3, size3, set_mode3, set_uid3, set_gid3, set_atime, set_mtime};
 
 fn from_post_op_fh3(pofh: post_op_fh3) -> Result<Vec<u8>> {
     match pofh {
@@ -119,9 +205,8 @@ impl std::fmt::Display for ErrorCode {
             ErrorCode::NFS3_OK => write!(f, "call completed successfully"),
             ErrorCode::NFS3ERR_PERM => write!(f, "permission denied"),
             ErrorCode::NFS3ERR_NOENT => write!(f, "no such file or directory"),
-            ErrorCode::NFS3ERR_IO => write!(f, "i/o error occurred while processing the requested operation"),
             ErrorCode::NFS3ERR_NXIO => write!(f, "i/o error - no such device or address"),
-            ErrorCode::NFS3ERR_ACCES => write!(f, "permission denied"), // FIXME: should message be different from nfsstat3::NFS3ERR_PERM?
+            ErrorCode::NFS3ERR_ACCES => write!(f, "access denied"),
             ErrorCode::NFS3ERR_EXIST => write!(f, "file exists"),
             ErrorCode::NFS3ERR_XDEV => write!(f, "cross-device hard link not allowed"),
             ErrorCode::NFS3ERR_NODEV => write!(f, "no such device"),
@@ -145,6 +230,10 @@ impl std::fmt::Display for ErrorCode {
             ErrorCode::NFS3ERR_SERVERFAULT => write!(f, "internal server error"),
             ErrorCode::NFS3ERR_BADTYPE => write!(f, "type not supported by server"),
             ErrorCode::NFS3ERR_JUKEBOX => write!(f, "try again"),
+            ErrorCode::NFS3ERR_IO => write!(
+                f,
+                "i/o error occurred while processing the requested operation"
+            ),
         }
     }
 }
@@ -160,13 +249,16 @@ impl std::fmt::Display for MountErrorCode {
             MountErrorCode::MNT3_OK => write!(f, "call completed successfully"),
             MountErrorCode::MNT3ERR_PERM => write!(f, "permission denied"),
             MountErrorCode::MNT3ERR_NOENT => write!(f, "no such file or directory"),
-            MountErrorCode::MNT3ERR_IO => write!(f, "i/o error occurred while processing the requested operation"),
-            MountErrorCode::MNT3ERR_ACCES => write!(f, "permission denied"), // FIXME: should message be different from mountstat3::MNT3ERR_PERM?
+            MountErrorCode::MNT3ERR_ACCES => write!(f, "access denied"),
             MountErrorCode::MNT3ERR_NOTDIR => write!(f, "not a directory"),
             MountErrorCode::MNT3ERR_INVAL => write!(f, "invalid or unsupported argument"),
             MountErrorCode::MNT3ERR_NAMETOOLONG => write!(f, "name is too long"),
             MountErrorCode::MNT3ERR_NOTSUPP => write!(f, "operation is not supported"),
             MountErrorCode::MNT3ERR_SERVERFAULT => write!(f, "internal server error"),
+            MountErrorCode::MNT3ERR_IO => write!(
+                f,
+                "i/o error occurred while processing the requested operation"
+            ),
         }
     }
 }
@@ -194,28 +286,34 @@ impl<Out: xdr_codec::Write> Pack<Out> for UMOUNT3args {
     }
 }
 
-#[derive(Debug, Default, PartialEq)]
-pub struct FSInfo {
-	pub attr:       Option<Fattr>,
-	pub rtmax:      u32,
-	pub rtpref:     u32,
-	pub rtmult:     u32,
-	pub wtmax:      u32,
-	pub wtpref:     u32,
-	pub wtmult:     u32,
-	pub dtpref:     u32,
-	pub size:       u64,
-	pub time_delta: Time,
-	pub properties: u32,
+impl From<nfstime3> for Time {
+    fn from(time: nfstime3) -> Self {
+        Self {
+            seconds: time.seconds,
+            nseconds: time.nseconds,
+        }
+    }
 }
 
-impl From<nfs3xdr::FSINFO3resok> for FSInfo {
-    fn from(ok: nfs3xdr::FSINFO3resok) -> Self {
-        Self{
-            attr: match ok.obj_attributes {
-                nfs3xdr::post_op_attr::TRUE(a) => Some(a.into()),
-                nfs3xdr::post_op_attr::FALSE => None,
-            },
+#[derive(Debug, Default, PartialEq)]
+pub struct FSInfo {
+    pub attr: Option<Fattr>,
+    pub rtmax: u32,
+    pub rtpref: u32,
+    pub rtmult: u32,
+    pub wtmax: u32,
+    pub wtpref: u32,
+    pub wtmult: u32,
+    pub dtpref: u32,
+    pub size: u64,
+    pub time_delta: Time,
+    pub properties: u32,
+}
+
+impl From<FSINFO3resok> for FSInfo {
+    fn from(ok: FSINFO3resok) -> Self {
+        Self {
+            attr: ok.obj_attributes.into(),
             rtmax: ok.rtmax,
             rtpref: ok.rtpref,
             rtmult: ok.rtmult,
@@ -224,7 +322,7 @@ impl From<nfs3xdr::FSINFO3resok> for FSInfo {
             wtmult: ok.wtmult,
             dtpref: ok.dtpref,
             size: ok.maxfilesize,
-            time_delta: Time{seconds: ok.time_delta.seconds, nseconds: ok.time_delta.nseconds},
+            time_delta: ok.time_delta.into(),
             properties: ok.properties,
         }
     }
@@ -242,13 +340,10 @@ pub struct FSStat {
     pub invarsec: u32,
 }
 
-impl From<nfs3xdr::FSSTAT3resok> for FSStat {
-    fn from(ok: nfs3xdr::FSSTAT3resok) -> Self {
+impl From<FSSTAT3resok> for FSStat {
+    fn from(ok: FSSTAT3resok) -> Self {
         Self {
-            attr: match ok.obj_attributes {
-                nfs3xdr::post_op_attr::TRUE(a) => Some(a.into()),
-                nfs3xdr::post_op_attr::FALSE => None,
-            },
+            attr: ok.obj_attributes.into(),
             tbytes: ok.tbytes,
             fbytes: ok.fbytes,
             abytes: ok.abytes,
@@ -277,9 +372,9 @@ pub struct Fattr {
     pub ctime: Time,
 }
 
-impl From<nfs3xdr::fattr3> for Fattr {
-    fn from(attr: nfs3xdr::fattr3) -> Self {
-        Self{
+impl From<fattr3> for Fattr {
+    fn from(attr: fattr3) -> Self {
+        Self {
             type_: attr.type_ as u32,
             file_mode: attr.mode,
             nlink: attr.nlink,
@@ -290,16 +385,16 @@ impl From<nfs3xdr::fattr3> for Fattr {
             spec_data: [attr.rdev.specdata1, attr.rdev.specdata2],
             fsid: attr.fsid,
             fileid: attr.fileid,
-            atime: Time{seconds: attr.atime.seconds, nseconds: attr.atime.nseconds},
-            mtime: Time{seconds: attr.mtime.seconds, nseconds: attr.mtime.nseconds},
-            ctime: Time{seconds: attr.ctime.seconds, nseconds: attr.ctime.nseconds},
+            atime: attr.atime.into(),
+            mtime: attr.mtime.into(),
+            ctime: attr.ctime.into(),
         }
     }
 }
 
-impl From<nfs3xdr::fattr3> for crate::mount::Attr {
-    fn from(attr: nfs3xdr::fattr3) -> Self {
-        Self{
+impl From<fattr3> for crate::mount::Attr {
+    fn from(attr: fattr3) -> Self {
+        Self {
             type_: attr.type_ as u32,
             file_mode: attr.mode,
             nlink: attr.nlink,
@@ -310,31 +405,34 @@ impl From<nfs3xdr::fattr3> for crate::mount::Attr {
             spec_data: [attr.rdev.specdata1, attr.rdev.specdata2],
             fsid: attr.fsid,
             fileid: attr.fileid,
-            atime: Time{seconds: attr.atime.seconds, nseconds: attr.atime.nseconds},
-            mtime: Time{seconds: attr.mtime.seconds, nseconds: attr.mtime.nseconds},
-            ctime: Time{seconds: attr.ctime.seconds, nseconds: attr.ctime.nseconds},
+            atime: attr.atime.into(),
+            mtime: attr.mtime.into(),
+            ctime: attr.ctime.into(),
         }
     }
 }
 
-impl From<nfs3xdr::post_op_attr> for Option<crate::mount::Attr> {
-    fn from(attr: nfs3xdr::post_op_attr) -> Self {
+impl From<post_op_attr> for Option<Fattr> {
+    fn from(attr: post_op_attr) -> Self {
         match attr {
-            nfs3xdr::post_op_attr::TRUE(a) => Some(a.into()),
-            nfs3xdr::post_op_attr::FALSE => None,
+            post_op_attr::TRUE(a) => Some(a.into()),
+            post_op_attr::FALSE => None,
+        }
+    }
+}
+
+impl From<post_op_attr> for Option<crate::mount::Attr> {
+    fn from(attr: post_op_attr) -> Self {
+        match attr {
+            post_op_attr::TRUE(a) => Some(a.into()),
+            post_op_attr::FALSE => None,
         }
     }
 }
 
 impl From<Fattr> for crate::mount::Attr {
     fn from(attr: Fattr) -> Self {
-        (&attr).into()
-    }
-}
-
-impl From<&Fattr> for crate::mount::Attr {
-    fn from(attr: &Fattr) -> Self {
-        Self{
+        Self {
             type_: attr.type_,
             file_mode: attr.file_mode,
             nlink: attr.nlink,
@@ -345,9 +443,9 @@ impl From<&Fattr> for crate::mount::Attr {
             spec_data: attr.spec_data,
             fsid: attr.fsid,
             fileid: attr.fileid,
-            atime: Time{seconds: attr.atime.seconds, nseconds: attr.atime.nseconds},
-            mtime: Time{seconds: attr.mtime.seconds, nseconds: attr.mtime.nseconds},
-            ctime: Time{seconds: attr.ctime.seconds, nseconds: attr.ctime.nseconds},
+            atime: attr.atime.into(),
+            mtime: attr.mtime.into(),
+            ctime: attr.ctime.into(),
         }
     }
 }
@@ -363,13 +461,10 @@ pub struct Pathconf {
     pub case_preserving: bool,
 }
 
-impl From<nfs3xdr::PATHCONF3resok> for Pathconf {
-    fn from(ok: nfs3xdr::PATHCONF3resok) -> Self {
-        Self{
-            attr: match ok.obj_attributes {
-                nfs3xdr::post_op_attr::TRUE(a) => Some(a.into()),
-                nfs3xdr::post_op_attr::FALSE => None,
-            },
+impl From<PATHCONF3resok> for Pathconf {
+    fn from(ok: PATHCONF3resok) -> Self {
+        Self {
+            attr: ok.obj_attributes.into(),
             linkmax: ok.linkmax,
             name_max: ok.name_max,
             no_trunc: ok.no_trunc,
@@ -382,8 +477,8 @@ impl From<nfs3xdr::PATHCONF3resok> for Pathconf {
 
 impl From<Pathconf> for crate::mount::Pathconf {
     fn from(pathconf: Pathconf) -> Self {
-        Self{
-            attr: pathconf.attr.map(|pc| pc.into()),
+        Self {
+            attr: pathconf.attr.map(Into::into),
             linkmax: pathconf.linkmax,
             name_max: pathconf.name_max,
             no_trunc: pathconf.no_trunc,
@@ -423,7 +518,7 @@ struct sattr3 {
 
 impl Default for sattr3 {
     fn default() -> Self {
-        Self{
+        Self {
             mode: set_mode3::default,
             uid: set_uid3::default,
             gid: set_gid3::default,
@@ -543,7 +638,7 @@ impl<Out: xdr_codec::Write> xdr_codec::Pack<Out> for mknoddata3 {
             &mknoddata3::NF3FIFO(ref val) => {
                 (mknoddata3::NF3FIFO as i32).pack(out)? + val.pack(out)?
             }
-            &mknoddata3::default => 0
+            &mknoddata3::default => 0,
         })
     }
 }

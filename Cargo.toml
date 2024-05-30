@@ -16,6 +16,7 @@ path-clean = "1.0.1"
 rand = "0.8.5"
 thiserror = "1.0.58"
 url = "2.5.0"
+wit-bindgen = { version = "0.25.0" }
 wit-bindgen-rt = { version = "0.25.0", features = ["bitflags"] }
 xdr-codec = "0.4.4"
 

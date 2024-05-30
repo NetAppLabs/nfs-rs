@@ -1,12 +1,18 @@
+/// NFS is an API intended to let users perform NFS procedures from user-space.
 interface nfs {
+    /// File handle
     type fh = list<u8>;
+
+    /// List/vector/array of bytes
     type bytes = list<u8>;
 
+    /// Time
     record time {
         seconds: u32,
         nseconds: u32,
     }
 
+    /// Attributes
     record attr {
         attr-type: u32,
         file-mode: u32,
@@ -23,11 +29,13 @@ interface nfs {
         ctime: time,
     }
 
+    /// Object response
     record obj-res {
         obj: fh,
         attr: option<attr>,
     }
 
+    /// Path configuration
     record path-conf {
         attr: option<attr>,
         linkmax: u32,
@@ -38,69 +46,324 @@ interface nfs {
         case-preserving: bool,
     }
 
+    /// Directory entry as returned from `nfs-mount::readdir`
     record readdir-entry {
         fileid: u64,
         file-name: string,
-        cookie: u64,
     }
 
+    /// Directory entry as returned from `nfs-mount::readdirplus`
     record readdirplus-entry {
         fileid: u64,
         file-name: string,
-        cookie: u64,
         attr: option<attr>,
         handle: fh,
     }
 
+    /// NFS version
+    enum nfs-version {
+        nfs-v3,
+        nfs-v4,
+        nfs-v4p1,
+    }
+
+    /// Error
     record error {
         nfs-error-code: option<s32>,
         message: string,
     }
 
+    /// Parse URL and mount
+    ///
+    /// Parses the specified URL and attempts to mount the relevant NFS export.
+    /// Example usage in the following pseud-code:
+    ///
+    /// ```text
+    /// // query param version=4.1,4,3 in URL should try each version in turn until mount procedure is successful
+    /// // see https://github.com/NetAppLabs/nfs-rs#url-format for supported URL format
+    /// let mount = nfs_rs.parse_url_and_mount("nfs://localhost/some/export?version=4.1,4,3");
+    /// let version = mount.version(); // check which NFS version we succeeded in mounting
+    /// mount.umount();
+    /// ```
     parse-url-and-mount: func(url: string) -> result<nfs-mount, error>;
 
+    /// Version agnostic NFS mount
+    ///
+    /// Due to the NFS mount being version agnostic, calling functions not supported by the NFS version being used will
+    /// result in error being returned.
     resource nfs-mount {
+        /// NULL procedure
+        ///
+        /// Procedure NULL does not do any work. It is made available to allow server response testing and timing.
+        /// Example usage in the following pseud-code:
+        ///
+        /// ```text
+        /// let mount = nfs_rs.parse_url_and_mount("nfs://localhost/some/export");
+        /// let version = mount.null(); // check which NFS version we succeeded in mounting
+        /// mount.umount();
+        /// ```
         null-op: func() -> result<_, error>;
+
+        /// ACCESS procedure
+        ///
+        /// Procedure ACCESS determines the access rights that a user, as identified by the credentials in the request,
+        /// has with respect to a file system object.
         access: func(fh: fh, mode: u32) -> result<u32, error>;
+
+        /// ACCESS procedure for a path
+        ///
+        /// Same as `nfs-mount::access` but instead of taking in a file handle, takes in a path for which file handle
+        /// is obtained by performing one or move LOOKUP procedures.
         access-path: func(path: string, mode: u32) -> result<u32, error>;
+
+        /// CLOSE procedure
+        ///
+        /// Procedure CLOSE releases share reservations for the regular or named attribute file as specified by the
+        /// current filehandle.
         close: func(seqid: u32, stateid: u64) -> result<_, error>;
+
+        /// COMMIT procedure
+        ///
+        /// Procedure COMMIT forces or flushes data to stable storage that was previously written with a WRITE
+        /// procedure call with the stable field set to UNSTABLE.
         commit: func(fh: fh, offset: u64, count: u32) -> result<_, error>;
+
+        /// COMMIT procedure for a path
+        ///
+        /// Same as `nfs-mount::commit` but instead of taking in a file handle, takes in a path for which file handle
+        /// is obtained by performing one or more LOOKUP procedures.
         commit-path: func(path: string, offset: u64, count: u32) -> result<_, error>;
+
+        /// CREATE procedure
+        ///
+        /// Procedure CREATE creates a regular file.
         create: func(dir-fh: fh, filename: string, mode: u32) -> result<obj-res, error>;
+
+        /// CREATE procedure for a path
+        ///
+        /// Same as `nfs-mount::create` but instead of taking in directory file handle and filename, takes in a path
+        /// for which directory file handle is obtained by performing one or more LOOKUP procedures.
         create-path: func(path: string, mode: u32) -> result<obj-res, error>;
+
+        /// DELEGPURGE procedure
+        ///
+        /// Procedure DELEGPURGE purges all of the delegations awaiting recovery for a given client.
         delegpurge: func(clientid: u64) -> result<_, error>;
+
+        /// DELEGRETURN procedure
+        ///
+        /// Procedure DELEGRETURN returns the delegation represented by the current filehandle and stateid.
         delegreturn: func(stateid: u64) -> result<_, error>;
+
+        /// GETATTR procedure
+        ///
+        /// Procedure GETATTR retrieves the attributes for a specified file system object.
         getattr: func(fh: fh) -> result<attr, error>;
+
+        /// GETATTR procedure for a path
+        ///
+        /// Same as `nfs-mount::getattr` but instead of taking in a file handle, takes in a path for which file handle
+        /// is obtained by performing one or more LOOKUP procedures.
         getattr-path: func(path: string) -> result<attr, error>;
-        setattr: func(fh: fh, guard-ctime: option<time>, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result<_, error>;
-        setattr-path: func(path: string, specify-guard: bool, mode: option<u32>, uid: option<u32>, gid: option<u32>, size: option<u64>, atime: option<time>, mtime: option<time>) -> result<_, error>;
+
+        /// SETATTR procedure
+        ///
+        /// Procedure SETATTR changes one or more of the attributes of a file system object on the server.
+        setattr: func(
+            fh: fh,
+            guard-ctime: option<time>,
+            mode: option<u32>,
+            uid: option<u32>,
+            gid: option<u32>,
+            size: option<u64>,
+            atime: option<time>,
+            mtime: option<time>
+        ) -> result<_, error>;
+
+        /// SETATTR procedure for a path
+        ///
+        /// Same as `nfs-mount::setattr` but instead of taking in a file handle, takes in a path for which file handle
+        /// is obtained by performing one or more LOOKUP procedures.  Also, instead of taking in optional guard ctime,
+        /// takes in a boolean which determines whether to specify guard in SETATTR procedure or not, using ctime from
+        /// LOOKUP.
+        setattr-path: func(
+            path: string,
+            specify-guard: bool,
+            mode: option<u32>,
+            uid: option<u32>,
+            gid: option<u32>,
+            size: option<u64>,
+            atime: option<time>,
+            mtime: option<time>
+        ) -> result<_, error>;
+
+        /// GETFH procedure
+        ///
+        /// Procedure GETFH returns the current filehandle value.
         getfh: func() -> result<_, error>;
+
+        /// LINK procedure
+        ///
+        /// Procedure LINK creates a hard link.
         link: func(src-fh: fh, dst-dir-fh: fh, dst-filename: string) -> result<attr, error>;
+
+        /// LINK procedure for a path
+        ///
+        /// Same as `nfs-mount::link` but instead of taking in a source file handle, destination directory file handle,
+        /// and destination filename, takes in a source path for which file handle is obtained by performing one or
+        /// more LOOKUP procedures and destination path for which directory file handle is obtained by performing one
+        /// or more LOOKUP procedures.
         link-path: func(src-path: string, dst-path: string) -> result<attr, error>;
+
+        /// SYMLINK procedure
+        ///
+        /// Procedure SYMLINK creates a new symbolic link.
         symlink: func(src-path: string, dst-dir-fh: fh, dst-filename: string) -> result<obj-res, error>;
+
+        /// SYMLINK procedure for a path
+        ///
+        /// Same as `nfs-mount::symlink` but instead of taking in a destination directory file handle and destination
+        /// filename, takes in a  destination path for which directory file handle is obtained by performing one or
+        /// more LOOKUP procedures.
         symlink-path: func(src-path: string, dst-path: string) -> result<obj-res, error>;
+
+        /// READLINK procedure
+        ///
+        /// Procedure READLINK reads the data associated with a symbolic link.
         readlink: func(fh: fh) -> result<string, error>;
+
+        /// READLINK procedure for a path
+        ///
+        /// Same as `nfs-mount::readlink` but instead of taking in a file handle, takes in a path for which file handle
+        /// is obtained by performing one or more LOOKUP procedures.
         readlink-path: func(path: string) -> result<string, error>;
+
+        /// LOOKUP procedure
+        ///
+        /// Procedure LOOKUP searches a directory for a specific name and returns the file handle and attributes for
+        /// the corresponding file system object.
         lookup: func(dir-fh: fh, filename: string) -> result<obj-res, error>;
+
+        /// LOOKUP procedure for a path
+        ///
+        /// Same as `nfs-mount::lookup` but instead of taking in a directory file handle and filename, takes in a path
+        /// for which directory file handle is obtained by performing one or more LOOKUP procedures for each directory
+        /// in the path, in turn.
         lookup-path: func(path: string) -> result<obj-res, error>;
+
+        /// PATHCONF procedure
+        ///
+        /// Procedure PATHCONF retrieves the pathconf information for a file or directory.
         pathconf: func(fh: fh) -> result<path-conf, error>;
+
+        /// PATHCONF procedure for a path
+        ///
+        /// Same as `nfs-mount::pathconf` but instead of taking in a file handle, takes in a path for which file handle
+        /// is obtained by performing one or more LOOKUP procedures.
         pathconf-path: func(path: string) -> result<path-conf, error>;
+
+        /// READ procedure
+        ///
+        /// Procedure READ reads data from a file.
         read: func(fh: fh, offset: u64, count: u32) -> result<bytes, error>;
+
+        /// READ procedure for a path
+        ///
+        /// Same as `nfs-mount::read` but instead of taking in a file handle, takes in a path for which file handle is
+        /// obtained by performing one or more LOOKUP procedures.
         read-path: func(path: string, offset: u64, count: u32) -> result<bytes, error>;
+
+        /// WRITE procedure
+        ///
+        /// Procedure WRITE writes data to a file.
         write: func(fh: fh, offset: u64, data: bytes) -> result<u32, error>;
+
+        /// WRITE procedure for a path
+        ///
+        /// Same as `nfs-mount::write` but instead of taking in a file handle, takes in a path for which file handle is
+        /// obtained by performing one or more LOOKUP procedures.
         write-path: func(path: string, offset: u64, data: bytes) -> result<u32, error>;
+
+        /// READDIR procedure
+        ///
+        /// Procedure READDIR retrieves a variable number of entries, in sequence, from a directory and returns the
+        /// name and file identifier for each, with information to allow the client to request additional directory
+        /// entries in a subsequent READDIR request.
         readdir: func(dir-fh: fh) -> result<list<readdir-entry>, error>;
+
+        /// READDIR procedure for a path
+        ///
+        /// Same as `nfs-mount::readdir` but instead of taking in a directory file handle, takes in a path for which
+        /// directory file handle is obtained by performing one or more LOOKUP procedures.
         readdir-path: func(dir-path: string) -> result<list<readdir-entry>, error>;
+
+        /// READDIRPLUS procedure
+        ///
+        /// Procedure READDIRPLUS retrieves a variable number of entries from a file system directory and returns
+        /// complete information about each along with information to allow the client to request additional directory
+        /// entries in a subsequent READDIRPLUS.  READDIRPLUS differs from READDIR only in the amount of information
+        /// returned for each entry.  In READDIR, each entry returns the filename and the fileid.  In READDIRPLUS, each
+        /// entry returns the name, the fileid, attributes (including the fileid), and file handle.
         readdirplus: func(dir-fh: fh) -> result<list<readdirplus-entry>, error>;
+
+        /// READDIRPLUS procedure for a path
+        ///
+        /// Same as `nfs-mount::readdirplus` but instead of taking in a directory file handle, takes in a path for
+        /// which directory file handle is obtained by performing one or more LOOKUP procedures.
         readdirplus-path: func(dir-path: string) -> result<list<readdirplus-entry>, error>;
+
+        /// MKDIR procedure
+        ///
+        /// Procedure MKDIR creates a new subdirectory.
         mkdir: func(dir-fh: fh, dirname: string, mode: u32) -> result<obj-res, error>;
+
+        /// MKDIR procedure for a path
+        ///
+        /// Same as `nfs-mount::mkdir` but instead of taking in directory file handle and dirname, takes in a path for
+        /// which directory file handle is obtained by performing one or more LOOKUP procedures.
         mkdir-path: func(path: string, mode: u32) -> result<obj-res, error>;
+
+        /// REMOVE procedure
+        ///
+        /// Procedure REMOVE removes (deletes) an entry from a directory.
         remove: func(dir-fh: fh, filename: string) -> result<_, error>;
+
+        /// REMOVE procedure for a path
+        ///
+        /// Same as `nfs-mount::remove` but instead of taking in a directory file handle and filename, takes in a path
+        /// for which directory file handle is obtained by performing one or more LOOKUP procedures.
         remove-path: func(path: string) -> result<_, error>;
+
+        /// RMDIR procedure
+        ///
+        /// Procedure RMDIR removes (deletes) a subdirectory from a directory.
         rmdir: func(dir-fh: fh, dirname: string) -> result<_, error>;
+
+        /// RMDIR procedure for a path
+        ///
+        /// Same as `nfs-mount::rmdir` but instead of taking in a directory file handle and directory name, takes in a
+        /// path for which directory file handle is obtained by performing one or more LOOKUP procedures.
         rmdir-path: func(path: string) -> result<_, error>;
+
+        /// RENAME procedure
+        ///
+        /// Procedure RENAME renames an entry.
         rename: func(from-dir-fh: fh, from-filename: string, to-dir-fh: fh, to-filename: string) -> result<_, error>;
+
+        /// RENAME procedure for a path
+        ///
+        /// Same as `nfs-mount::rename` but instead of taking in a from directory file handle, from filename, to
+        /// directory file handle, and to filename, takes in a from path for which directory file handle is obtained by
+        /// performing one or more LOOKUP procedures and to path for which directory file handle is obtained by
+        /// performing one or more LOOKUP procedures.
         rename-path: func(from-path: string, to-path: string) -> result<_, error>;
+
+        /// UMOUNT procedure
+        ///
+        /// Procedure UMOUNT unmounts the mount itself.
         umount: func() -> result<_, error>;
+
+        /// Return `nfs-mount`'s NFS version
+        version: func() -> result<nfs-version, error>;
     }
 }

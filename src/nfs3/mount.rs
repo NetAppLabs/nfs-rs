@@ -1,10 +1,9 @@
-
 use std::io;
 
-use xdr_codec::{Pack, Unpack};
-use super::{Mount, Error, ErrorKind, Result, MOUNT3args, Time, ObjRes};
 use super::mount3xdr::{dirpath, mountres3};
-use crate::{SocketAddr, TcpStream, ToSocketAddrs, nfs3, rpc};
+use super::{Error, ErrorKind, MOUNT3args, Mount, ObjRes, Result, Time};
+use crate::{nfs3, rpc, NFSVersion, SocketAddr, TcpStream, ToSocketAddrs};
+use xdr_codec::{Pack, Unpack};
 
 // const MNT_PATH_LEN: u32 = 1024;
 
@@ -76,31 +75,60 @@ impl crate::Mount for Mount3 {
     }
 
     fn getattr(&self, fh: &Vec<u8>) -> Result<crate::mount::Attr> {
-        self.m.getattr(fh).map(|res| res.into())
+        self.m.getattr(fh).map(Into::into)
     }
 
     fn getattr_path(&self, path: &str) -> Result<crate::mount::Attr> {
-        self.m.getattr_path(path).map(|res| res.into())
+        self.m.getattr_path(path).map(Into::into)
     }
 
-    fn setattr(&self, fh: &Vec<u8>, guard_ctime: Option<Time>, mode: Option<u32>, uid: Option<u32>, gid: Option<u32>, size: Option<u64>, atime: Option<Time>, mtime: Option<Time>) -> Result<()> {
-        self.m.setattr(fh, guard_ctime, mode, uid, gid, size, atime, mtime)
+    fn setattr(
+        &self,
+        fh: &Vec<u8>,
+        guard_ctime: Option<Time>,
+        mode: Option<u32>,
+        uid: Option<u32>,
+        gid: Option<u32>,
+        size: Option<u64>,
+        atime: Option<Time>,
+        mtime: Option<Time>,
+    ) -> Result<()> {
+        self.m
+            .setattr(fh, guard_ctime, mode, uid, gid, size, atime, mtime)
     }
 
-    fn setattr_path(&self, path: &str, specify_guard: bool, mode: Option<u32>, uid: Option<u32>, gid: Option<u32>, size: Option<u64>, atime: Option<Time>, mtime: Option<Time>) -> Result<()> {
-        self.m.setattr_path(path, specify_guard, mode, uid, gid, size, atime, mtime)
+    fn setattr_path(
+        &self,
+        path: &str,
+        specify_guard: bool,
+        mode: Option<u32>,
+        uid: Option<u32>,
+        gid: Option<u32>,
+        size: Option<u64>,
+        atime: Option<Time>,
+        mtime: Option<Time>,
+    ) -> Result<()> {
+        self.m
+            .setattr_path(path, specify_guard, mode, uid, gid, size, atime, mtime)
     }
 
     fn getfh(&self) -> Result<()> {
         Err(Error::new(ErrorKind::Unsupported, "not supported"))
     }
 
-    fn link(&self, src_fh: &Vec<u8>, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<crate::mount::Attr> {
-        self.m.link(src_fh, dst_dir_fh, dst_filename).map(|res| res.into())
+    fn link(
+        &self,
+        src_fh: &Vec<u8>,
+        dst_dir_fh: &Vec<u8>,
+        dst_filename: &str,
+    ) -> Result<crate::mount::Attr> {
+        self.m
+            .link(src_fh, dst_dir_fh, dst_filename)
+            .map(Into::into)
     }
 
     fn link_path(&self, src_path: &str, dst_path: &str) -> Result<crate::mount::Attr> {
-        self.m.link_path(src_path, dst_path).map(|res| res.into())
+        self.m.link_path(src_path, dst_path).map(Into::into)
     }
 
     fn symlink(&self, src_path: &str, dst_dir_fh: &Vec<u8>, dst_filename: &str) -> Result<ObjRes> {
@@ -128,11 +156,11 @@ impl crate::Mount for Mount3 {
     }
 
     fn pathconf(&self, fh: &Vec<u8>) -> Result<crate::mount::Pathconf> {
-        self.m.pathconf(fh).map(|res| res.into())
+        self.m.pathconf(fh).map(Into::into)
     }
 
     fn pathconf_path(&self, path: &str) -> Result<crate::mount::Pathconf> {
-        self.m.pathconf_path(path).map(|res| res.into())
+        self.m.pathconf_path(path).map(Into::into)
     }
 
     fn read(&self, fh: &Vec<u8>, offset: u64, count: u32) -> Result<Vec<u8>> {
@@ -152,19 +180,27 @@ impl crate::Mount for Mount3 {
     }
 
     fn readdir(&self, dir_fh: &Vec<u8>) -> Result<Vec<crate::mount::ReaddirEntry>> {
-        Ok(self.m.readdir(dir_fh)?.iter().map(|e| e.into()).collect())
+        self.m
+            .readdir(dir_fh)
+            .map(|entries| entries.into_iter().map(Into::into).collect())
     }
 
     fn readdir_path(&self, dir_path: &str) -> Result<Vec<crate::mount::ReaddirEntry>> {
-        Ok(self.m.readdir_path(dir_path)?.iter().map(|e| e.into()).collect())
+        self.m
+            .readdir_path(dir_path)
+            .map(|entries| entries.into_iter().map(Into::into).collect())
     }
 
     fn readdirplus(&self, dir_fh: &Vec<u8>) -> Result<Vec<crate::mount::ReaddirplusEntry>> {
-        Ok(self.m.readdirplus(dir_fh)?.iter().map(|e| e.into()).collect())
+        self.m
+            .readdirplus(dir_fh)
+            .map(|entries| entries.into_iter().map(Into::into).collect())
     }
 
     fn readdirplus_path(&self, dir_path: &str) -> Result<Vec<crate::mount::ReaddirplusEntry>> {
-        Ok(self.m.readdirplus_path(dir_path)?.iter().map(|e| e.into()).collect())
+        self.m
+            .readdirplus_path(dir_path)
+            .map(|entries| entries.into_iter().map(Into::into).collect())
     }
 
     fn mkdir(&self, dir_fh: &Vec<u8>, dirname: &str, mode: u32) -> Result<ObjRes> {
@@ -191,8 +227,15 @@ impl crate::Mount for Mount3 {
         self.m.rmdir_path(path)
     }
 
-    fn rename(&self, from_dir_fh: &Vec<u8>, from_filename: &str, to_dir_fh: &Vec<u8>, to_filename: &str) -> Result<()> {
-        self.m.rename(from_dir_fh, from_filename, to_dir_fh, to_filename)
+    fn rename(
+        &self,
+        from_dir_fh: &Vec<u8>,
+        from_filename: &str,
+        to_dir_fh: &Vec<u8>,
+        to_filename: &str,
+    ) -> Result<()> {
+        self.m
+            .rename(from_dir_fh, from_filename, to_dir_fh, to_filename)
     }
 
     fn rename_path(&self, from_path: &str, to_path: &str) -> Result<()> {
@@ -202,9 +245,19 @@ impl crate::Mount for Mount3 {
     fn umount(&self) -> Result<()> {
         self.m.umount()
     }
+
+    fn version(&self) -> NFSVersion {
+        NFSVersion::NFSv3
+    }
 }
 
-fn ensure_port(addrs: &Vec<SocketAddr>, port: u16, prog: u32, vers: u32, auth: &crate::Auth) -> Result<u16> {
+fn ensure_port(
+    addrs: &Vec<SocketAddr>,
+    port: u16,
+    prog: u32,
+    vers: u32,
+    auth: &crate::Auth,
+) -> Result<u16> {
     if port != 0 {
         return Ok(port);
     }
@@ -213,10 +266,24 @@ fn ensure_port(addrs: &Vec<SocketAddr>, port: u16, prog: u32, vers: u32, auth: &
 
 pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
     // start by resolving host address and assigning portmapper port to each resolved address
-    let addrs = (args.host.as_str(), rpc::PORTMAP_PORT).to_socket_addrs()?.collect();
+    let addrs = (args.host.as_str(), rpc::PORTMAP_PORT)
+        .to_socket_addrs()?
+        .collect();
     let auth = crate::Auth::new_unix("nfs-rs", args.uid, args.gid);
-    let nfsport = ensure_port(&addrs, args.nfsport, rpc::NFS3_PROG, rpc::NFS3_VERSION, &auth)?;
-    let mountport = ensure_port(&addrs, args.mountport, rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, &auth)?;
+    let nfsport = ensure_port(
+        &addrs,
+        args.nfsport,
+        rpc::NFS3_PROG,
+        rpc::NFS3_VERSION,
+        &auth,
+    )?;
+    let mountport = ensure_port(
+        &addrs,
+        args.mountport,
+        rpc::MOUNT3_PROG,
+        rpc::MOUNT3_VERSION,
+        &auth,
+    )?;
     for mut addr in addrs {
         addr.set_port(nfsport); // replace portmapper port with NFS port obtained above
         let res = mount_on_addr(&addr, &args, &auth, mountport);
@@ -224,10 +291,18 @@ pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
             return Ok(res.unwrap());
         }
     }
-    Err(io::Error::new(io::ErrorKind::Other, "no valid socket address"))
+    Err(io::Error::new(
+        io::ErrorKind::Other,
+        "no valid socket address",
+    ))
 }
 
-fn mount_on_addr(addr: &SocketAddr, args: &crate::MountArgs, auth: &crate::Auth, mountport: u16) -> Result<Box<dyn crate::Mount>> {
+fn mount_on_addr(
+    addr: &SocketAddr,
+    args: &crate::MountArgs,
+    auth: &crate::Auth,
+    mountport: u16,
+) -> Result<Box<dyn crate::Mount>> {
     let nfs_conn = TcpStream::connect(addr)?;
     let nfs_addr = nfs_conn.peer_addr()?;
     let dir: String = args.dirpath.to_owned();
@@ -241,7 +316,12 @@ fn mount_on_addr(addr: &SocketAddr, args: &crate::MountArgs, auth: &crate::Auth,
     };
     let client = rpc::Client::new(Some(nfs_conn), Some(mount_conn));
 
-    let args = nfs3::rpc_header(rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, nfs3::MountProc3::Null as u32, &auth);
+    let args = nfs3::rpc_header(
+        rpc::MOUNT3_PROG,
+        rpc::MOUNT3_VERSION,
+        nfs3::MountProc3::Null as u32,
+        &auth,
+    );
     let mut buf = Vec::<u8>::new();
     let res = args.pack(&mut buf);
     if res.is_err() {
@@ -249,8 +329,13 @@ fn mount_on_addr(addr: &SocketAddr, args: &crate::MountArgs, auth: &crate::Auth,
     }
     let _ = client.call(buf)?;
 
-    let args = MOUNT3args{
-        header: nfs3::rpc_header(rpc::MOUNT3_PROG, rpc::MOUNT3_VERSION, nfs3::MountProc3::Mount as u32, &auth),
+    let args = MOUNT3args {
+        header: nfs3::rpc_header(
+            rpc::MOUNT3_PROG,
+            rpc::MOUNT3_VERSION,
+            nfs3::MountProc3::Mount as u32,
+            &auth,
+        ),
         dirpath: dirpath(dir.trim_end_matches('/').to_string()),
     };
     let mut buf = Vec::<u8>::new();
@@ -271,9 +356,16 @@ fn mount_on_addr(addr: &SocketAddr, args: &crate::MountArgs, auth: &crate::Auth,
         mountres3::default(e) => Err(Error::new(ErrorKind::Other, e)),
     }?;
 
-    let m = Mount{rpc: client, auth: auth.clone(), fh: res.fhandle.0, dir, dircount, maxcount};
+    let m = Mount {
+        rpc: client,
+        auth: auth.clone(),
+        fh: res.fhandle.0,
+        dir,
+        dircount,
+        maxcount,
+    };
     let _ = m.null()?;
     let _ = m.fsinfo()?; // XXX: use returned FS info for something? github.com/sahlberg/libnfs must be calling this for something...
 
-    Ok(Box::new(Mount3{m}))
+    Ok(Box::new(Mount3 { m }))
 }

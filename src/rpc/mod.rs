@@ -1,9 +1,9 @@
 pub mod auth;
 pub mod header;
 
+use crate::{Error, ErrorKind, Result, SocketAddr, TcpStream};
 use byteorder::{BigEndian, ByteOrder};
-use xdr_codec::{Pack, Unpack, Read, Write};
-use crate::{Result, Error, ErrorKind, SocketAddr, TcpStream};
+use xdr_codec::{Pack, Read, Unpack, Write};
 
 use auth::Auth;
 pub(crate) use header::Header;
@@ -36,7 +36,10 @@ pub(crate) fn portmap(addrs: &Vec<SocketAddr>, prog: u32, vers: u32, auth: &Auth
             return Ok(res.unwrap());
         }
     }
-    Err(Error::new(ErrorKind::Other, "error obtaining ports from portmapper"))
+    Err(Error::new(
+        ErrorKind::Other,
+        "error obtaining ports from portmapper",
+    ))
 }
 
 fn portmap_on_addr(addr: &SocketAddr, prog: u32, vers: u32, auth: &Auth) -> Result<u16> {
@@ -45,7 +48,14 @@ fn portmap_on_addr(addr: &SocketAddr, prog: u32, vers: u32, auth: &Auth) -> Resu
         return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
     }
     let client = Client::new(res.ok(), None);
-    let args = Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::Null as u32, &auth, &Auth::new_null());
+    let args = Header::new(
+        RPC_VERSION,
+        PORTMAP_PROG,
+        PORTMAP_VERSION,
+        PortmapProc2::Null as u32,
+        &auth,
+        &Auth::new_null(),
+    );
     let mut buf = Vec::<u8>::new();
     let res = args.pack(&mut buf);
     if res.is_err() {
@@ -57,8 +67,15 @@ fn portmap_on_addr(addr: &SocketAddr, prog: u32, vers: u32, auth: &Auth) -> Resu
         let _ = client.shutdown();
         return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
     }
-    let args = GETPORT2args{
-        header: Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::GetPort as u32, &auth, &Auth::new_null()),
+    let args = GETPORT2args {
+        header: Header::new(
+            RPC_VERSION,
+            PORTMAP_PROG,
+            PORTMAP_VERSION,
+            PortmapProc2::GetPort as u32,
+            &auth,
+            &Auth::new_null(),
+        ),
         prog,
         vers,
         proto: IPPROTO_TCP,
@@ -92,13 +109,20 @@ struct GETPORT2args {
 
 impl<Out: Write> Pack<Out> for GETPORT2args {
     fn pack(&self, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok(self.header.pack(out)? + self.prog.pack(out)? + self.vers.pack(out)? + self.proto.pack(out)? + self.port.pack(out)?)
+        Ok(self.header.pack(out)?
+            + self.prog.pack(out)?
+            + self.vers.pack(out)?
+            + self.proto.pack(out)?
+            + self.port.pack(out)?)
     }
 }
 
 fn parse_xdr_response<T>(res: xdr_codec::Result<T>, response_part_being_parsed: &str) -> Result<T> {
     if res.is_err() {
-        Err(Error::new(ErrorKind::Other, format!("could not parse response {}", response_part_being_parsed).as_str()))
+        Err(Error::new(
+            ErrorKind::Other,
+            format!("could not parse response {}", response_part_being_parsed).as_str(),
+        ))
     } else {
         Ok(res.unwrap())
     }
@@ -112,7 +136,10 @@ pub(crate) struct Client {
 
 impl Client {
     pub(crate) fn new(nfs_conn: Option<TcpStream>, mount_conn: Option<TcpStream>) -> Self {
-        Self{nfs_conn, mount_conn}
+        Self {
+            nfs_conn,
+            mount_conn,
+        }
     }
 
     fn get_conn(&self, reqmsg: &Message) -> &TcpStream {
@@ -158,28 +185,46 @@ impl Client {
 
         // verify response message matches expected
         if resmsg.xid != reqmsg.xid {
-            return Err(Error::new(ErrorKind::Other, "response id does not match expected one"));
+            return Err(Error::new(
+                ErrorKind::Other,
+                "response id does not match expected one",
+            ));
         }
         if resmsg.msgtype != MessageType::Response {
-            return Err(Error::new(ErrorKind::Other, "response type does not match expected one"));
+            return Err(Error::new(
+                ErrorKind::Other,
+                "response type does not match expected one",
+            ));
         }
 
         // unpack message status
         let mut zbuf = resmsg.body.as_slice();
-        let messagestatus = parse_xdr_response(xdr_codec::unpack::<_, MessageStatus>(&mut zbuf), "message status")?;
+        let messagestatus = parse_xdr_response(
+            xdr_codec::unpack::<_, MessageStatus>(&mut zbuf),
+            "message status",
+        )?;
 
         // check message status
         match messagestatus {
-            MessageStatus::Accepted => {},
-            _ => return Err(Error::new(ErrorKind::Other, "could not parse response due to bad status")),
+            MessageStatus::Accepted => {}
+            _ => {
+                return Err(Error::new(
+                    ErrorKind::Other,
+                    "could not parse response due to bad status",
+                ))
+            }
         }
 
         // unpack padding
-        let _padding = parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message padding")?;
+        let _padding =
+            parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message padding")?;
         // TODO: should there be a "seek" for padding, equivalent to what is done for opaque length?
 
         // unpack opaque length
-        let opaquelen = parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message opaque length")?;
+        let opaquelen = parse_xdr_response(
+            xdr_codec::unpack::<_, u32>(&mut zbuf),
+            "message opaque length",
+        )?;
         if opaquelen > 0 {
             // "seek" opaquelen bytes from current position
             let seek = xdr_codec::unpack_opaque_flex(&mut zbuf, Some(opaquelen as usize));
@@ -189,7 +234,10 @@ impl Client {
         }
 
         // unpack accept status
-        let acceptstatus = parse_xdr_response(xdr_codec::unpack::<_, AcceptStatus>(&mut zbuf), "message accept status")?;
+        let acceptstatus = parse_xdr_response(
+            xdr_codec::unpack::<_, AcceptStatus>(&mut zbuf),
+            "message accept status",
+        )?;
 
         // check accept status
         match acceptstatus {
@@ -305,7 +353,7 @@ struct Message {
 
 impl Message {
     fn new(msg_body: Vec<u8>) -> Self {
-        Self{
+        Self {
             xid: get_xid(),
             msgtype: MessageType::Request,
             body: msg_body,
@@ -331,7 +379,9 @@ impl Message {
 
 impl<Out: Write> Pack<Out> for Message {
     fn pack(&self, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok(self.xid.pack(out)? + (self.msgtype.clone() as u32).pack(out)? + xdr_codec::pack_opaque_array(self.body.as_slice(), self.body.len(), out)?)
+        Ok(self.xid.pack(out)?
+            + (self.msgtype.clone() as u32).pack(out)?
+            + xdr_codec::pack_opaque_array(self.body.as_slice(), self.body.len(), out)?)
     }
 }
 
@@ -339,7 +389,7 @@ impl<In: Read> Unpack<In> for Message {
     fn unpack(input: &mut In) -> xdr_codec::Result<(Message, usize)> {
         let mut sz = 0;
         Ok((
-            Message{
+            Message {
                 xid: {
                     let (v, fsz) = Unpack::unpack(input)?;
                     sz += fsz;
@@ -378,30 +428,30 @@ mod tests {
         assert_ne!(msg.xid, 0);
         let xid = msg.xid;
         let msg = Message::new(vec![]);
-        assert_eq!(msg.xid, xid+1);
+        assert_eq!(msg.xid, xid + 1);
     }
 
     #[test]
     fn message_rpc_version() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.rpc_version(), 2);
     }
 
     #[test]
     fn message_program() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.program(), 3);
     }
 
     #[test]
     fn message_version() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.version(), 4);
     }
 
     #[test]
     fn message_procedure() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.procedure(), 5);
     }
 }

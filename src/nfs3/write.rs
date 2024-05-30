@@ -1,7 +1,4 @@
-use xdr_codec::Unpack;
-use super::{Mount, Result, Error, ErrorKind};
-use super::nfs3xdr::{WRITE3args, WRITE3res, nfs_fh3, stable_how};
-use crate::nfs3;
+use super::{nfs_fh3, stable_how, Error, ErrorKind, Mount, Result, WRITE3args, WRITE3res};
 
 impl Mount {
     pub fn write_path(&self, path: &str, offset: u64, data: &Vec<u8>) -> Result<u32> {
@@ -10,29 +7,19 @@ impl Mount {
 
     pub fn write(&self, fh: &Vec<u8>, offset: u64, data: &Vec<u8>) -> Result<u32> {
         if data.len() > u32::MAX as usize {
-            return Err(Error::new(ErrorKind::InvalidData, "data length exceeds maximum"));
+            return Err(Error::new(
+                ErrorKind::InvalidData,
+                "data length exceeds maximum",
+            ));
         }
-        let args = WRITE3args{
-            file: nfs_fh3{data: fh.to_vec()},
+        let args = WRITE3args {
+            file: nfs_fh3 { data: fh.to_vec() },
             stable: stable_how::FILE_SYNC,
             count: data.len() as u32,
             data: data.to_vec(),
             offset,
         };
-        let mut buf = Vec::<u8>::new();
-        let res = self.pack_nfs3(nfs3::NFSProc3::Write, &args, &mut buf);
-        if res.is_err() {
-            return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
-        }
-
-        let res = self.rpc.call(buf)?;
-        let mut r = res.as_slice();
-        let x = WRITE3res::unpack(&mut r);
-        if x.is_err() {
-            return Err(Error::new(ErrorKind::Other, "could not parse write response"));
-        }
-
-        match x.unwrap().0 {
+        match self._write(args)? {
             WRITE3res::NFS3_OK(ok) => Ok(ok.count),
             WRITE3res::default((e, _)) => Err(Error::new(ErrorKind::Other, e)),
         }
@@ -46,7 +33,7 @@ mod tests {
 
     #[test]
     fn mount_write_fh_data_exceeding_max_length() {
-        let mount = Mount{
+        let mount = Mount {
             rpc: crate::rpc::Client::new(None, None),
             auth: crate::rpc::auth::Auth::new_null(),
             dir: "/".to_string(),
