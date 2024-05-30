@@ -4,7 +4,7 @@ use super::nfs3xdr::{RENAME3args, RENAME3res, diropargs3, filename3, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn rename_path(&self, from: &str, to: &str) -> Result<()> {
+    pub fn rename_path(&mut self, from: &str, to: &str) -> Result<()> {
         let (from_dir, from_filename) = split_path(from)?;
         let (to_dir, to_filename) = split_path(to)?;
         let is_same_dir = from_dir == to_dir;
@@ -17,7 +17,7 @@ impl Mount {
         self.rename(&from_dir_fh, &from_filename, &to_dir_fh, &to_filename)
     }
 
-    pub fn rename(&self, from_dir_fh: &Vec<u8>, from_filename: &str, to_dir_fh: &Vec<u8>, to_filename: &str) -> Result<()> {
+    pub fn rename(&mut self, from_dir_fh: &Vec<u8>, from_filename: &str, to_dir_fh: &Vec<u8>, to_filename: &str) -> Result<()> {
         let args = RENAME3args{
             from: diropargs3{dir: nfs_fh3{data: from_dir_fh.to_vec()}, name: filename3(from_filename.to_string())},
             to: diropargs3{dir: nfs_fh3{data: to_dir_fh.to_vec()}, name: filename3(to_filename.to_string())},

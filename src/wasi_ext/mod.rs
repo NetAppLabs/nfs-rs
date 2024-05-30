@@ -27,6 +27,7 @@ fn check_error<T>(res: &Result<T, ErrorCode>, err_msg: &str) -> io::Result<()> {
 }
 
 pub struct TcpStream {
+    socket_addr: SocketAddr,
     sock: TcpSocket,
     input: InputStream,
     output: OutputStream,
@@ -145,13 +146,52 @@ impl TcpStream {
         check_error(&res, "finish connect error")?;
 
         let (input, output) = res.unwrap();
-        let stream = Self{sock, input, output};
+        let socket_addr = addr.clone();
+        let stream = Self{socket_addr, sock, input, output};
         if let Some(err) = stream.peer_addr().err() {
             return Err(err);
         }
 
         Ok(stream)
     }
+
+
+    pub fn reconnect(&mut self) -> io::Result<()> {
+        let addr = self.socket_addr;
+        let res = to_wasi_addr(&addr);
+        if res.is_err() {
+            return Err(res.unwrap_err());
+        }
+
+        let wasi_addr = res.unwrap();
+        let address_family = match wasi_addr {
+            IpSocketAddress::Ipv4(_) => IpAddressFamily::Ipv4,
+            IpSocketAddress::Ipv6(_) => IpAddressFamily::Ipv6,
+        };
+        let res = sockets::tcp_create_socket::create_tcp_socket(address_family);
+        check_error(&res, "create tcp socket error")?;
+
+        let sock = res.unwrap();
+        let nw = sockets::instance_network::instance_network();
+        let res = sock.start_connect(&nw, wasi_addr);
+        check_error(&res, "start connect error")?;
+
+        let res = sock.finish_connect();
+        check_error(&res, "finish connect error")?;
+
+        let (input, output) = res.unwrap();
+        let socket_addr = addr.clone();
+        //let stream = Self{socket_addr, sock, input, output};
+        //if let Some(err) = stream.peer_addr().err() {
+        //    return Err(err);
+        //}
+        self.input = input;
+        self.output = output;
+        self.sock = sock;
+        //Ok(stream)
+        Ok(())
+    }
+
 
     pub fn connect_timeout(_: &SocketAddr, _: Duration) -> io::Result<TcpStream> {
         unimplemented!("connect_timeout")
@@ -177,20 +217,39 @@ impl TcpStream {
         unimplemented!("peek")
     }
 
-    pub fn read(&self, mut buf: &mut [u8]) -> io::Result<usize> {
+    pub fn read(&mut self, mut buf: &mut [u8]) -> io::Result<usize> {
+        return self.read_with_reconnect(buf, 5);
+    }
+
+    pub fn read_with_reconnect(&mut self, mut buf: &mut [u8], reconnect_try: u32) -> io::Result<usize> {
         // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
         //      what is probably more apt in our case, wasi::io::streams::blocking_read
         let len = buf.len() as u64;
         let res = self.input.blocking_read(len);
-        if res.is_err() {
-            return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error"));
+        match res {
+            Ok(received_bytes) => {
+                buf.write(received_bytes.as_slice());
+                return Ok(received_bytes.len());
+            },
+            Err(str_err) => {
+                match str_err {
+                    crate::bindings::wasi::io::streams::StreamError::LastOperationFailed(lofe) => {
+                        return Err(io::Error::new(io::ErrorKind::Other, lofe.to_debug_string()));
+                    },
+                    crate::bindings::wasi::io::streams::StreamError::Closed => {
+                        if reconnect_try > 0 {
+                            self.reconnect()?;
+                            return self.read_with_reconnect(buf, reconnect_try -1 )
+                        } else {
+                            return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error closed. reconnect exhausted"));
+                        }
+                    }
+                }
+            },
         }
-        let received_bytes = res.unwrap();
-        buf.write(received_bytes.as_slice());
-        Ok(received_bytes.len())
     }
 
-    pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
+    pub fn read_exact(&mut self, mut buf: &mut [u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.read(buf) {
                 Ok(0) => break,
@@ -209,7 +268,7 @@ impl TcpStream {
         }
     }
 
-    pub fn read_vectored(&self, iov: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
+    pub fn read_vectored(&mut self, iov: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
         let mut res = 0;
         for buf in iov {
             res += self.read(buf).unwrap();
@@ -221,16 +280,51 @@ impl TcpStream {
         true
     }
 
-    pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
+    pub fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        return self.write_with_reconnect(buf, 5);
+    }
+
+    pub fn write_with_reconnect(&mut self, buf: &[u8], reconnect_try: u32) -> io::Result<usize> {
         // XXX: according to the documentation for wasi::io::streams::OutputStream::blocking_write_and_flush,
         //      it only writes up to 4096 bytes - so we have to make sure not to pass in all of `buf`, if it
         //      is larger than that
-        let sz = buf.len().min(4096);
-        self.output.blocking_write_and_flush(&buf[..sz]);
-        Ok(sz)
+
+        let mut buf_len = 4096;
+
+        let buf_len_res = self.output.check_write();
+        match buf_len_res {
+            Ok(buf_len_u64) => {
+                buf_len = buf_len_u64 as usize;
+            },
+            Err(_) => {},
+        }
+        let sz = buf.len().min(buf_len);
+
+        let res = self.output.blocking_write_and_flush(&buf[..sz]);
+        match res {
+            Ok(_) => {
+                Ok(sz)
+            }
+            Err(err) => {
+                    match err {
+                        crate::bindings::wasi::io::streams::StreamError::LastOperationFailed(lofe) => {
+                            return Err(io::Error::new(io::ErrorKind::Other, lofe.to_debug_string()));
+                        },
+                        crate::bindings::wasi::io::streams::StreamError::Closed => {
+                            if reconnect_try > 0 {
+                                self.reconnect()?;
+                                return self.write_with_reconnect(buf, reconnect_try -1 )
+                            } else {
+                                return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error closed. reconnect exhausted"));
+                            }
+                        }
+    
+                    }
+            }
+        }
     }
 
-    pub fn write_all(&self, mut buf: &[u8]) -> io::Result<()> {
+    pub fn write_all(&mut self, mut buf: &[u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.write(buf) {
                 Ok(0) => return Err(io::Error::new(io::ErrorKind::WriteZero, "failed to write whole buffer")),
@@ -242,7 +336,7 @@ impl TcpStream {
         Ok(())
     }
 
-    pub fn write_vectored(&self, iov: &[IoSlice<'_>]) -> io::Result<usize> {
+    pub fn write_vectored(&mut self, iov: &[IoSlice<'_>]) -> io::Result<usize> {
         let mut res = 0;
         for buf in iov {
             res += self.write(buf).unwrap();
@@ -259,7 +353,7 @@ impl TcpStream {
     }
 
     pub fn socket_addr(&self) -> io::Result<SocketAddr> {
-        unimplemented!("socket_addr")
+        return Ok(self.socket_addr)
     }
 
     pub fn shutdown(&self, shutdown_type: Shutdown) -> io::Result<()> {
@@ -303,6 +397,7 @@ impl TcpStream {
     pub fn try_clone(&self) -> io::Result<TcpStream> {
         Ok(unsafe {
             TcpStream{
+                socket_addr: self.socket_addr.clone(),
                 sock: TcpSocket::from_handle(self.sock.handle()),
                 input: InputStream::from_handle(self.input.handle()),
                 output: OutputStream::from_handle(self.output.handle()),

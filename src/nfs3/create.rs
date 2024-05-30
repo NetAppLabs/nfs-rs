@@ -4,12 +4,13 @@ use super::nfs3xdr::{diropargs3, filename3, nfs_fh3, set_atime, set_gid3, set_mo
 use crate::nfs3;
 
 impl Mount {
-    pub fn create_path(&self, path: &str, mode: u32) -> Result<ObjRes> {
+    pub fn create_path(&mut self, path: &str, mode: u32) -> Result<ObjRes> {
         let (dir, filename) = nfs3::split_path(path)?;
-        self.create(&self.lookup_path(&dir)?.fh, &filename, mode)
+        let res = self.lookup_path(&dir)?;
+        self.create(&res.fh, &filename, mode)
     }
 
-    pub fn create(&self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<ObjRes> {
+    pub fn create(&mut self, dir_fh: &Vec<u8>, filename: &str, mode: u32) -> Result<ObjRes> {
         let args = CREATE3args{
             where_: diropargs3{dir: nfs_fh3{data: dir_fh.to_vec()}, name: filename3(filename.to_string())},
             how: createhow3::UNCHECKED(sattr3{

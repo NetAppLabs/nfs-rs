@@ -442,7 +442,7 @@ mod tests {
         */
         let mount_result = parse_url_and_mount("nfs://localhost/Users/Shared/nfs/?nfsport=20490&mountport=20490");
         assert!(mount_result.is_ok(), "err = {}", mount_result.unwrap_err());
-        let mount = mount_result.unwrap();
+        let mut mount = mount_result.unwrap();
         let res = mount.access_path("/3", 1|2|4|8|16|32);
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
         let three_access = res.unwrap();

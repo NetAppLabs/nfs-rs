@@ -4,13 +4,13 @@ use super::nfs3xdr::{diropargs3, filename3, nfs_fh3, set_atime, set_gid3, set_mo
 use crate::nfs3;
 
 impl Mount {
-    pub fn mkdir_path(&self, path: &str, mode: u32) -> Result<ObjRes> {
+    pub fn mkdir_path(&mut self, path: &str, mode: u32) -> Result<ObjRes> {
         let (dir, dirname) = nfs3::split_path(path)?;
         let dir_fh = self.lookup_path(&dir)?.fh;
         self.mkdir(&dir_fh, &dirname, mode)
     }
 
-    pub fn mkdir(&self, dir_fh: &Vec<u8>, dirname: &str, mode: u32) -> Result<ObjRes> {
+    pub fn mkdir(&mut self, dir_fh: &Vec<u8>, dirname: &str, mode: u32) -> Result<ObjRes> {
         let args = MKDIR3args{
             where_: diropargs3{dir: nfs_fh3{data: dir_fh.to_vec()}, name: filename3(dirname.to_string())},
             attrs: sattr3{

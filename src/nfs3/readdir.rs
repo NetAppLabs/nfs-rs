@@ -21,11 +21,12 @@ impl From<&ReaddirEntry> for crate::mount::ReaddirEntry {
 }
 
 impl Mount {
-    pub fn readdir_path(&self, dir_path: &str) -> Result<Vec<ReaddirEntry>> {
-        self.readdir(&self.lookup_path(dir_path)?.fh)
+    pub fn readdir_path(&mut self, dir_path: &str) -> Result<Vec<ReaddirEntry>> {
+        let res = self.lookup_path(dir_path)?;
+        self.readdir(&res.fh)
     }
 
-    pub fn readdir(&self, dir_fh: &Vec<u8>) -> Result<Vec<ReaddirEntry>> {
+    pub fn readdir(&mut self, dir_fh: &Vec<u8>) -> Result<Vec<ReaddirEntry>> {
         let mut entries = Vec::new();
         let mut cookie = 0u64;
         let mut res = READDIR3resok{
@@ -42,7 +43,7 @@ impl Mount {
         Ok(entries)
     }
 
-    fn readdir_at(&self, dir_fh: &Vec<u8>, cookie: u64, cookieverf: cookieverf3) -> Result<READDIR3resok> {
+    fn readdir_at(&mut self, dir_fh: &Vec<u8>, cookie: u64, cookieverf: cookieverf3) -> Result<READDIR3resok> {
         let args = READDIR3args{
             dir: nfs_fh3{data: dir_fh.to_vec()},
             cookie,
@@ -68,7 +69,7 @@ impl Mount {
         }
     }
 
-    fn readdir_entries(&self, entries: &mut Vec<ReaddirEntry>, entry: Box<entry3>) -> u64 {
+    fn readdir_entries(&mut self, entries: &mut Vec<ReaddirEntry>, entry: Box<entry3>) -> u64 {
         entries.push(ReaddirEntry{
             fileid: entry.fileid,
             file_name: entry.name.0,

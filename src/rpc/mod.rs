@@ -44,7 +44,7 @@ fn portmap_on_addr(addr: &SocketAddr, prog: u32, vers: u32, auth: &Auth) -> Resu
     if res.is_err() {
         return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
     }
-    let client = Client::new(res.ok(), None);
+    let mut client = Client::new(res.ok(), None);
     let args = Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::Null as u32, &auth, &Auth::new_null());
     let mut buf = Vec::<u8>::new();
     let res = args.pack(&mut buf);
@@ -115,15 +115,15 @@ impl Client {
         Self{nfs_conn, mount_conn}
     }
 
-    fn get_conn(&self, reqmsg: &Message) -> &TcpStream {
+    fn get_conn(&mut self, reqmsg: &Message) -> &mut TcpStream {
         match reqmsg.program() {
-            MOUNT3_PROG => self.mount_conn.as_ref().unwrap(),
-            NFS3_PROG | PORTMAP_PROG => self.nfs_conn.as_ref().unwrap(),
+            MOUNT3_PROG => self.mount_conn.as_mut().unwrap(),
+            NFS3_PROG | PORTMAP_PROG => self.nfs_conn.as_mut().unwrap(),
             _ => panic!("unknown RPC program - RPC header values: rpc_version={} program={} version={} procedure={}", reqmsg.rpc_version(), reqmsg.program(), reqmsg.version(), reqmsg.procedure()),
         }
     }
 
-    pub(crate) fn call(&self, msg_body: Vec<u8>) -> Result<Vec<u8>> {
+    pub(crate) fn call(&mut self, msg_body: Vec<u8>) -> Result<Vec<u8>> {
         const SIZE_HDR_BIT: u32 = 0x80000000;
         const SIZE_HDR_BITS: u32 = SIZE_HDR_BIT - 1;
 

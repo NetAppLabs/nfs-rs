@@ -4,7 +4,7 @@ use super::nfs3xdr::{LOOKUP3args, LOOKUP3resok, LOOKUP3res, diropargs3, filename
 use crate::nfs3;
 
 impl Mount {
-    pub fn lookup_path(&self, path: &str) -> Result<ObjRes> {
+    pub fn lookup_path(&mut self, path: &str) -> Result<ObjRes> {
         let mut res = Ok(ObjRes{
             fh: self.fh.to_vec(),
             attr: None,
@@ -18,7 +18,7 @@ impl Mount {
         res
     }
 
-    pub fn lookup(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<ObjRes> {
+    pub fn lookup(&mut self, dir_fh: &Vec<u8>, filename: &str) -> Result<ObjRes> {
         let args = LOOKUP3args{
             what: diropargs3{
                 dir: nfs_fh3{data: dir_fh.to_vec()},

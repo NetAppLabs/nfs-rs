@@ -4,11 +4,12 @@ use super::nfs3xdr::{ACCESS3args, ACCESS3res, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn access_path(&self, path: &str, mode: u32) -> Result<u32> {
-        self.access(&self.lookup_path(path)?.fh, mode)
+    pub fn access_path(&mut self, path: &str, mode: u32) -> Result<u32> {
+        let res = self.lookup_path(path)?;
+        self.access(&res.fh, mode)
     }
 
-    pub fn access(&self, fh: &Vec<u8>, mode: u32) -> Result<u32> {
+    pub fn access(&mut self, fh: &Vec<u8>, mode: u32) -> Result<u32> {
         let args = ACCESS3args{object: nfs_fh3{data: fh.to_vec()}, access: mode};
         let mut buf = Vec::<u8>::new();
         let res = self.pack_nfs3(nfs3::NFSProc3::Access, &args, &mut buf);

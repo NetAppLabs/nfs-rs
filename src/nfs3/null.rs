@@ -2,7 +2,7 @@ use super::{Mount, Result, Error, ErrorKind, NULL3args};
 use crate::nfs3;
 
 impl Mount {
-    pub fn null(&self) -> Result<()> {
+    pub fn null(&mut self) -> Result<()> {
         let args = NULL3args{};
         let mut buf = Vec::<u8>::new();
         let res = self.pack_nfs3(nfs3::NFSProc3::Null, &args, &mut buf);

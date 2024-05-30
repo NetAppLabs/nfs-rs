@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     #[allow(unused)]
-    pub fn fsstat(&self) -> Result<FSStat> {
+    pub fn fsstat(&mut self) -> Result<FSStat> {
         let args = FSSTAT3args{fsroot: nfs_fh3{data: self.fh.to_vec()}};
         let mut buf = Vec::<u8>::new();
         let res = self.pack_nfs3(nfs3::NFSProc3::FSStat, &args, &mut buf);

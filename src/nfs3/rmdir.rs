@@ -4,13 +4,13 @@ use super::nfs3xdr::{RMDIR3args, RMDIR3res, diropargs3, filename3, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn rmdir_path(&self, path: &str) -> Result<()> {
+    pub fn rmdir_path(&mut self, path: &str) -> Result<()> {
         let (dir, dirname) = nfs3::split_path(path)?;
         let dir_fh = self.lookup_path(&dir)?.fh;
         self.rmdir(&dir_fh, &dirname)
     }
 
-    pub fn rmdir(&self, dir_fh: &Vec<u8>, dirname: &str) -> Result<()> {
+    pub fn rmdir(&mut self, dir_fh: &Vec<u8>, dirname: &str) -> Result<()> {
         let args = RMDIR3args{
             object: diropargs3{dir: nfs_fh3{data: dir_fh.to_vec()}, name: filename3(dirname.to_string())},
         };

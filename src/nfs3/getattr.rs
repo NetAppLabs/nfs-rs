@@ -4,11 +4,12 @@ use super::nfs3xdr::{GETATTR3args, GETATTR3res, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn getattr_path(&self, path: &str) -> Result<Fattr> {
-        self.getattr(&self.lookup_path(path)?.fh)
+    pub fn getattr_path(&mut self, path: &str) -> Result<Fattr> {
+        let res = self.lookup_path(path)?;
+        self.getattr(& res.fh)
     }
 
-    pub(crate) fn getattr(&self, fh: &Vec<u8>) -> Result<Fattr> {
+    pub(crate) fn getattr(&mut self, fh: &Vec<u8>) -> Result<Fattr> {
         let args = GETATTR3args{
             object: nfs_fh3{data: fh.to_vec()},
         };

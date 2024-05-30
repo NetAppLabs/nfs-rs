@@ -4,7 +4,7 @@ use super::nfs3xdr::{SETATTR3res, nfstime3, nfs_fh3, sattrguard3, set_mode3, set
 use crate::nfs3;
 
 impl Mount {
-    pub fn setattr_path(&self, path: &str, specify_guard: bool, mode: Option<u32>, uid: Option<u32>, gid: Option<u32>, size: Option<u64>, atime: Option<Time>, mtime: Option<Time>) -> Result<()> {
+    pub fn setattr_path(&mut self, path: &str, specify_guard: bool, mode: Option<u32>, uid: Option<u32>, gid: Option<u32>, size: Option<u64>, atime: Option<Time>, mtime: Option<Time>) -> Result<()> {
         let res = self.lookup_path(path)?;
         let guard_ctime = match (specify_guard, res.attr) {
             (true, Some(attr)) => Some(Time{seconds: attr.ctime.seconds, nseconds: attr.ctime.nseconds}),
@@ -13,7 +13,7 @@ impl Mount {
         self.setattr(&res.fh, guard_ctime, mode, uid, gid, size, atime, mtime)
     }
 
-    pub fn setattr(&self, fh: &Vec<u8>, guard_ctime: Option<Time>, mode: Option<u32>, uid: Option<u32>, gid: Option<u32>, size: Option<u64>, atime: Option<Time>, mtime: Option<Time>) -> Result<()> {
+    pub fn setattr(&mut self, fh: &Vec<u8>, guard_ctime: Option<Time>, mode: Option<u32>, uid: Option<u32>, gid: Option<u32>, size: Option<u64>, atime: Option<Time>, mtime: Option<Time>) -> Result<()> {
         let args = SETATTR3args{
             object: nfs_fh3{data: fh.to_vec()},
             new_attributes: sattr3{

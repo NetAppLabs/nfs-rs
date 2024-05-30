@@ -4,11 +4,12 @@ use super::nfs3xdr::{READ3args, READ3res, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn read_path(&self, path: &str, offset: u64, count: u32) -> Result<Vec<u8>> {
-        self.read(&self.lookup_path(path)?.fh, offset, count)
+    pub fn read_path(&mut self, path: &str, offset: u64, count: u32) -> Result<Vec<u8>> {
+        let res = self.lookup_path(path)?;
+        self.read(&res.fh, offset, count)
     }
 
-    pub fn read(&self, fh: &Vec<u8>, offset: u64, count: u32) -> Result<Vec<u8>> {
+    pub fn read(&mut self, fh: &Vec<u8>, offset: u64, count: u32) -> Result<Vec<u8>> {
         let args = READ3args{
             file: nfs_fh3{data: fh.to_vec()},
             offset,

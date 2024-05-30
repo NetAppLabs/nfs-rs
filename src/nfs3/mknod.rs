@@ -5,7 +5,7 @@ use crate::nfs3;
 
 impl Mount {
     #[allow(unused)]
-    pub fn mknod_blk(&self, path: &str) -> Result<Vec<u8>> {
+    pub fn mknod_blk(&mut self, path: &str) -> Result<Vec<u8>> {
         // TODO: verify args
         let what = mknoddata3::NF3BLK(devicedata3{
             dev_attributes: sattr3{
@@ -25,7 +25,7 @@ impl Mount {
     }
 
     #[allow(unused)]
-    pub fn mknod_chr(&self, path: &str) -> Result<Vec<u8>> {
+    pub fn mknod_chr(&mut self, path: &str) -> Result<Vec<u8>> {
         // TODO: verify args
         let what = mknoddata3::NF3CHR(devicedata3{
             dev_attributes: sattr3{
@@ -45,7 +45,7 @@ impl Mount {
     }
 
     #[allow(unused)]
-    pub fn mknod_fifo(&self, path: &str) -> Result<Vec<u8>> {
+    pub fn mknod_fifo(&mut self, path: &str) -> Result<Vec<u8>> {
         // TODO: verify args
         let what = mknoddata3::NF3FIFO(sattr3{
             mode: set_mode3::TRUE(0),
@@ -59,7 +59,7 @@ impl Mount {
     }
 
     #[allow(unused)]
-    pub fn mknod_sock(&self, path: &str) -> Result<Vec<u8>> {
+    pub fn mknod_sock(&mut self, path: &str) -> Result<Vec<u8>> {
         // TODO: verify args
         let what = mknoddata3::NF3SOCK(sattr3{
             mode: set_mode3::TRUE(0),
@@ -72,7 +72,7 @@ impl Mount {
         self.mknod(path, what)
     }
 
-    fn mknod(&self, path: &str, what: mknoddata3) -> Result<Vec<u8>> {
+    fn mknod(&mut self, path: &str, what: mknoddata3) -> Result<Vec<u8>> {
         let (dir, name) = split_path(path)?;
         let fh = self.lookup_path(&dir)?.fh;
         let args = MKNOD3args{

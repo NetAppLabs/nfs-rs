@@ -4,13 +4,13 @@ use super::nfs3xdr::{REMOVE3args, REMOVE3res, diropargs3, filename3, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn remove_path(&self, path: &str) -> Result<()> {
+    pub fn remove_path(&mut self, path: &str) -> Result<()> {
         let (dir, filename) = nfs3::split_path(path)?;
         let dir_fh = self.lookup_path(&dir)?.fh;
         self.remove(&dir_fh, &filename)
     }
 
-    pub fn remove(&self, dir_fh: &Vec<u8>, filename: &str) -> Result<()> {
+    pub fn remove(&mut self, dir_fh: &Vec<u8>, filename: &str) -> Result<()> {
         let args = REMOVE3args{
             object: diropargs3{dir: nfs_fh3{data: dir_fh.to_vec()}, name: filename3(filename.to_string())},
         };

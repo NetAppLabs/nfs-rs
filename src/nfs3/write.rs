@@ -4,11 +4,12 @@ use super::nfs3xdr::{WRITE3args, WRITE3res, nfs_fh3, stable_how};
 use crate::nfs3;
 
 impl Mount {
-    pub fn write_path(&self, path: &str, offset: u64, data: &Vec<u8>) -> Result<u32> {
-        self.write(&self.lookup_path(path)?.fh, offset, data)
+    pub fn write_path(&mut self, path: &str, offset: u64, data: &Vec<u8>) -> Result<u32> {
+        let res = self.lookup_path(path)?;
+        self.write(&res.fh, offset, data)
     }
 
-    pub fn write(&self, fh: &Vec<u8>, offset: u64, data: &Vec<u8>) -> Result<u32> {
+    pub fn write(&mut self, fh: &Vec<u8>, offset: u64, data: &Vec<u8>) -> Result<u32> {
         if data.len() > u32::MAX as usize {
             return Err(Error::new(ErrorKind::InvalidData, "data length exceeds maximum"));
         }
@@ -46,7 +47,7 @@ mod tests {
 
     #[test]
     fn mount_write_fh_data_exceeding_max_length() {
-        let mount = Mount{
+        let mut mount = Mount{
             rpc: crate::rpc::Client::new(None, None),
             auth: crate::rpc::auth::Auth::new_null(),
             dir: "/".to_string(),

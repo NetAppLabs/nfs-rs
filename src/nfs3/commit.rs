@@ -4,11 +4,12 @@ use super::nfs3xdr::{COMMIT3args, COMMIT3res, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn commit_path(&self, path: &str, offset: u64, count: u32) -> Result<()> {
-        self.commit(&self.lookup_path(path)?.fh, offset, count)
+    pub fn commit_path(&mut self, path: &str, offset: u64, count: u32) -> Result<()> {
+        let res = self.lookup_path(path)?;
+        self.commit(&res.fh, offset, count)
     }
 
-    pub fn commit(&self, fh: &Vec<u8>, offset: u64, count: u32) -> Result<()> {
+    pub fn commit(&mut self, fh: &Vec<u8>, offset: u64, count: u32) -> Result<()> {
         let args = COMMIT3args{
             file: nfs_fh3{data: fh.to_vec()},
             offset,

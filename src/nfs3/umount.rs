@@ -3,7 +3,7 @@ use super::mount3xdr::dirpath;
 use crate::nfs3;
 
 impl Mount {
-    pub fn umount(&self) -> Result<()> {
+    pub fn umount(&mut self) -> Result<()> {
         let args = UMOUNT3args{dirpath: dirpath(self.dir.to_owned())};
         let mut buf = Vec::<u8>::new();
         let res = self.pack_mount3(nfs3::MountProc3::Umount, &args, &mut buf);

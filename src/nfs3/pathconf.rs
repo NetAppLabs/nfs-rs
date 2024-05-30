@@ -4,11 +4,12 @@ use super::nfs3xdr::{PATHCONF3args, PATHCONF3res, nfs_fh3};
 use crate::nfs3;
 
 impl Mount {
-    pub fn pathconf_path(&self, path: &str) -> Result<Pathconf> {
-        self.pathconf(&self.lookup_path(path)?.fh)
+    pub fn pathconf_path(&mut self, path: &str) -> Result<Pathconf> {
+        let res = self.lookup_path(path)?;
+        self.pathconf(&res.fh)
     }
 
-    pub fn pathconf(&self, fh: &Vec<u8>) -> Result<Pathconf> {
+    pub fn pathconf(&mut self, fh: &Vec<u8>) -> Result<Pathconf> {
         let args = PATHCONF3args{object: nfs_fh3{data: fh.to_vec()}};
         let mut buf = Vec::<u8>::new();
         let res = self.pack_nfs3(nfs3::NFSProc3::Pathconf, &args, &mut buf);
