@@ -2,7 +2,9 @@ use std::io;
 
 use super::mount3xdr::{dirpath, mountres3};
 use super::{Error, ErrorKind, MOUNT3args, Mount, ObjRes, Result, Time};
-use crate::{nfs3, rpc, NFSVersion, SocketAddr, TcpStream, ToSocketAddrs};
+use crate::{
+    connect_tcp_stream, nfs3, rpc, using_tcp_stream, NFSVersion, SocketAddr, ToSocketAddrs,
+};
 use xdr_codec::{Pack, Unpack};
 
 // const MNT_PATH_LEN: u32 = 1024;
@@ -303,18 +305,20 @@ fn mount_on_addr(
     auth: &crate::Auth,
     mountport: u16,
 ) -> Result<Box<dyn crate::Mount>> {
-    let nfs_conn = TcpStream::connect(addr)?;
-    let nfs_addr = nfs_conn.peer_addr()?;
+    let nfs_stream_id = connect_tcp_stream(addr)?;
+    let nfs_addr = using_tcp_stream(&nfs_stream_id, |stream| -> Result<SocketAddr> {
+        stream.peer_addr()
+    })?;
     let dir: String = args.dirpath.to_owned();
     let (dircount, maxcount) = (args.dircount, args.maxcount);
-    let mount_conn = if mountport != nfs_addr.port() {
+    let mount_stream_id = if mountport != nfs_addr.port() {
         let mut mount_addr = addr.clone();
         mount_addr.set_port(mountport);
-        TcpStream::connect(&mount_addr)?
+        Some(connect_tcp_stream(&mount_addr)?)
     } else {
-        nfs_conn.try_clone()?
+        None
     };
-    let client = rpc::Client::new(Some(nfs_conn), Some(mount_conn));
+    let client = rpc::Client::new(nfs_stream_id, mount_stream_id);
 
     let args = nfs3::rpc_header(
         rpc::MOUNT3_PROG,

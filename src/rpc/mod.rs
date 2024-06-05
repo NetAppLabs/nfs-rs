@@ -1,7 +1,10 @@
 pub mod auth;
 pub mod header;
 
-use crate::{Error, ErrorKind, Result, SocketAddr, TcpStream};
+use crate::{
+    connect_tcp_stream, reconnect_tcp_stream, remove_tcp_stream, using_tcp_stream,
+    using_tcp_stream_with_buffer, Error, ErrorKind, Result, SocketAddr,
+};
 use byteorder::{BigEndian, ByteOrder};
 use xdr_codec::{Pack, Read, Unpack, Write};
 
@@ -43,11 +46,12 @@ pub(crate) fn portmap(addrs: &Vec<SocketAddr>, prog: u32, vers: u32, auth: &Auth
 }
 
 fn portmap_on_addr(addr: &SocketAddr, prog: u32, vers: u32, auth: &Auth) -> Result<u16> {
-    let res = TcpStream::connect(addr);
+    let res = connect_tcp_stream(addr);
     if res.is_err() {
         return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
     }
-    let client = Client::new(res.ok(), None);
+    let stream_id = res.unwrap();
+    let client = Client::new(stream_id, None);
     let args = Header::new(
         RPC_VERSION,
         PORTMAP_PROG,
@@ -130,27 +134,70 @@ fn parse_xdr_response<T>(res: xdr_codec::Result<T>, response_part_being_parsed: 
 
 #[derive(Debug)]
 pub(crate) struct Client {
-    nfs_conn: Option<TcpStream>,
-    mount_conn: Option<TcpStream>,
+    nfs_stream_id: u32,
+    mount_stream_id: Option<u32>,
 }
 
 impl Client {
-    pub(crate) fn new(nfs_conn: Option<TcpStream>, mount_conn: Option<TcpStream>) -> Self {
+    pub(crate) fn new(nfs_stream_id: u32, mount_stream_id: Option<u32>) -> Self {
         Self {
-            nfs_conn,
-            mount_conn,
+            nfs_stream_id,
+            mount_stream_id,
         }
     }
 
-    fn get_conn(&self, reqmsg: &Message) -> &TcpStream {
+    fn get_stream_id(&self, reqmsg: &Message) -> u32 {
         match reqmsg.program() {
-            MOUNT3_PROG => self.mount_conn.as_ref().unwrap(),
-            NFS3_PROG | PORTMAP_PROG => self.nfs_conn.as_ref().unwrap(),
+            MOUNT3_PROG => self.mount_stream_id.unwrap_or(self.nfs_stream_id),
+            NFS3_PROG | PORTMAP_PROG => self.nfs_stream_id,
             _ => panic!("unknown RPC program - RPC header values: rpc_version={} program={} version={} procedure={}", reqmsg.rpc_version(), reqmsg.program(), reqmsg.version(), reqmsg.procedure()),
         }
     }
 
     pub(crate) fn call(&self, msg_body: Vec<u8>) -> Result<Vec<u8>> {
+        let max_retries = 10;
+        let mut num_retries = 0;
+        while num_retries < max_retries {
+            let res = self._call(msg_body.to_vec());
+            if res.is_err() {
+                let err = res.unwrap_err();
+                match err.kind() {
+                    ErrorKind::BrokenPipe
+                    | ErrorKind::ConnectionAborted
+                    | ErrorKind::ConnectionReset => {}
+                    _ => return Err(err),
+                }
+                std::thread::sleep(std::time::Duration::from_millis(num_retries * 100));
+                let res = reconnect_tcp_stream(self.nfs_stream_id);
+                if res.is_err() {
+                    let err = res.unwrap_err();
+                    println!(
+                        "error attempting reconnect to NFS server: {}",
+                        err.to_string()
+                    )
+                }
+                if self.mount_stream_id.is_some() {
+                    let res = reconnect_tcp_stream(self.mount_stream_id.unwrap());
+                    if res.is_err() {
+                        let err = res.unwrap_err();
+                        println!(
+                            "error attempting reconnect to NFS server (mount protocol): {}",
+                            err.to_string()
+                        )
+                    }
+                }
+                num_retries += 1;
+                continue;
+            }
+            return res;
+        }
+        Err(Error::new(
+            ErrorKind::NotConnected,
+            "unable to reconnect to NFS server",
+        ))
+    }
+
+    fn _call(&self, msg_body: Vec<u8>) -> Result<Vec<u8>> {
         const SIZE_HDR_BIT: u32 = 0x80000000;
         const SIZE_HDR_BITS: u32 = SIZE_HDR_BIT - 1;
 
@@ -165,19 +212,26 @@ impl Client {
         // overwrite previously written dummy request message size with real request message size
         BigEndian::write_u32(&mut buf[0..4], b.unwrap() as u32 | SIZE_HDR_BIT);
 
-        // send the byte buffer to RPC service
-        #[allow(unused_mut)]
-        let mut conn = self.get_conn(&reqmsg);
-        let _ = conn.write_all(buf.as_slice())?;
+        let stream_id = self.get_stream_id(&reqmsg);
+        let res = using_tcp_stream_with_buffer(
+            &stream_id,
+            &buf,
+            #[allow(unused_mut)]
+            |mut stream, buf| -> Result<Vec<u8>> {
+                // send the byte buffer to RPC service
+                let _ = stream.write_all(buf.as_slice())?;
 
-        // read response message size from RPC service
-        let mut hdr = [0u8; 4];
-        let _ = conn.read_exact(&mut hdr)?;
-        let sz = BigEndian::read_u32(&hdr) & SIZE_HDR_BITS;
+                // read response message size from RPC service
+                let mut hdr = [0u8; 4];
+                let _ = stream.read_exact(&mut hdr)?;
+                let sz = BigEndian::read_u32(&hdr) & SIZE_HDR_BITS;
 
-        // read response message from RPC service
-        let mut res = vec![0u8; sz as usize];
-        let _ = conn.read_exact(&mut res)?;
+                // read response message from RPC service
+                let mut res = vec![0u8; sz as usize];
+                let _ = stream.read_exact(&mut res)?;
+                Ok(res)
+            },
+        )?;
 
         // unpack response message
         let mut r = res.as_slice();
@@ -247,13 +301,25 @@ impl Client {
     }
 
     fn shutdown(&self) -> Result<()> {
-        if let Some(nfs_conn) = &self.nfs_conn {
-            nfs_conn.shutdown(std::net::Shutdown::Both)?;
-        }
-        if let Some(mount_conn) = &self.mount_conn {
-            mount_conn.shutdown(std::net::Shutdown::Both)?;
+        using_tcp_stream(&self.nfs_stream_id, |stream| -> Result<()> {
+            stream.shutdown(std::net::Shutdown::Both)
+        })?;
+        if self.mount_stream_id.is_some() {
+            using_tcp_stream(
+                self.mount_stream_id.as_ref().unwrap(),
+                |stream| -> Result<()> { stream.shutdown(std::net::Shutdown::Both) },
+            )?;
         }
         Ok(())
+    }
+}
+
+impl Drop for Client {
+    fn drop(&mut self) {
+        remove_tcp_stream(&self.nfs_stream_id);
+        if self.mount_stream_id.is_some() {
+            remove_tcp_stream(self.mount_stream_id.as_ref().unwrap())
+        }
     }
 }
 

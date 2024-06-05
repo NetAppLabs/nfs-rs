@@ -26,6 +26,105 @@ use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 #[cfg(target_os = "wasi")]
 use wasi_ext::{SocketAddr, TcpStream, ToSocketAddrs};
 
+static mut SOCKET_ADDRESSES: Option<Arc<RwLock<HashMap<u32, SocketAddr>>>> = None;
+static mut TCP_STREAMS: Option<Arc<RwLock<HashMap<u32, Arc<RwLock<TcpStream>>>>>> = None;
+
+fn get_socket_addresses() -> &'static mut Arc<RwLock<HashMap<u32, SocketAddr>>> {
+    unsafe {
+        if SOCKET_ADDRESSES.is_none() {
+            SOCKET_ADDRESSES = Some(Arc::new(RwLock::new(HashMap::new())));
+        }
+        SOCKET_ADDRESSES.as_mut().unwrap()
+    }
+}
+
+fn get_socket_address(id: &u32) -> Result<SocketAddr> {
+    let socket_addresses = get_socket_addresses().read().unwrap();
+    let socket_address = socket_addresses.get(id);
+    match socket_address {
+        Some(addr) => Ok(addr.clone()),
+        None => Err(Error::new(ErrorKind::NotFound, "socket address not found")),
+    }
+}
+
+fn get_tcp_streams() -> &'static mut Arc<RwLock<HashMap<u32, Arc<RwLock<TcpStream>>>>> {
+    unsafe {
+        if TCP_STREAMS.is_none() {
+            TCP_STREAMS = Some(Arc::new(RwLock::new(HashMap::new())));
+        }
+        TCP_STREAMS.as_mut().unwrap()
+    }
+}
+
+// macro for use in `using_tcp_stream` and `using_tcp_stream_with_buffer` to ensure that the same
+// type of locking is performed in both functions
+macro_rules! using_locked {
+    ($stream:ident) => {
+        // XXX: by calling `stream.write()` instead of `stream.read()` below, we ensure that only
+        //      one call to `using_tcp_stream` or `using_tcp_stream_with_buffer` has its function
+        //      parameter called at a time, for each TCP stream
+        &$stream.write().unwrap()
+    };
+}
+
+fn using_tcp_stream<T>(id: &u32, func: fn(&TcpStream) -> Result<T>) -> Result<T> {
+    let tcp_streams = get_tcp_streams().read().unwrap();
+    let tcp_stream = tcp_streams.get(id);
+    match tcp_stream {
+        Some(stream) => func(using_locked!(stream)),
+        None => Err(Error::new(ErrorKind::NotFound, "TCP stream not found")),
+    }
+}
+
+fn using_tcp_stream_with_buffer<T>(
+    id: &u32,
+    buf: &Vec<u8>,
+    func: fn(&TcpStream, &Vec<u8>) -> Result<T>,
+) -> Result<T> {
+    let tcp_streams = get_tcp_streams().read().unwrap();
+    let tcp_stream = tcp_streams.get(id);
+    match tcp_stream {
+        Some(stream) => func(using_locked!(stream), buf),
+        None => Err(Error::new(ErrorKind::NotFound, "TCP stream not found")),
+    }
+}
+
+fn add_tcp_stream(addr: &SocketAddr, stream: TcpStream) -> Result<u32> {
+    let mut tcp_streams = get_tcp_streams().write().unwrap();
+    let mut socket_addresses = get_socket_addresses().write().unwrap();
+    let mut id: u32 = rand::random();
+    while id == 0 || tcp_streams.contains_key(&id) {
+        id = rand::random();
+    }
+    tcp_streams.insert(id, Arc::new(RwLock::new(stream)));
+    socket_addresses.insert(id, addr.clone());
+    Ok(id)
+}
+
+fn replace_tcp_stream(id: u32, stream: TcpStream) -> Result<()> {
+    let mut tcp_streams = get_tcp_streams().write().unwrap();
+    tcp_streams.insert(id, Arc::new(RwLock::new(stream)));
+    Ok(())
+}
+
+fn remove_tcp_stream(id: &u32) {
+    let mut tcp_streams = get_tcp_streams().write().unwrap();
+    let mut socket_addresses = get_socket_addresses().write().unwrap();
+    tcp_streams.remove(id);
+    socket_addresses.remove(id);
+}
+
+fn connect_tcp_stream(addr: &SocketAddr) -> Result<u32> {
+    let stream = TcpStream::connect(addr)?;
+    add_tcp_stream(addr, stream)
+}
+
+fn reconnect_tcp_stream(id: u32) -> Result<()> {
+    let addr = get_socket_address(&id)?;
+    let stream = TcpStream::connect(&addr)?;
+    replace_tcp_stream(id, stream)
+}
+
 mod mount;
 mod nfs3;
 mod rpc;
@@ -36,7 +135,9 @@ pub use shared::Time;
 pub use std::io::Error;
 
 use rpc::auth::Auth;
+use std::collections::HashMap;
 use std::io::{ErrorKind, Result};
+use std::sync::{Arc, RwLock};
 use url::Url;
 
 #[derive(Debug)]

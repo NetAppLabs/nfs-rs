@@ -34,7 +34,7 @@ mod tests {
     #[test]
     fn mount_write_fh_data_exceeding_max_length() {
         let mount = Mount {
-            rpc: crate::rpc::Client::new(None, None),
+            rpc: crate::rpc::Client::new(0, None),
             auth: crate::rpc::auth::Auth::new_null(),
             dir: "/".to_string(),
             fh: Vec::new(),
