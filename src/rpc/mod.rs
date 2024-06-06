@@ -170,20 +170,20 @@ impl Client {
                 std::thread::sleep(std::time::Duration::from_millis(num_retries * 100));
                 let res = reconnect_tcp_stream(self.nfs_stream_id);
                 if res.is_err() {
-                    let err = res.unwrap_err();
-                    println!(
-                        "error attempting reconnect to NFS server: {}",
-                        err.to_string()
-                    )
+                    let _ = res.unwrap_err();
+                    // println!(
+                    //     "error attempting reconnect to NFS server: {}",
+                    //     err.to_string()
+                    // )
                 }
                 if self.mount_stream_id.is_some() {
                     let res = reconnect_tcp_stream(self.mount_stream_id.unwrap());
                     if res.is_err() {
-                        let err = res.unwrap_err();
-                        println!(
-                            "error attempting reconnect to NFS server (mount protocol): {}",
-                            err.to_string()
-                        )
+                        let _ = res.unwrap_err();
+                        // println!(
+                        //     "error attempting reconnect to NFS server (mount protocol): {}",
+                        //     err.to_string()
+                        // )
                     }
                 }
                 num_retries += 1;

@@ -9,7 +9,7 @@ use std::unimplemented;
 
 pub use std::net::SocketAddr;
 
-use crate::bindings::wasi::io::streams::{InputStream, OutputStream};
+use crate::bindings::wasi::io::streams::{InputStream, OutputStream, StreamError};
 use crate::bindings::wasi::sockets;
 use crate::bindings::wasi::sockets::ip_name_lookup::ResolveAddressStream;
 use crate::bindings::wasi::sockets::network::{
@@ -58,6 +58,17 @@ pub struct TcpStream {
     sock: Option<TcpSocket>,
     input: Option<InputStream>,
     output: Option<OutputStream>,
+}
+
+impl From<StreamError> for io::Error {
+    fn from(value: StreamError) -> Self {
+        match value {
+            StreamError::Closed => Self::new(io::ErrorKind::BrokenPipe, "stream closed"), // FIXME: verify error kind
+            StreamError::LastOperationFailed(last_err) => {
+                Self::new(io::ErrorKind::Other, last_err.to_debug_string())
+            }
+        }
+    }
 }
 
 impl From<Ipv4SocketAddress> for IpAddr {
@@ -255,13 +266,13 @@ impl TcpStream {
         // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
         //      what is probably more apt in our case, wasi::io::streams::blocking_read
         let len = buf.len() as u64;
-        let res = self.input.as_ref().unwrap().blocking_read(len);
-        if res.is_err() {
-            return Err(io::Error::new(io::ErrorKind::Other, "sock_recv error"));
-        }
-        let received_bytes = res.unwrap();
-        buf.write(received_bytes.as_slice());
-        Ok(received_bytes.len())
+        let received_bytes = self
+            .input
+            .as_ref()
+            .unwrap()
+            .blocking_read(len)
+            .map_err(Into::<io::Error>::into)?;
+        buf.write(received_bytes.as_slice())
     }
 
     pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
@@ -296,13 +307,14 @@ impl TcpStream {
 
     pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
         // XXX: according to the documentation for wasi::io::streams::OutputStream::blocking_write_and_flush,
-        //      it only writes up to 4096 bytes - so we have to make sure not to pass in all of `buf`, if it
-        //      is larger than that
-        let sz = buf.len().min(4096);
-        self.output
-            .as_ref()
-            .unwrap()
-            .blocking_write_and_flush(&buf[..sz]);
+        //      it only writes up to 4096 bytes - instead of limiting the size of the data we send to 4096,
+        //      let's call `output.check_write()` and use the returned value from that as the maximum size.
+        let output = self.output.as_ref().unwrap();
+        let max = output.check_write().map_err(Into::<io::Error>::into)?;
+        let sz = buf.len().min(max as usize);
+        let _ = output
+            .blocking_write_and_flush(&buf[..sz])
+            .map_err(Into::<io::Error>::into)?;
         Ok(sz)
     }
 
