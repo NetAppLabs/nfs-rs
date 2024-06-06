@@ -1,9 +1,12 @@
 pub mod auth;
 pub mod header;
 
+use crate::{
+    connect_tcp_stream, reconnect_tcp_stream, remove_tcp_stream, using_tcp_stream,
+    using_tcp_stream_with_buffer, Error, ErrorKind, Result, SocketAddr,
+};
 use byteorder::{BigEndian, ByteOrder};
-use xdr_codec::{Pack, Unpack, Read, Write};
-use crate::{Result, Error, ErrorKind, SocketAddr, TcpStream};
+use xdr_codec::{Pack, Read, Unpack, Write};
 
 use auth::Auth;
 pub(crate) use header::Header;
@@ -36,16 +39,27 @@ pub(crate) fn portmap(addrs: &Vec<SocketAddr>, prog: u32, vers: u32, auth: &Auth
             return Ok(res.unwrap());
         }
     }
-    Err(Error::new(ErrorKind::Other, "error obtaining ports from portmapper"))
+    Err(Error::new(
+        ErrorKind::Other,
+        "error obtaining ports from portmapper",
+    ))
 }
 
 fn portmap_on_addr(addr: &SocketAddr, prog: u32, vers: u32, auth: &Auth) -> Result<u16> {
-    let res = TcpStream::connect(addr);
+    let res = connect_tcp_stream(addr);
     if res.is_err() {
         return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
     }
-    let client = Client::new(res.ok(), None);
-    let args = Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::Null as u32, &auth, &Auth::new_null());
+    let stream_id = res.unwrap();
+    let client = Client::new(stream_id, None);
+    let args = Header::new(
+        RPC_VERSION,
+        PORTMAP_PROG,
+        PORTMAP_VERSION,
+        PortmapProc2::Null as u32,
+        &auth,
+        &Auth::new_null(),
+    );
     let mut buf = Vec::<u8>::new();
     let res = args.pack(&mut buf);
     if res.is_err() {
@@ -57,8 +71,15 @@ fn portmap_on_addr(addr: &SocketAddr, prog: u32, vers: u32, auth: &Auth) -> Resu
         let _ = client.shutdown();
         return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
     }
-    let args = GETPORT2args{
-        header: Header::new(RPC_VERSION, PORTMAP_PROG, PORTMAP_VERSION, PortmapProc2::GetPort as u32, &auth, &Auth::new_null()),
+    let args = GETPORT2args {
+        header: Header::new(
+            RPC_VERSION,
+            PORTMAP_PROG,
+            PORTMAP_VERSION,
+            PortmapProc2::GetPort as u32,
+            &auth,
+            &Auth::new_null(),
+        ),
         prog,
         vers,
         proto: IPPROTO_TCP,
@@ -92,13 +113,20 @@ struct GETPORT2args {
 
 impl<Out: Write> Pack<Out> for GETPORT2args {
     fn pack(&self, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok(self.header.pack(out)? + self.prog.pack(out)? + self.vers.pack(out)? + self.proto.pack(out)? + self.port.pack(out)?)
+        Ok(self.header.pack(out)?
+            + self.prog.pack(out)?
+            + self.vers.pack(out)?
+            + self.proto.pack(out)?
+            + self.port.pack(out)?)
     }
 }
 
 fn parse_xdr_response<T>(res: xdr_codec::Result<T>, response_part_being_parsed: &str) -> Result<T> {
     if res.is_err() {
-        Err(Error::new(ErrorKind::Other, format!("could not parse response {}", response_part_being_parsed).as_str()))
+        Err(Error::new(
+            ErrorKind::Other,
+            format!("could not parse response {}", response_part_being_parsed).as_str(),
+        ))
     } else {
         Ok(res.unwrap())
     }
@@ -106,24 +134,70 @@ fn parse_xdr_response<T>(res: xdr_codec::Result<T>, response_part_being_parsed: 
 
 #[derive(Debug)]
 pub(crate) struct Client {
-    nfs_conn: Option<TcpStream>,
-    mount_conn: Option<TcpStream>,
+    nfs_stream_id: u32,
+    mount_stream_id: Option<u32>,
 }
 
 impl Client {
-    pub(crate) fn new(nfs_conn: Option<TcpStream>, mount_conn: Option<TcpStream>) -> Self {
-        Self{nfs_conn, mount_conn}
+    pub(crate) fn new(nfs_stream_id: u32, mount_stream_id: Option<u32>) -> Self {
+        Self {
+            nfs_stream_id,
+            mount_stream_id,
+        }
     }
 
-    fn get_conn(&self, reqmsg: &Message) -> &TcpStream {
+    fn get_stream_id(&self, reqmsg: &Message) -> u32 {
         match reqmsg.program() {
-            MOUNT3_PROG => self.mount_conn.as_ref().unwrap(),
-            NFS3_PROG | PORTMAP_PROG => self.nfs_conn.as_ref().unwrap(),
+            MOUNT3_PROG => self.mount_stream_id.unwrap_or(self.nfs_stream_id),
+            NFS3_PROG | PORTMAP_PROG => self.nfs_stream_id,
             _ => panic!("unknown RPC program - RPC header values: rpc_version={} program={} version={} procedure={}", reqmsg.rpc_version(), reqmsg.program(), reqmsg.version(), reqmsg.procedure()),
         }
     }
 
     pub(crate) fn call(&self, msg_body: Vec<u8>) -> Result<Vec<u8>> {
+        let max_retries = 10;
+        let mut num_retries = 0;
+        while num_retries < max_retries {
+            let res = self._call(msg_body.to_vec());
+            if res.is_err() {
+                let err = res.unwrap_err();
+                match err.kind() {
+                    ErrorKind::BrokenPipe
+                    | ErrorKind::ConnectionAborted
+                    | ErrorKind::ConnectionReset => {}
+                    _ => return Err(err),
+                }
+                std::thread::sleep(std::time::Duration::from_millis(num_retries * 100));
+                let res = reconnect_tcp_stream(self.nfs_stream_id);
+                if res.is_err() {
+                    let _ = res.unwrap_err();
+                    // println!(
+                    //     "error attempting reconnect to NFS server: {}",
+                    //     err.to_string()
+                    // )
+                }
+                if self.mount_stream_id.is_some() {
+                    let res = reconnect_tcp_stream(self.mount_stream_id.unwrap());
+                    if res.is_err() {
+                        let _ = res.unwrap_err();
+                        // println!(
+                        //     "error attempting reconnect to NFS server (mount protocol): {}",
+                        //     err.to_string()
+                        // )
+                    }
+                }
+                num_retries += 1;
+                continue;
+            }
+            return res;
+        }
+        Err(Error::new(
+            ErrorKind::NotConnected,
+            "unable to reconnect to NFS server",
+        ))
+    }
+
+    fn _call(&self, msg_body: Vec<u8>) -> Result<Vec<u8>> {
         const SIZE_HDR_BIT: u32 = 0x80000000;
         const SIZE_HDR_BITS: u32 = SIZE_HDR_BIT - 1;
 
@@ -138,19 +212,26 @@ impl Client {
         // overwrite previously written dummy request message size with real request message size
         BigEndian::write_u32(&mut buf[0..4], b.unwrap() as u32 | SIZE_HDR_BIT);
 
-        // send the byte buffer to RPC service
-        #[allow(unused_mut)]
-        let mut conn = self.get_conn(&reqmsg);
-        let _ = conn.write_all(buf.as_slice())?;
+        let stream_id = self.get_stream_id(&reqmsg);
+        let res = using_tcp_stream_with_buffer(
+            &stream_id,
+            &buf,
+            #[allow(unused_mut)]
+            |mut stream, buf| -> Result<Vec<u8>> {
+                // send the byte buffer to RPC service
+                let _ = stream.write_all(buf.as_slice())?;
 
-        // read response message size from RPC service
-        let mut hdr = [0u8; 4];
-        let _ = conn.read_exact(&mut hdr)?;
-        let sz = BigEndian::read_u32(&hdr) & SIZE_HDR_BITS;
+                // read response message size from RPC service
+                let mut hdr = [0u8; 4];
+                let _ = stream.read_exact(&mut hdr)?;
+                let sz = BigEndian::read_u32(&hdr) & SIZE_HDR_BITS;
 
-        // read response message from RPC service
-        let mut res = vec![0u8; sz as usize];
-        let _ = conn.read_exact(&mut res)?;
+                // read response message from RPC service
+                let mut res = vec![0u8; sz as usize];
+                let _ = stream.read_exact(&mut res)?;
+                Ok(res)
+            },
+        )?;
 
         // unpack response message
         let mut r = res.as_slice();
@@ -158,28 +239,46 @@ impl Client {
 
         // verify response message matches expected
         if resmsg.xid != reqmsg.xid {
-            return Err(Error::new(ErrorKind::Other, "response id does not match expected one"));
+            return Err(Error::new(
+                ErrorKind::Other,
+                "response id does not match expected one",
+            ));
         }
         if resmsg.msgtype != MessageType::Response {
-            return Err(Error::new(ErrorKind::Other, "response type does not match expected one"));
+            return Err(Error::new(
+                ErrorKind::Other,
+                "response type does not match expected one",
+            ));
         }
 
         // unpack message status
         let mut zbuf = resmsg.body.as_slice();
-        let messagestatus = parse_xdr_response(xdr_codec::unpack::<_, MessageStatus>(&mut zbuf), "message status")?;
+        let messagestatus = parse_xdr_response(
+            xdr_codec::unpack::<_, MessageStatus>(&mut zbuf),
+            "message status",
+        )?;
 
         // check message status
         match messagestatus {
-            MessageStatus::Accepted => {},
-            _ => return Err(Error::new(ErrorKind::Other, "could not parse response due to bad status")),
+            MessageStatus::Accepted => {}
+            _ => {
+                return Err(Error::new(
+                    ErrorKind::Other,
+                    "could not parse response due to bad status",
+                ))
+            }
         }
 
         // unpack padding
-        let _padding = parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message padding")?;
+        let _padding =
+            parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message padding")?;
         // TODO: should there be a "seek" for padding, equivalent to what is done for opaque length?
 
         // unpack opaque length
-        let opaquelen = parse_xdr_response(xdr_codec::unpack::<_, u32>(&mut zbuf), "message opaque length")?;
+        let opaquelen = parse_xdr_response(
+            xdr_codec::unpack::<_, u32>(&mut zbuf),
+            "message opaque length",
+        )?;
         if opaquelen > 0 {
             // "seek" opaquelen bytes from current position
             let seek = xdr_codec::unpack_opaque_flex(&mut zbuf, Some(opaquelen as usize));
@@ -189,7 +288,10 @@ impl Client {
         }
 
         // unpack accept status
-        let acceptstatus = parse_xdr_response(xdr_codec::unpack::<_, AcceptStatus>(&mut zbuf), "message accept status")?;
+        let acceptstatus = parse_xdr_response(
+            xdr_codec::unpack::<_, AcceptStatus>(&mut zbuf),
+            "message accept status",
+        )?;
 
         // check accept status
         match acceptstatus {
@@ -199,13 +301,25 @@ impl Client {
     }
 
     fn shutdown(&self) -> Result<()> {
-        if let Some(nfs_conn) = &self.nfs_conn {
-            nfs_conn.shutdown(std::net::Shutdown::Both)?;
-        }
-        if let Some(mount_conn) = &self.mount_conn {
-            mount_conn.shutdown(std::net::Shutdown::Both)?;
+        using_tcp_stream(&self.nfs_stream_id, |stream| -> Result<()> {
+            stream.shutdown(std::net::Shutdown::Both)
+        })?;
+        if self.mount_stream_id.is_some() {
+            using_tcp_stream(
+                self.mount_stream_id.as_ref().unwrap(),
+                |stream| -> Result<()> { stream.shutdown(std::net::Shutdown::Both) },
+            )?;
         }
         Ok(())
+    }
+}
+
+impl Drop for Client {
+    fn drop(&mut self) {
+        remove_tcp_stream(&self.nfs_stream_id);
+        if self.mount_stream_id.is_some() {
+            remove_tcp_stream(self.mount_stream_id.as_ref().unwrap())
+        }
     }
 }
 
@@ -305,7 +419,7 @@ struct Message {
 
 impl Message {
     fn new(msg_body: Vec<u8>) -> Self {
-        Self{
+        Self {
             xid: get_xid(),
             msgtype: MessageType::Request,
             body: msg_body,
@@ -331,7 +445,9 @@ impl Message {
 
 impl<Out: Write> Pack<Out> for Message {
     fn pack(&self, out: &mut Out) -> xdr_codec::Result<usize> {
-        Ok(self.xid.pack(out)? + (self.msgtype.clone() as u32).pack(out)? + xdr_codec::pack_opaque_array(self.body.as_slice(), self.body.len(), out)?)
+        Ok(self.xid.pack(out)?
+            + (self.msgtype.clone() as u32).pack(out)?
+            + xdr_codec::pack_opaque_array(self.body.as_slice(), self.body.len(), out)?)
     }
 }
 
@@ -339,7 +455,7 @@ impl<In: Read> Unpack<In> for Message {
     fn unpack(input: &mut In) -> xdr_codec::Result<(Message, usize)> {
         let mut sz = 0;
         Ok((
-            Message{
+            Message {
                 xid: {
                     let (v, fsz) = Unpack::unpack(input)?;
                     sz += fsz;
@@ -378,30 +494,30 @@ mod tests {
         assert_ne!(msg.xid, 0);
         let xid = msg.xid;
         let msg = Message::new(vec![]);
-        assert_eq!(msg.xid, xid+1);
+        assert_eq!(msg.xid, xid + 1);
     }
 
     #[test]
     fn message_rpc_version() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.rpc_version(), 2);
     }
 
     #[test]
     fn message_program() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.program(), 3);
     }
 
     #[test]
     fn message_version() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.version(), 4);
     }
 
     #[test]
     fn message_procedure() {
-        let msg = Message::new(vec![0,0,0,2,0,0,0,3,0,0,0,4,0,0,0,5]);
+        let msg = Message::new(vec![0, 0, 0, 2, 0, 0, 0, 3, 0, 0, 0, 4, 0, 0, 0, 5]);
         assert_eq!(msg.procedure(), 5);
     }
 }

@@ -1,16 +1,8 @@
-use super::{Mount, Result, Error, ErrorKind, NULL3args};
-use crate::nfs3;
+use super::{Mount, NULL3args, Result};
 
 impl Mount {
     pub fn null(&self) -> Result<()> {
-        let args = NULL3args{};
-        let mut buf = Vec::<u8>::new();
-        let res = self.pack_nfs3(nfs3::NFSProc3::Null, &args, &mut buf);
-        if res.is_err() {
-            return Err(Error::new(ErrorKind::Other, res.unwrap_err()));
-        }
-
-        let _ = self.rpc.call(buf)?;
-        Ok(())
+        let args = NULL3args {};
+        self._null(args)
     }
 }
