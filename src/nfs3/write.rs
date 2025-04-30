@@ -56,6 +56,8 @@ mod tests {
             fh: Vec::new(),
             dircount: 512,
             maxcount: 4096,
+            rsize: 8192,
+            wsize: 16384,
         };
         let data = vec![0u8; (u32::MAX as usize) + 1];
         let res = mount.write(&Vec::new(), 0, &data).map_err(|e| e.kind());

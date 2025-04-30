@@ -111,6 +111,8 @@ pub struct Mount {
     dir: String,
     dircount: u32,
     maxcount: u32,
+    rsize: u32,
+    wsize: u32,
 }
 
 impl Mount {
@@ -576,13 +578,11 @@ impl<Out: xdr_codec::Write> Pack<Out> for sattr3 {
     }
 }
 
-#[allow(non_camel_case_types)]
+#[allow(unused,non_camel_case_types)]
 #[derive(Debug, PartialEq)]
 enum createhow3 {
     UNCHECKED(sattr3),
-    #[allow(dead_code)]
     GUARDED(sattr3),
-    #[allow(dead_code)]
     EXCLUSIVE(createverf3),
 }
 

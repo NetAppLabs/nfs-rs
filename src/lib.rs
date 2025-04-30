@@ -167,6 +167,8 @@ struct MountArgs {
     gid: u32,
     dircount: u32,
     maxcount: u32,
+    rsize: u32,
+    wsize: u32,
 }
 
 /// Parses the specified URL and attempts to mount the relevant NFS export
@@ -255,6 +257,9 @@ fn parse_url(url: &str) -> Result<MountArgs> {
         Default::default(),
         "specified URL contains bad mount port",
     )?;
+    let txsize_def: u32 = 1048576; // XXX: mimic libnfs default of 1 MiB
+    let rsize = get_url_query_param(&params, "rsize", txsize_def, "specified URL contains bad max read size value")?;
+    let wsize = get_url_query_param(&params, "wsize", txsize_def, "specified URL contains bad max write size value")?;
     let host = parsed_url.host_str().unwrap_or_default().to_string();
     Ok(MountArgs {
         versions,
@@ -266,6 +271,8 @@ fn parse_url(url: &str) -> Result<MountArgs> {
         gid,
         dircount,
         maxcount,
+        rsize,
+        wsize,
     })
 }
 
@@ -474,6 +481,30 @@ mod tests {
     }
 
     #[test]
+    fn parse_url_with_bad_rsize() {
+        let res = parse_url("nfs://127.0.0.1/some/export/path?rsize=sizable");
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err.kind(), ErrorKind::InvalidInput);
+        assert_eq!(
+            err.to_string(),
+            "specified URL contains bad max read size value".to_string()
+        );
+    }
+
+    #[test]
+    fn parse_url_with_bad_wsize() {
+        let res = parse_url("nfs://127.0.0.1/some/export/path?wsize=4mib");
+        assert!(res.is_err());
+        let err = res.unwrap_err();
+        assert_eq!(err.kind(), ErrorKind::InvalidInput);
+        assert_eq!(
+            err.to_string(),
+            "specified URL contains bad max write size value".to_string()
+        );
+    }
+
+    #[test]
     fn parse_url_without_uid_and_gid() {
         let res = parse_url("nfs://127.0.0.1/some/export/path");
         assert!(res.is_ok(), "err = {}", res.unwrap_err());
@@ -485,6 +516,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -502,6 +534,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), (616, 666));
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -516,6 +549,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -530,6 +564,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -544,6 +579,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -558,6 +594,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -572,6 +609,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -586,6 +624,37 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
+    }
+
+    #[test]
+    fn parse_url_with_rsize() {
+        let res = parse_url("nfs://127.0.0.1/some/export/path?rsize=16384");
+        assert!(res.is_ok(), "err = {}", res.unwrap_err());
+        let args = res.unwrap();
+        assert_eq!(args.versions, vec![NFSVersion::NFSv3]);
+        assert_eq!(args.host, "127.0.0.1".to_string());
+        assert_eq!(args.nfsport, 0);
+        assert_eq!(args.mountport, 0);
+        assert_eq!(args.dirpath, "/some/export/path".to_string());
+        assert_eq!((args.uid, args.gid), get_uid_gid());
+        assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (16384, 1048576));
+    }
+
+    #[test]
+    fn parse_url_with_wsize() {
+        let res = parse_url("nfs://127.0.0.1/some/export/path?wsize=16384");
+        assert!(res.is_ok(), "err = {}", res.unwrap_err());
+        let args = res.unwrap();
+        assert_eq!(args.versions, vec![NFSVersion::NFSv3]);
+        assert_eq!(args.host, "127.0.0.1".to_string());
+        assert_eq!(args.nfsport, 0);
+        assert_eq!(args.mountport, 0);
+        assert_eq!(args.dirpath, "/some/export/path".to_string());
+        assert_eq!((args.uid, args.gid), get_uid_gid());
+        assert_eq!((args.dircount, args.maxcount), (8192, 8192));
+        assert_eq!((args.rsize, args.wsize), (1048576, 16384));
     }
 
     #[test]
@@ -600,6 +669,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (4096, 4096));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -614,6 +684,7 @@ mod tests {
         assert_eq!(args.dirpath, "/some/export/path".to_string());
         assert_eq!((args.uid, args.gid), get_uid_gid());
         assert_eq!((args.dircount, args.maxcount), (2048, 4096));
+        assert_eq!((args.rsize, args.wsize), (1048576, 1048576));
     }
 
     #[test]
@@ -628,6 +699,8 @@ mod tests {
             uid: Default::default(),
             dircount: Default::default(),
             maxcount: Default::default(),
+            rsize: Default::default(),
+            wsize: Default::default(),
         };
         let res = mount(args);
         assert!(res.is_err());
@@ -648,6 +721,8 @@ mod tests {
             uid: Default::default(),
             dircount: Default::default(),
             maxcount: Default::default(),
+            rsize: Default::default(),
+            wsize: Default::default(),
         };
         let res = mount(args);
         assert!(res.is_err());
@@ -668,6 +743,8 @@ mod tests {
             uid: Default::default(),
             dircount: Default::default(),
             maxcount: Default::default(),
+            rsize: Default::default(),
+            wsize: Default::default(),
         };
         let res = mount(args);
         assert!(res.is_err());

@@ -44,6 +44,14 @@ struct Mount3 {
 }
 
 impl crate::Mount for Mount3 {
+    fn get_max_read_size(&self) -> u32 {
+        self.m.rsize
+    }
+
+    fn get_max_write_size(&self) -> u32 {
+        self.m.wsize
+    }
+
     fn null(&self) -> Result<()> {
         self.m.null()
     }
@@ -327,6 +335,9 @@ fn mount_on_addr(
     })?;
     let dir: String = args.dirpath.to_owned();
     let (dircount, maxcount) = (args.dircount, args.maxcount);
+    let (rsize, wsize) = (args.rsize, args.wsize);
+    let (rsize_max, wsize_max) = (4194304, 4194304); // XXX: according to libnfs, maximum read/write size is 4 MiB
+    let (rsize_min, wsize_min) = (8192, 8192); // XXX: according to libnfs, minimum read/write size is 8 KiB
     let mount_stream_id = if mountport != nfs_addr.port() {
         let mut mount_addr = addr.clone();
         mount_addr.set_port(mountport);
@@ -376,16 +387,20 @@ fn mount_on_addr(
         mountres3::default(e) => Err(Error::new(ErrorKind::Other, e)),
     }?;
 
-    let m = Mount {
+    let mut m = Mount {
         rpc: client,
         auth: auth.clone(),
         fh: res.fhandle.0,
         dir,
         dircount,
         maxcount,
+        rsize,
+        wsize,
     };
     let _ = m.null()?;
-    let _ = m.fsinfo()?; // XXX: use returned FS info for something? github.com/sahlberg/libnfs must be calling this for something...
+    let fsinfo = m.fsinfo()?;
+    m.rsize = fsinfo.rtmax.min(m.rsize).min(rsize_max).max(rsize_min);
+    m.wsize = fsinfo.wtmax.min(m.wsize).min(wsize_max).max(wsize_min);
 
     Ok(Box::new(Mount3 { m }))
 }

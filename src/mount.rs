@@ -21,6 +21,31 @@ use crate::{Result, Time};
 /// NFS version agnostic.  However, since NFSv4 introduces procedures that are not present in NFSv3, invoking those
 /// procedures will return an error when relevant [`Mount`] is NFSv3.
 pub trait Mount: std::fmt::Debug + Send + Sync {
+    /// Utility function get_max_read_size returns maximum read chunk size.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// fn read_chunk(mount: &dyn nfs_rs::Mount, fh: &Vec<u8>, offset: u64, size: u32) -> std::io::Result<Vec<u8>> {
+    ///     let chunk_size = mount.get_max_read_size().min(size);
+    ///     mount.read(fh, offset, chunk_size)
+    /// }
+    /// ```
+    fn get_max_read_size(&self) -> u32;
+
+    /// Utility function get_max_write_size returns maximum write chunk size.
+    ///
+    /// # Example
+    ///
+    /// ```
+    /// fn write_chunk(mount: &dyn nfs_rs::Mount, fh: &Vec<u8>, offset: u64, data: &Vec<u8>, size: u32) -> std::io::Result<u32> {
+    ///     let chunk_size = mount.get_max_write_size().min(size) as usize;
+    ///     let data = data[0..chunk_size].to_vec();
+    ///     mount.write(fh, offset, &data)
+    /// }
+    /// ```
+    fn get_max_write_size(&self) -> u32;
+
     /// Procedure NULL does not do any work. It is made available to allow server response testing and timing.
     ///
     /// # Example
