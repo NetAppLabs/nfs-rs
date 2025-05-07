@@ -15,7 +15,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #[cfg(target_os = "wasi")]
-#[allow(unused)]
+#[allow(static_mut_refs,unused)]
 mod bindings;
 #[cfg(target_os = "wasi")]
 mod component;
@@ -42,33 +42,15 @@ use std::net::{SocketAddr, TcpStream, ToSocketAddrs};
 #[cfg(target_os = "wasi")]
 use wasi_ext::{SocketAddr, TcpStream, ToSocketAddrs};
 
-static mut SOCKET_ADDRESSES: Option<Arc<RwLock<HashMap<u32, SocketAddr>>>> = None;
-static mut TCP_STREAMS: Option<Arc<RwLock<HashMap<u32, Arc<RwLock<TcpStream>>>>>> = None;
-
-fn get_socket_addresses() -> &'static mut Arc<RwLock<HashMap<u32, SocketAddr>>> {
-    unsafe {
-        if SOCKET_ADDRESSES.is_none() {
-            SOCKET_ADDRESSES = Some(Arc::new(RwLock::new(HashMap::new())));
-        }
-        SOCKET_ADDRESSES.as_mut().unwrap()
-    }
-}
+static SOCKET_ADDRESSES: LazyLock<Arc<RwLock<HashMap<u32, SocketAddr>>>> = LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
+static TCP_STREAMS: LazyLock<Arc<RwLock<HashMap<u32, Arc<RwLock<TcpStream>>>>>> = LazyLock::new(|| Arc::new(RwLock::new(HashMap::new())));
 
 fn get_socket_address(id: &u32) -> Result<SocketAddr> {
-    let socket_addresses = get_socket_addresses().read().unwrap();
+    let socket_addresses = SOCKET_ADDRESSES.read().unwrap();
     let socket_address = socket_addresses.get(id);
     match socket_address {
         Some(addr) => Ok(addr.clone()),
         None => Err(Error::new(ErrorKind::NotFound, "socket address not found")),
-    }
-}
-
-fn get_tcp_streams() -> &'static mut Arc<RwLock<HashMap<u32, Arc<RwLock<TcpStream>>>>> {
-    unsafe {
-        if TCP_STREAMS.is_none() {
-            TCP_STREAMS = Some(Arc::new(RwLock::new(HashMap::new())));
-        }
-        TCP_STREAMS.as_mut().unwrap()
     }
 }
 
@@ -84,7 +66,7 @@ macro_rules! using_locked {
 }
 
 fn using_tcp_stream<T>(id: &u32, func: fn(&TcpStream) -> Result<T>) -> Result<T> {
-    let tcp_streams = get_tcp_streams().read().unwrap();
+    let tcp_streams = TCP_STREAMS.read().unwrap();
     let tcp_stream = tcp_streams.get(id);
     match tcp_stream {
         Some(stream) => func(using_locked!(stream)),
@@ -97,7 +79,7 @@ fn using_tcp_stream_with_buffer<T>(
     buf: &Vec<u8>,
     func: fn(&TcpStream, &Vec<u8>) -> Result<T>,
 ) -> Result<T> {
-    let tcp_streams = get_tcp_streams().read().unwrap();
+    let tcp_streams = TCP_STREAMS.read().unwrap();
     let tcp_stream = tcp_streams.get(id);
     match tcp_stream {
         Some(stream) => func(using_locked!(stream), buf),
@@ -106,8 +88,8 @@ fn using_tcp_stream_with_buffer<T>(
 }
 
 fn add_tcp_stream(addr: &SocketAddr, stream: TcpStream) -> Result<u32> {
-    let mut tcp_streams = get_tcp_streams().write().unwrap();
-    let mut socket_addresses = get_socket_addresses().write().unwrap();
+    let mut tcp_streams = TCP_STREAMS.write().unwrap();
+    let mut socket_addresses = SOCKET_ADDRESSES.write().unwrap();
     let mut id: u32 = rand::random();
     while id == 0 || tcp_streams.contains_key(&id) {
         id = rand::random();
@@ -118,14 +100,14 @@ fn add_tcp_stream(addr: &SocketAddr, stream: TcpStream) -> Result<u32> {
 }
 
 fn replace_tcp_stream(id: u32, stream: TcpStream) -> Result<()> {
-    let mut tcp_streams = get_tcp_streams().write().unwrap();
+    let mut tcp_streams = TCP_STREAMS.write().unwrap();
     tcp_streams.insert(id, Arc::new(RwLock::new(stream)));
     Ok(())
 }
 
 fn remove_tcp_stream(id: &u32) {
-    let mut tcp_streams = get_tcp_streams().write().unwrap();
-    let mut socket_addresses = get_socket_addresses().write().unwrap();
+    let mut tcp_streams = TCP_STREAMS.write().unwrap();
+    let mut socket_addresses = SOCKET_ADDRESSES.write().unwrap();
     tcp_streams.remove(id);
     socket_addresses.remove(id);
 }
@@ -153,7 +135,7 @@ pub use std::io::Error;
 use rpc::auth::Auth;
 use std::collections::HashMap;
 use std::io::{ErrorKind, Result};
-use std::sync::{Arc, RwLock};
+use std::sync::{Arc, LazyLock, RwLock};
 use url::Url;
 
 #[derive(Debug)]
