@@ -1,19 +1,19 @@
 # NFS-RS
 
-A pure rust implementation of the NFS protocol.
+A pure Rust implementation of the NFSv3 protocol for use in User Space applications.
 
 ## Justification
 
-Project [github.com/cholcombe973/libnfs](github.com/cholcombe973/libnfs) provides
+The [libnfs](https://github.com/cholcombe973/libnfs) Rust bindings project provides
 support for the NFS protocol for most scenarios.  However, its reliance on the C
-implementation of the NFS protocol,
-[github.com/sahlberg/libnfs](github.com/sahlberg/libnfs), leads to issues when the
+implementation of the NFS protocol by using
+[libnfs](https://github.com/sahlberg/libnfs), leads to issues when the
 target platform is not supported by the C implementation, as well as, there being
 added headaches for anyone trying to cross-compile for a different target OS and/or
 platform.
 
-By having an implementation of the NFS protocol written purely in rust, the issues
-listed above no longer apply.
+By having an implementation of the NFS protocol written purely in Rust, the issues
+listed above no longer apply as well as it provides a more flexible foundation.
 
 ## Usage
 
@@ -33,7 +33,7 @@ if let Some(fh) = mount.create_path("nfs-rs.txt", 0o664).ok() {
 
 ## URL format
 
-URL format follows [github.com/sahlberg/libnfs](github.com/sahlberg/libnfs) where
+URL format follows [libnfs](https://github.com/sahlberg/libnfs) where
 the URL format supported is:
 
 `nfs://<server|ipv4|ipv6>[:<port>]/path[?arg=val[&arg=val]*]`.
@@ -61,14 +61,24 @@ Arguments supported are:
   maximum size of the response buffer (including attributes).  If only one <count>
   is given it will be used for both.  Default is 8192 for both.
 
-## Caveats
+## Limitations
 
-Initial implementation only provides NFSv3 client functionality - basically, it is
-a rust version of [go-nfs-client](github.com/willscott/go-nfs-client) but with all
-NFSv3 procedures implemented (go-nfs-client omits some procedures, probably due to
-them being rarely used features of NFS).
+Initial implementation only provides NFSv3 client functionality - essentially it is
+similar to [go-nfs-client](https://github.com/willscott/go-nfs-client) but with all
+NFSv3 procedures implemented ([go-nfs-client](https://github.com/willscott/go-nfs-client) 
+omits some procedures, probably due to them being rarely used features of NFS).
 
-One thing that go-nfs-client does, but this rust implementation does not do, is to
-attempt connecting from a privileged port (i.e. binding source port to a port that
-is lower than 1024).  This is due to rust's `std::net` crate not offering a way to
-do this.
+One thing that [go-nfs-client](https://github.com/willscott/go-nfs-client) does, 
+but this rust implementation does not do, is to attempt connecting from a privileged 
+port (i.e. binding source port to a port that is lower than 1024). 
+This is due to rust's `std::net` crate not offering a way to do this.
+
+## License
+
+[Apache-2.0](LICENSE)
+
+Disclaimer: _This is not an officially supported NetApp product._
+
+## Contributing
+
+See [Contributing.md](./CONTRIBUTING.md)
