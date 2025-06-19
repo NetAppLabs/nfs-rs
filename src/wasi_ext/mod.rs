@@ -17,11 +17,10 @@
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::io;
-use std::io::{IoSlice, IoSliceMut};
+use std::io::{IoSlice, IoSliceMut, Read as IoRead, Write as IoWrite};
 use std::mem;
 use std::net::{IpAddr, Ipv4Addr, Ipv6Addr, Shutdown, SocketAddrV4, SocketAddrV6};
 use std::time::Duration;
-use std::unimplemented;
 
 pub use std::net::SocketAddr;
 
@@ -278,20 +277,7 @@ impl TcpStream {
         unimplemented!("peek")
     }
 
-    pub fn read(&self, mut buf: &mut [u8]) -> io::Result<usize> {
-        // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
-        //      what is probably more apt in our case, wasi::io::streams::blocking_read
-        let len = buf.len() as u64;
-        let received_bytes = self
-            .input
-            .as_ref()
-            .unwrap()
-            .blocking_read(len)
-            .map_err(Into::<io::Error>::into)?;
-        buf.write(received_bytes.as_slice())
-    }
-
-    pub fn read_exact(&self, mut buf: &mut [u8]) -> io::Result<()> {
+    pub fn read_exact(&mut self, mut buf: &mut [u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.read(buf) {
                 // XXX: despite documentation for wasi::io::streams::blocking_read stating that it should
@@ -300,7 +286,7 @@ impl TcpStream {
                 //      so, let's "handle" this scenario by blocking (sleeping) on zero bytes read
                 Ok(0) => std::thread::sleep(std::time::Duration::from_millis(1)),
                 Ok(n) => buf = &mut buf[n..],
-                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {}
+                Err(ref e) if e.kind() == std::io::ErrorKind::Interrupted => {},
                 Err(e) => return Err(e),
             }
         }
@@ -313,7 +299,7 @@ impl TcpStream {
         Ok(())
     }
 
-    pub fn read_vectored(&self, iov: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
+    pub fn read_vectored(&mut self, iov: &mut [IoSliceMut<'_>]) -> io::Result<usize> {
         iov.iter_mut().map(|buf| self.read(buf)).sum()
     }
 
@@ -321,20 +307,7 @@ impl TcpStream {
         true
     }
 
-    pub fn write(&self, buf: &[u8]) -> io::Result<usize> {
-        // XXX: according to the documentation for wasi::io::streams::OutputStream::blocking_write_and_flush,
-        //      it only writes up to 4096 bytes - instead of limiting the size of the data we send to 4096,
-        //      let's call `output.check_write()` and use the returned value from that as the maximum size.
-        let output = self.output.as_ref().unwrap();
-        let max = output.check_write().map_err(Into::<io::Error>::into)?;
-        let sz = buf.len().min(max as usize);
-        let _ = output
-            .blocking_write_and_flush(&buf[..sz])
-            .map_err(Into::<io::Error>::into)?;
-        Ok(sz)
-    }
-
-    pub fn write_all(&self, mut buf: &[u8]) -> io::Result<()> {
+    pub fn write_all(&mut self, mut buf: &[u8]) -> io::Result<()> {
         while !buf.is_empty() {
             match self.write(buf) {
                 Ok(0) => {
@@ -351,7 +324,7 @@ impl TcpStream {
         Ok(())
     }
 
-    pub fn write_vectored(&self, iov: &[IoSlice<'_>]) -> io::Result<usize> {
+    pub fn write_vectored(&mut self, iov: &[IoSlice<'_>]) -> io::Result<usize> {
         iov.iter().map(|buf| self.write(buf)).sum()
     }
 
@@ -422,6 +395,44 @@ impl TcpStream {
                 )),
             }
         })
+    }
+}
+
+impl IoRead for TcpStream {
+    fn read(&mut self, mut buf: &mut [u8]) -> io::Result<usize> {
+        // XXX: there is no wasi::sockets::tcp::recv or equivalent -- should use wasi::io::streams::read or,
+        //      what is probably more apt in our case, wasi::io::streams::blocking_read
+        let len = buf.len() as u64;
+        let received_bytes = self
+            .input
+            .as_ref()
+            .unwrap()
+            .blocking_read(len)
+            .map_err(Into::<io::Error>::into)?;
+        buf.write(received_bytes.as_slice())
+    }
+}
+
+impl IoWrite for TcpStream {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        // XXX: according to the documentation for wasi::io::streams::OutputStream::blocking_write_and_flush,
+        //      it only writes up to 4096 bytes - instead of limiting the size of the data we send to 4096,
+        //      let's call `output.check_write()` and use the returned value from that as the maximum size.
+        let output = self.output.as_ref().unwrap();
+        let max = output.check_write().map_err(Into::<io::Error>::into)?;
+        let sz = buf.len().min(max as usize);
+        let _ = output
+            .blocking_write_and_flush(&buf[..sz])
+            .map_err(Into::<io::Error>::into)?;
+        Ok(sz)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.output
+            .as_ref()
+            .unwrap()
+            .blocking_flush()
+            .map_err(Into::<io::Error>::into)
     }
 }
 

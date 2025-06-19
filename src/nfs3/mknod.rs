@@ -14,10 +14,11 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::split_path;
 use super::{
     devicedata3, diropargs3, filename3, from_post_op_fh3, mknoddata3, nfs_fh3, sattr3, set_atime,
-    set_gid3, set_mode3, set_mtime, set_size3, set_uid3, specdata3, split_path, Error, ErrorKind,
-    MKNOD3args, MKNOD3res, Mount, Result,
+    set_gid3, set_mode3, set_mtime, set_size3, set_uid3, specdata3, Error, ErrorKind, MKNOD3args,
+    MKNOD3res, Mount, Result,
 };
 
 impl Mount {
