@@ -19,17 +19,17 @@ use xdr_codec::Pack;
 const AUTH_BODY_MAX_SIZE: usize = 400;
 
 #[derive(Clone, Debug, PartialEq)]
-enum AuthFlavor {
+pub(crate) enum AuthFlavor {
     Null = 0,
     Unix = 1,
 }
 
 #[derive(Clone, Debug, PartialEq)]
 pub(crate) struct Auth {
-    flavor: AuthFlavor,
+    pub(crate) flavor: AuthFlavor,
     pub(crate) uid: u32,
     pub(crate) gid: u32,
-    body: Vec<u8>,
+    pub(crate) body: Vec<u8>,
 }
 
 impl Auth {

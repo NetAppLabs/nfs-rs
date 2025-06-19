@@ -14,8 +14,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::split_path;
 use super::{
-    diropargs3, filename3, from_post_op_fh3, nfs_fh3, nfspath3, sattr3, split_path, symlinkdata3,
+    diropargs3, filename3, from_post_op_fh3, nfs_fh3, nfspath3, sattr3, symlinkdata3,
     Error, ErrorKind, Mount, ObjRes, Result, SYMLINK3args, SYMLINK3res, SYMLINK3resok,
 };
 

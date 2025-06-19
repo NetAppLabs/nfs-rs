@@ -697,7 +697,7 @@ pub trait Mount: std::fmt::Debug + Send + Sync {
     ///     }
     /// }
     /// ```
-    // FIXME: verify that NFSv4 and NFSv4.1 have no unsupported procedures and update code doc if either/both do
+    // FIXME: verify that NFSv4, NFSv4.1, and NFSv4.2 have no unsupported procedures and update code doc if any do
     fn version(&self) -> NFSVersion;
 }
 
@@ -707,6 +707,7 @@ pub enum NFSVersion {
     NFSv3,
     NFSv4,
     NFSv4p1,
+    NFSv4p2,
 }
 
 impl Into<NFSVersion> for &str {
@@ -715,6 +716,7 @@ impl Into<NFSVersion> for &str {
             "3" => NFSVersion::NFSv3,
             "4" => NFSVersion::NFSv4,
             "4.1" => NFSVersion::NFSv4p1,
+            "4.2" => NFSVersion::NFSv4p2,
             _ => NFSVersion::Unknown,
         }
     }

@@ -31,10 +31,11 @@ pub(crate) const RPC_VERSION: u32 = 2;
 pub(crate) const PORTMAP_PROG: u32 = 100000;
 pub(crate) const PORTMAP_VERSION: u32 = 2;
 pub(crate) const PORTMAP_PORT: u16 = 111;
-pub(crate) const MOUNT3_PROG: u32 = 100005;
+pub(crate) const MOUNT_PROG: u32 = 100005;
 pub(crate) const MOUNT3_VERSION: u32 = 3;
-pub(crate) const NFS3_PROG: u32 = 100003;
+pub(crate) const NFS_PROG: u32 = 100003;
 pub(crate) const NFS3_VERSION: u32 = 3;
+pub(crate) const NFS4_VERSION: u32 = 4;
 
 const IPPROTO_TCP: u32 = 6;
 // const IPPROTO_UDP: u32 = 17;
@@ -164,8 +165,8 @@ impl Client {
 
     fn get_stream_id(&self, reqmsg: &Message) -> u32 {
         match reqmsg.program() {
-            MOUNT3_PROG => self.mount_stream_id.unwrap_or(self.nfs_stream_id),
-            NFS3_PROG | PORTMAP_PROG => self.nfs_stream_id,
+            MOUNT_PROG => self.mount_stream_id.unwrap_or(self.nfs_stream_id),
+            NFS_PROG | PORTMAP_PROG => self.nfs_stream_id,
             _ => panic!("unknown RPC program - RPC header values: rpc_version={} program={} version={} procedure={}", reqmsg.rpc_version(), reqmsg.program(), reqmsg.version(), reqmsg.procedure()),
         }
     }
@@ -232,8 +233,7 @@ impl Client {
         let res = using_tcp_stream_with_buffer(
             &stream_id,
             &buf,
-            #[allow(unused_mut)]
-            |mut stream, buf| -> Result<Vec<u8>> {
+            |stream, buf| -> Result<Vec<u8>> {
                 // send the byte buffer to RPC service
                 let _ = stream.write_all(buf.as_slice())?;
 

@@ -45,10 +45,10 @@ Arguments supported are:
 * `gid=<int>`
   * GID value to use when talking to the server.  Defaults to 65534 on Windows and
   getgid() on unixen.
-* `version=<3|4|4.1>`
+* `version=<3|4|4.1|4.2>`
   * NFS Version.  Can be specified as comma separated list in descending order of
-  preference, e.g. `4.1,4,3`, with first supported one being used.  Default is 3.
-  * Note: versions `4` and `4.1` accepted in URL but not yet supported.
+  preference, e.g. `4.1,4,3`, with first supported one being used.  Default is 4.1,3.
+  * Note: versions `4` and `4.2` accepted in URL but not yet supported.
 * `nfsport=<port>`
   * Use this port for NFS instead of using the portmapper or port specified in
   host part of URL.

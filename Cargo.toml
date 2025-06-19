@@ -1,6 +1,6 @@
 [package]
 name = "nfs-rs"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 license = "Apache-2.0"
 
@@ -11,14 +11,16 @@ crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 byteorder = "1.5.0"
-bytes = "1.6.0"
-nix = "0.28.0"
+bytes = "1.10.1"
+nfs4 = { version = "0.1.0", path = "./nfs4p1-rs/nfs4" }
+nfs4_client = { version = "0.1.0", path = "./nfs4p1-rs/nfs4_client" }
+nix = "0.29.0"
 path-clean = "1.0.1"
-rand = "0.8.5"
-thiserror = "1.0.58"
-url = "2.5.0"
-wit-bindgen = { version = "0.25.0" }
-wit-bindgen-rt = { version = "0.25.0", features = ["bitflags"] }
+rand = "0.9.1"
+thiserror = "2.0.12"
+url = "2.5.4"
+wit-bindgen = { version = "0.43.0" }
+wit-bindgen-rt = { version = "0.43.0", features = ["bitflags"] }
 xdr-codec = "0.4.4"
 
 [package.metadata.component]

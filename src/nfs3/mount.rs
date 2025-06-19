@@ -290,7 +290,7 @@ fn ensure_port(
     rpc::portmap(addrs, prog, vers, auth)
 }
 
-pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
+pub(crate) fn mount(args: &crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
     // start by resolving host address and assigning portmapper port to each resolved address
     let addrs = (args.host.as_str(), rpc::PORTMAP_PORT)
         .to_socket_addrs()?
@@ -299,14 +299,14 @@ pub(crate) fn mount(args: crate::MountArgs) -> Result<Box<dyn crate::Mount>> {
     let nfsport = ensure_port(
         &addrs,
         args.nfsport,
-        rpc::NFS3_PROG,
+        rpc::NFS_PROG,
         rpc::NFS3_VERSION,
         &auth,
     )?;
     let mountport = ensure_port(
         &addrs,
         args.mountport,
-        rpc::MOUNT3_PROG,
+        rpc::MOUNT_PROG,
         rpc::MOUNT3_VERSION,
         &auth,
     )?;
@@ -348,7 +348,7 @@ fn mount_on_addr(
     let client = rpc::Client::new(nfs_stream_id, mount_stream_id);
 
     let args = nfs3::rpc_header(
-        rpc::MOUNT3_PROG,
+        rpc::MOUNT_PROG,
         rpc::MOUNT3_VERSION,
         nfs3::MountProc3::Null as u32,
         &auth,
@@ -362,7 +362,7 @@ fn mount_on_addr(
 
     let args = MOUNT3args {
         header: nfs3::rpc_header(
-            rpc::MOUNT3_PROG,
+            rpc::MOUNT_PROG,
             rpc::MOUNT3_VERSION,
             nfs3::MountProc3::Mount as u32,
             &auth,

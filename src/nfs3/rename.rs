@@ -14,9 +14,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::split_path;
 use super::{
-    diropargs3, filename3, nfs_fh3, split_path, Error, ErrorKind, Mount, RENAME3args, RENAME3res,
-    Result,
+    diropargs3, filename3, nfs_fh3, Error, ErrorKind, Mount, RENAME3args, RENAME3res, Result,
 };
 
 impl Mount {

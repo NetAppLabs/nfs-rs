@@ -123,7 +123,7 @@ impl Mount {
         out: &mut Out,
     ) -> xdr_codec::Result<usize> {
         Ok(
-            rpc_header(rpc::NFS3_PROG, rpc::NFS3_VERSION, proc as u32, &self.auth).pack(out)?
+            rpc_header(rpc::NFS_PROG, rpc::NFS3_VERSION, proc as u32, &self.auth).pack(out)?
                 + args.pack(out)?,
         )
     }
@@ -135,7 +135,7 @@ impl Mount {
         out: &mut Out,
     ) -> xdr_codec::Result<usize> {
         Ok(rpc_header(
-            rpc::MOUNT3_PROG,
+            rpc::MOUNT_PROG,
             rpc::MOUNT3_VERSION,
             proc as u32,
             &self.auth,
@@ -170,19 +170,6 @@ impl Mount {
 
 fn rpc_header(prog: u32, vers: u32, proc: u32, cred: &Auth) -> rpc::Header {
     rpc::Header::new(rpc::RPC_VERSION, prog, vers, proc, cred, &Auth::new_null())
-}
-
-fn split_path(path: &str) -> Result<(String, String)> {
-    let cleaned = &path_clean::clean(path);
-    let dir = cleaned
-        .parent()
-        .map_or("/".to_string(), |x| x.to_string_lossy().to_string());
-    let name = cleaned
-        .file_name()
-        .unwrap_or_default()
-        .to_string_lossy()
-        .to_string();
-    Ok((dir, name))
 }
 
 #[allow(unused, non_camel_case_types)]
@@ -752,15 +739,5 @@ mod tests {
         let header = rpc_header(9, 8, 7, &auth);
         let expected = rpc::Header::new(rpc::RPC_VERSION, 9, 8, 7, &auth, &crate::Auth::new_null());
         assert_eq!(header, expected);
-    }
-
-    #[test]
-    fn split_path_util() {
-        let path = "/first/place/1999.txt";
-        let res = split_path(path);
-        assert!(res.is_ok());
-        let (dir, name) = res.unwrap();
-        assert_eq!(dir, "/first/place".to_string());
-        assert_eq!(name, "1999.txt".to_string());
     }
 }
