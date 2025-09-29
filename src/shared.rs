@@ -14,9 +14,36 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+use std::time::{Duration, SystemTime, UNIX_EPOCH};
+
 /// Struct describing an NFS timestamp.
 #[derive(Clone, Copy, Debug, Default, PartialEq)]
 pub struct Time {
     pub seconds: u32,
     pub nseconds: u32,
+}
+
+impl Time {
+    // Convert to std::time::SystemTime
+    pub fn to_system_time(&self) -> SystemTime {
+        UNIX_EPOCH + Duration::new(self.seconds as u64, self.nseconds)
+    }
+
+    // Create Time from SystemTime
+    pub fn from_system_time(system_time: SystemTime) -> Self {
+        match system_time.duration_since(UNIX_EPOCH) {
+            Ok(duration) => Time {
+                seconds: duration.as_secs() as u32,
+                nseconds: duration.subsec_nanos(),
+            },
+            Err(e) => {
+                // Handle time earlier than UNIX_EPOCH
+                let duration = e.duration();
+                Time {
+                    seconds: duration.as_secs() as u32,
+                    nseconds: duration.subsec_nanos(),
+                }
+            }
+        }
+    }
 }
